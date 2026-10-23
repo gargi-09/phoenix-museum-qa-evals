@@ -1,0 +1,1433 @@
+{
+ "generated_by": "src/export_sandbox_data.py",
+ "source": "fixture mode: 10 public museum records, scripted model",
+ "scenarios": [
+  {
+   "id": "clean",
+   "scenario": "clean",
+   "why": "Clean answer with one valid citation -- everything should pass.",
+   "payload": {
+    "question": "What year was Coney Island Beach by Reginald Marsh made?",
+    "result": {
+     "question": "What year was Coney Island Beach by Reginald Marsh made?",
+     "abstained": false,
+     "answer": "According to the museum records, Coney Island Beach by Reginald Marsh was made in 1935.",
+     "answerable": true,
+     "record_ids_used": [
+      "cma-117571"
+     ],
+     "limitations": "",
+     "full_provenance": [
+      {
+       "id": "cma-117571",
+       "category": "used",
+       "reason": null
+      },
+      {
+       "id": "aic-59820",
+       "category": "shown_not_cited",
+       "reason": "different Reginald Marsh work (Tattoo and Haircut)"
+      },
+      {
+       "id": "cma-171726",
+       "category": "shown_not_cited",
+       "reason": "Leon Levinstein photograph, not the Marsh work"
+      },
+      {
+       "id": "cma-157127",
+       "category": "shown_not_cited",
+       "reason": "Andreas Feininger photograph, not the Marsh work"
+      },
+      {
+       "id": "aic-265559",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-167554",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-160059",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-160794",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-169223",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-168184",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      }
+     ],
+     "confidence": {
+      "score": 0.68,
+      "label": "medium",
+      "components": {
+       "retrieval_score": 0.35,
+       "verification_score": 1.0,
+       "contradiction_penalty": 0.0,
+       "label_capped_by_failed_check": false
+      }
+     },
+     "verification_checks": {
+      "citation_membership": {
+       "passed": true,
+       "detail": "all citations valid"
+      },
+      "not_recorded_violation": {
+       "passed": true,
+       "detail": "no violations detected across 1 [not recorded] field(s) in scope: ['cma-117571.dimensions']"
+      },
+      "factual_match": {
+       "passed": true,
+       "detail": "years consistent with cited records"
+      },
+      "not_truncated": {
+       "passed": true,
+       "detail": "no truncation signal fired"
+      }
+     },
+     "retrieval_signals": {
+      "dense_similarity": 0.3533489754227049,
+      "bm25_max": 8.47422610060859,
+      "dense_threshold": 0.05,
+      "bm25_threshold": 6.0,
+      "dense_below_threshold": false,
+      "bm25_below_threshold": false,
+      "abstain_reasons": [],
+      "retriever": "fixture (BM25 + TF-IDF, RRF)"
+     },
+     "is_truncated": false,
+     "truncation_recovered": false,
+     "prior_truncation": null,
+     "call_seq": 1,
+     "budget_remaining": null
+    },
+    "candidate_ids": [
+     "cma-117571",
+     "aic-59820",
+     "cma-171726",
+     "cma-157127",
+     "aic-265559",
+     "cma-167554",
+     "cma-160059",
+     "cma-160794",
+     "cma-169223",
+     "cma-168184"
+    ],
+    "context_blocks": [
+     {
+      "id": "cma-117571",
+      "fields": {
+       "title": "Coney Island Beach",
+       "artist": "Reginald Marsh",
+       "year": "1935",
+       "medium": "etching",
+       "dimensions": "[not recorded]",
+       "classification": "Print"
+      },
+      "years": [
+       1935
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-59820",
+      "fields": {
+       "title": "Tattoo and Haircut",
+       "artist": "Reginald Marsh",
+       "year": "1932",
+       "medium": "Egg tempera on Masonite",
+       "dimensions": "118.1 × 121.6 cm (46 1/2 × 47 7/8 in.)",
+       "classification": "tempera"
+      },
+      "years": [
+       1932
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-171726",
+      "fields": {
+       "title": "Coney Island",
+       "artist": "Leon Levinstein",
+       "year": "c. 1954",
+       "medium": "Gelatin silver print",
+       "dimensions": "Image: 32.3 x 46.5 cm (12 11/16 x 18 5/16 in.); Paper: 38.2 x 50.5 cm (15 1/16 x 19 7/8 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       1954
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-157127",
+      "fields": {
+       "title": "Coney Island",
+       "artist": "Andreas Feininger",
+       "year": "1949",
+       "medium": "gelatin silver print",
+       "dimensions": "Image: 34.2 x 27.2 cm (13 7/16 x 10 11/16 in.); Matted: 50.8 x 40.6 cm (20 x 16 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       1949
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-265559",
+      "fields": {
+       "title": "Untitled (Taoist Collages)",
+       "artist": "Ray Johnson",
+       "year": "1955",
+       "medium": "Mixed media",
+       "dimensions": "Dimensions variable",
+       "classification": "collage"
+      },
+      "years": [
+       1955
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-167554",
+      "fields": {
+       "title": "Humming Gold",
+       "artist": "Helen Frankenthaler",
+       "year": "1971",
+       "medium": "acrylic on canvas",
+       "dimensions": "Framed: 208.5 x 277 x 4 cm (82 1/16 x 109 1/16 x 1 9/16 in.); Unframed: 205.7 x 274.2 cm (81 x 107 15/16 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1971
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-160059",
+      "fields": {
+       "title": "Ste Sebastienne",
+       "artist": "Louise Bourgeois",
+       "year": "1992",
+       "medium": "drypoint",
+       "dimensions": "Sheet: 120.4 x 94.5 cm (47 3/8 x 37 3/16 in.); Platemark: 98.7 x 78.3 cm (38 7/8 x 30 13/16 in.)",
+       "classification": "Print"
+      },
+      "years": [
+       1992
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-160794",
+      "fields": {
+       "title": "Untitled",
+       "artist": "Louise Bourgeois",
+       "year": "1995",
+       "medium": "etching and drypoint",
+       "dimensions": "Platemark: 25.1 x 10.2 cm (9 7/8 x 4 in.); Sheet: 29.8 x 29.9 cm (11 3/4 x 11 3/4 in.)",
+       "classification": "Print"
+      },
+      "years": [
+       1995
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-169223",
+      "fields": {
+       "title": "Railroad Landscape #33, Newburgh, Dutchess & Connecticut Right-of-Way, Abandoned 1938, MP 16, View South, Winter, Pine Plains, New York",
+       "artist": "Jeff Brouws",
+       "year": "2009, printed 2010",
+       "medium": "inkjet print",
+       "dimensions": "Image: 83.7 x 101.6 cm (32 15/16 x 40 in.); Paper: 93.9 x 111.7 cm (36 15/16 x 44 in.); Mounted: 93.9 x 111.7 cm (36 15/16 x 44 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       2009,
+       2010
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-168184",
+      "fields": {
+       "title": "The Casting",
+       "artist": "Omer Fast",
+       "year": "2007",
+       "medium": "Four-channel video installation, color, sound; 14 minutes; edition 4/6 (Commissioned by the Museum Moderner Kunst Stiftung Ludwig Wien)",
+       "dimensions": "[not recorded]",
+       "classification": "Time-based Media"
+      },
+      "years": [
+       2007
+      ],
+      "internal_contradiction": false
+     }
+    ],
+    "prompt_audit": {
+     "status": "ok",
+     "system_prompt_dropped_suspected": false,
+     "instruction_tokens_expected": 460,
+     "prompt_tokens_delta": 0,
+     "prompt_tokens_ratio": 1.0,
+     "detail": "reported prompt_tokens 3388 is consistent with the instructions arriving (estimate 3388, delta +0)"
+    },
+    "prompt_tokens": 3388,
+    "llm": {
+     "error_type": null,
+     "is_truncated": false,
+     "truncation_reasons": [],
+     "prior_truncation": null,
+     "truncation_recovered": false,
+     "raw_content": "{\"answer\": \"According to the museum records, Coney Island Beach by Reginald Marsh was made in 1935.\", \"answerable\": true, \"record_ids_used\": [\"cma-117571\"], \"record_ids_excluded\": [{\"id\": \"cma-171726\", \"reason\": \"Leon Levinstein photograph, not the Marsh work\"}, {\"id\": \"cma-157127\", \"reason\": \"Andreas Feininger photograph, not the Marsh work\"}, {\"id\": \"aic-59820\", \"reason\": \"different Reginald Marsh work (Tattoo and Haircut)\"}], \"limitations\": \"\"}"
+    }
+   },
+   "dropped_by_script": false,
+   "message_format": "prepend",
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "1 valid source record(s) cited: ['cma-117571']"
+    },
+    "citation_groundedness": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All 1 citation(s) found in the 10-record RRF candidate set."
+    },
+    "confidence_capping": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "No cap required; confidence 0.68 (medium)."
+    },
+    "prompt_integrity": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "reported prompt_tokens 3388 is consistent with the instructions arriving (estimate 3388, delta +0)"
+    },
+    "verifier.citation_membership": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "all citations valid"
+    },
+    "verifier.not_recorded_violation": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no violations detected across 1 [not recorded] field(s) in scope: ['cma-117571.dimensions']"
+    },
+    "verifier.factual_match": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "years consistent with cited records"
+    },
+    "verifier.not_truncated": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no truncation signal fired"
+    },
+    "deterministic_verdict": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All deterministic evaluators passed, or could not run (inconclusive) or did not apply."
+    },
+    "llm_judge_surrogate": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "PASS -- Answer is relevant, coherent and appears correct."
+    }
+   },
+   "audit_inputs": {
+    "expected_with_instructions": 3388,
+    "expected_without_instructions": 2928,
+    "instruction_tokens": 460
+   },
+   "best_similarity": 0.3533489754227049,
+   "max_tokens": 1024
+  },
+  {
+   "id": "zero",
+   "scenario": "zero_source_false_pass",
+   "why": "The trap: a confident 'No violations found' that cites zero records.",
+   "payload": {
+    "question": "Are there any violations in the Louise Bourgeois Ode to My Mother records?",
+    "result": {
+     "question": "Are there any violations in the Louise Bourgeois Ode to My Mother records?",
+     "abstained": false,
+     "answer": "No violations found. The Ode to My Mother records are consistent across both institutions, and every field is complete and verified.",
+     "answerable": true,
+     "record_ids_used": [],
+     "limitations": "",
+     "full_provenance": [
+      {
+       "id": "cma-160794",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-160059",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "aic-265559",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-167554",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-168184",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-157127",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-169223",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "aic-59820",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-117571",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-171726",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      }
+     ],
+     "confidence": {
+      "score": null,
+      "label": "not_applicable",
+      "reason": "no factual claim was asserted and no record was cited, so there is nothing to be confident about. The verification checks below pass vacuously on an empty citation set and are reported as inconclusive, not as passes.",
+      "components": null
+     },
+     "verification_checks": {
+      "citation_membership": {
+       "passed": true,
+       "inconclusive": true,
+       "detail": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+      },
+      "not_recorded_violation": {
+       "passed": true,
+       "inconclusive": true,
+       "detail": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+      },
+      "factual_match": {
+       "passed": true,
+       "inconclusive": true,
+       "detail": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+      },
+      "not_truncated": {
+       "passed": true,
+       "detail": "no truncation signal fired"
+      }
+     },
+     "retrieval_signals": {
+      "dense_similarity": 0.3009349649895096,
+      "bm25_max": 13.41698724656545,
+      "dense_threshold": 0.05,
+      "bm25_threshold": 6.0,
+      "dense_below_threshold": false,
+      "bm25_below_threshold": false,
+      "abstain_reasons": [],
+      "retriever": "fixture (BM25 + TF-IDF, RRF)"
+     },
+     "is_truncated": false,
+     "truncation_recovered": false,
+     "prior_truncation": null,
+     "call_seq": 2,
+     "budget_remaining": null
+    },
+    "candidate_ids": [
+     "cma-160794",
+     "cma-160059",
+     "aic-265559",
+     "cma-167554",
+     "cma-168184",
+     "cma-157127",
+     "cma-169223",
+     "aic-59820",
+     "cma-117571",
+     "cma-171726"
+    ],
+    "context_blocks": [
+     {
+      "id": "cma-160794",
+      "fields": {
+       "title": "Untitled",
+       "artist": "Louise Bourgeois",
+       "year": "1995",
+       "medium": "etching and drypoint",
+       "dimensions": "Platemark: 25.1 x 10.2 cm (9 7/8 x 4 in.); Sheet: 29.8 x 29.9 cm (11 3/4 x 11 3/4 in.)",
+       "classification": "Print"
+      },
+      "years": [
+       1995
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-160059",
+      "fields": {
+       "title": "Ste Sebastienne",
+       "artist": "Louise Bourgeois",
+       "year": "1992",
+       "medium": "drypoint",
+       "dimensions": "Sheet: 120.4 x 94.5 cm (47 3/8 x 37 3/16 in.); Platemark: 98.7 x 78.3 cm (38 7/8 x 30 13/16 in.)",
+       "classification": "Print"
+      },
+      "years": [
+       1992
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-265559",
+      "fields": {
+       "title": "Untitled (Taoist Collages)",
+       "artist": "Ray Johnson",
+       "year": "1955",
+       "medium": "Mixed media",
+       "dimensions": "Dimensions variable",
+       "classification": "collage"
+      },
+      "years": [
+       1955
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-167554",
+      "fields": {
+       "title": "Humming Gold",
+       "artist": "Helen Frankenthaler",
+       "year": "1971",
+       "medium": "acrylic on canvas",
+       "dimensions": "Framed: 208.5 x 277 x 4 cm (82 1/16 x 109 1/16 x 1 9/16 in.); Unframed: 205.7 x 274.2 cm (81 x 107 15/16 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1971
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-168184",
+      "fields": {
+       "title": "The Casting",
+       "artist": "Omer Fast",
+       "year": "2007",
+       "medium": "Four-channel video installation, color, sound; 14 minutes; edition 4/6 (Commissioned by the Museum Moderner Kunst Stiftung Ludwig Wien)",
+       "dimensions": "[not recorded]",
+       "classification": "Time-based Media"
+      },
+      "years": [
+       2007
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-157127",
+      "fields": {
+       "title": "Coney Island",
+       "artist": "Andreas Feininger",
+       "year": "1949",
+       "medium": "gelatin silver print",
+       "dimensions": "Image: 34.2 x 27.2 cm (13 7/16 x 10 11/16 in.); Matted: 50.8 x 40.6 cm (20 x 16 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       1949
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-169223",
+      "fields": {
+       "title": "Railroad Landscape #33, Newburgh, Dutchess & Connecticut Right-of-Way, Abandoned 1938, MP 16, View South, Winter, Pine Plains, New York",
+       "artist": "Jeff Brouws",
+       "year": "2009, printed 2010",
+       "medium": "inkjet print",
+       "dimensions": "Image: 83.7 x 101.6 cm (32 15/16 x 40 in.); Paper: 93.9 x 111.7 cm (36 15/16 x 44 in.); Mounted: 93.9 x 111.7 cm (36 15/16 x 44 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       2009,
+       2010
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-59820",
+      "fields": {
+       "title": "Tattoo and Haircut",
+       "artist": "Reginald Marsh",
+       "year": "1932",
+       "medium": "Egg tempera on Masonite",
+       "dimensions": "118.1 × 121.6 cm (46 1/2 × 47 7/8 in.)",
+       "classification": "tempera"
+      },
+      "years": [
+       1932
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-117571",
+      "fields": {
+       "title": "Coney Island Beach",
+       "artist": "Reginald Marsh",
+       "year": "1935",
+       "medium": "etching",
+       "dimensions": "[not recorded]",
+       "classification": "Print"
+      },
+      "years": [
+       1935
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-171726",
+      "fields": {
+       "title": "Coney Island",
+       "artist": "Leon Levinstein",
+       "year": "c. 1954",
+       "medium": "Gelatin silver print",
+       "dimensions": "Image: 32.3 x 46.5 cm (12 11/16 x 18 5/16 in.); Paper: 38.2 x 50.5 cm (15 1/16 x 19 7/8 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       1954
+      ],
+      "internal_contradiction": false
+     }
+    ],
+    "prompt_audit": {
+     "status": "ok",
+     "system_prompt_dropped_suspected": false,
+     "instruction_tokens_expected": 460,
+     "prompt_tokens_delta": 0,
+     "prompt_tokens_ratio": 1.0,
+     "detail": "reported prompt_tokens 3393 is consistent with the instructions arriving (estimate 3393, delta +0)"
+    },
+    "prompt_tokens": 3393,
+    "llm": {
+     "error_type": null,
+     "is_truncated": false,
+     "truncation_reasons": [],
+     "prior_truncation": null,
+     "truncation_recovered": false,
+     "raw_content": "{\"answer\": \"No violations found. The Ode to My Mother records are consistent across both institutions, and every field is complete and verified.\", \"answerable\": true, \"record_ids_used\": [], \"record_ids_excluded\": [], \"limitations\": \"\"}"
+    }
+   },
+   "dropped_by_script": false,
+   "message_format": "prepend",
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "FALSE PASS: output asserts an all-clear (\"no violations\") but cites 0 valid source records (cited=[], 10 candidates available). Confidence must be 0.0."
+    },
+    "citation_groundedness": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "Answer asserts a claim with 0 citations -- nothing grounds it."
+    },
+    "confidence_capping": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "Capped correctly: 0 valid citations -> score withheld (label=not_applicable); effective confidence 0.00."
+    },
+    "prompt_integrity": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "reported prompt_tokens 3393 is consistent with the instructions arriving (estimate 3393, delta +0)"
+    },
+    "verifier.citation_membership": {
+     "label": "INCONCLUSIVE",
+     "score": null,
+     "explanation": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+    },
+    "verifier.not_recorded_violation": {
+     "label": "INCONCLUSIVE",
+     "score": null,
+     "explanation": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+    },
+    "verifier.factual_match": {
+     "label": "INCONCLUSIVE",
+     "score": null,
+     "explanation": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+    },
+    "verifier.not_truncated": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no truncation signal fired"
+    },
+    "deterministic_verdict": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "zero_source_false_pass: FALSE PASS: output asserts an all-clear (\"no violations\") but cites 0 valid source records (cited=[], 10 candidates available). Confidence must be 0.0.; citation_groundedness: Answer asserts a claim with 0 citations -- nothing grounds it."
+    },
+    "llm_judge_surrogate": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "PASS -- No violations reported; answer is on-topic and confident."
+    }
+   },
+   "audit_inputs": {
+    "expected_with_instructions": 3393,
+    "expected_without_instructions": 2933,
+    "instruction_tokens": 460
+   },
+   "best_similarity": 0.3009349649895096,
+   "max_tokens": 1024
+  },
+  {
+   "id": "dropped",
+   "scenario": "dropped_system_prompt",
+   "why": "Instructions silently dropped: accurate prose, but no JSON and no citations.",
+   "payload": {
+    "question": "When was Omer Fast's The Casting made?",
+    "result": {
+     "question": "When was Omer Fast's The Casting made?",
+     "abstained": false,
+     "error": "failed_to_parse_response: no_json_found",
+     "answer": null,
+     "raw_content": "Omer Fast's The Casting was made in 2007. It is a four-channel video installation interweaving a soldier's recollections with staged tableaux."
+    },
+    "candidate_ids": [
+     "cma-168184",
+     "aic-265559",
+     "cma-167554",
+     "cma-169223",
+     "cma-157127",
+     "cma-117571",
+     "cma-160059",
+     "aic-59820",
+     "cma-160794",
+     "cma-171726"
+    ],
+    "context_blocks": [
+     {
+      "id": "cma-168184",
+      "fields": {
+       "title": "The Casting",
+       "artist": "Omer Fast",
+       "year": "2007",
+       "medium": "Four-channel video installation, color, sound; 14 minutes; edition 4/6 (Commissioned by the Museum Moderner Kunst Stiftung Ludwig Wien)",
+       "dimensions": "[not recorded]",
+       "classification": "Time-based Media"
+      },
+      "years": [
+       2007
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-265559",
+      "fields": {
+       "title": "Untitled (Taoist Collages)",
+       "artist": "Ray Johnson",
+       "year": "1955",
+       "medium": "Mixed media",
+       "dimensions": "Dimensions variable",
+       "classification": "collage"
+      },
+      "years": [
+       1955
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-167554",
+      "fields": {
+       "title": "Humming Gold",
+       "artist": "Helen Frankenthaler",
+       "year": "1971",
+       "medium": "acrylic on canvas",
+       "dimensions": "Framed: 208.5 x 277 x 4 cm (82 1/16 x 109 1/16 x 1 9/16 in.); Unframed: 205.7 x 274.2 cm (81 x 107 15/16 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1971
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-169223",
+      "fields": {
+       "title": "Railroad Landscape #33, Newburgh, Dutchess & Connecticut Right-of-Way, Abandoned 1938, MP 16, View South, Winter, Pine Plains, New York",
+       "artist": "Jeff Brouws",
+       "year": "2009, printed 2010",
+       "medium": "inkjet print",
+       "dimensions": "Image: 83.7 x 101.6 cm (32 15/16 x 40 in.); Paper: 93.9 x 111.7 cm (36 15/16 x 44 in.); Mounted: 93.9 x 111.7 cm (36 15/16 x 44 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       2009,
+       2010
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-157127",
+      "fields": {
+       "title": "Coney Island",
+       "artist": "Andreas Feininger",
+       "year": "1949",
+       "medium": "gelatin silver print",
+       "dimensions": "Image: 34.2 x 27.2 cm (13 7/16 x 10 11/16 in.); Matted: 50.8 x 40.6 cm (20 x 16 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       1949
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-117571",
+      "fields": {
+       "title": "Coney Island Beach",
+       "artist": "Reginald Marsh",
+       "year": "1935",
+       "medium": "etching",
+       "dimensions": "[not recorded]",
+       "classification": "Print"
+      },
+      "years": [
+       1935
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-160059",
+      "fields": {
+       "title": "Ste Sebastienne",
+       "artist": "Louise Bourgeois",
+       "year": "1992",
+       "medium": "drypoint",
+       "dimensions": "Sheet: 120.4 x 94.5 cm (47 3/8 x 37 3/16 in.); Platemark: 98.7 x 78.3 cm (38 7/8 x 30 13/16 in.)",
+       "classification": "Print"
+      },
+      "years": [
+       1992
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-59820",
+      "fields": {
+       "title": "Tattoo and Haircut",
+       "artist": "Reginald Marsh",
+       "year": "1932",
+       "medium": "Egg tempera on Masonite",
+       "dimensions": "118.1 × 121.6 cm (46 1/2 × 47 7/8 in.)",
+       "classification": "tempera"
+      },
+      "years": [
+       1932
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-160794",
+      "fields": {
+       "title": "Untitled",
+       "artist": "Louise Bourgeois",
+       "year": "1995",
+       "medium": "etching and drypoint",
+       "dimensions": "Platemark: 25.1 x 10.2 cm (9 7/8 x 4 in.); Sheet: 29.8 x 29.9 cm (11 3/4 x 11 3/4 in.)",
+       "classification": "Print"
+      },
+      "years": [
+       1995
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-171726",
+      "fields": {
+       "title": "Coney Island",
+       "artist": "Leon Levinstein",
+       "year": "c. 1954",
+       "medium": "Gelatin silver print",
+       "dimensions": "Image: 32.3 x 46.5 cm (12 11/16 x 18 5/16 in.); Paper: 38.2 x 50.5 cm (15 1/16 x 19 7/8 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       1954
+      ],
+      "internal_contradiction": false
+     }
+    ],
+    "prompt_audit": {
+     "status": "dropped_suspected",
+     "system_prompt_dropped_suspected": true,
+     "instruction_tokens_expected": 460,
+     "prompt_tokens_delta": -460,
+     "prompt_tokens_ratio": 0.864,
+     "detail": "reported prompt_tokens 2924 is below the 3154-token midpoint between the with-instructions estimate (3384) and the without-instructions estimate (2924) -- the ~460-token instruction block was most likely NOT delivered"
+    },
+    "prompt_tokens": 2924,
+    "llm": {
+     "error_type": null,
+     "is_truncated": false,
+     "truncation_reasons": [],
+     "prior_truncation": null,
+     "truncation_recovered": false,
+     "raw_content": "Omer Fast's The Casting was made in 2007. It is a four-channel video installation interweaving a soldier's recollections with staged tableaux."
+    }
+   },
+   "dropped_by_script": true,
+   "message_format": "prepend",
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "FALSE PASS: output asserts an answer in unparseable output (failed_to_parse_response) but cites 0 valid source records (cited=[], 10 candidates available). Confidence must be 0.0."
+    },
+    "citation_groundedness": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "Answer asserts a claim with 0 citations -- nothing grounds it."
+    },
+    "confidence_capping": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "Capped correctly: 0 valid citations; system prompt suspected dropped -> no confidence emitted (failed_to_parse_response: no_json_found); effective confidence 0.00."
+    },
+    "prompt_integrity": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "SYSTEM PROMPT DROPPED: reported prompt_tokens 2924 is below the 3154-token midpoint between the with-instructions estimate (3384) and the without-instructions estimate (2924) -- the ~460-token instruction block was most likely NOT delivered"
+    },
+    "verifier.citation_membership": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "no response to check"
+    },
+    "verifier.not_recorded_violation": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "no response to check"
+    },
+    "verifier.factual_match": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "no response to check"
+    },
+    "verifier.not_truncated": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no truncation signal fired"
+    },
+    "deterministic_verdict": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "zero_source_false_pass: FALSE PASS: output asserts an answer in unparseable output (failed_to_parse_response) but cites 0 valid source records (cited=[], 10 candidates available). Confidence must be 0.0.; citation_groundedness: Answer asserts a claim with 0 citations -- nothing grounds it.; prompt_integrity: SYSTEM PROMPT DROPPED: reported prompt_tokens 2924 is below the 3154-token midpoint between the with-instructions estimate (3384) and the without-instructions estimate (2924) -- the ~460-token instruction block was most likely NOT delivered; verifier.citation_membership: no response to check; verifier.not_recorded_violation: no response to check; verifier.factual_match: no response to check"
+    },
+    "llm_judge_surrogate": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "PASS -- Answer is relevant, coherent and appears correct."
+    }
+   },
+   "audit_inputs": {
+    "expected_with_instructions": 3384,
+    "expected_without_instructions": 2924,
+    "instruction_tokens": 460
+   },
+   "best_similarity": 0.2243691846090982,
+   "max_tokens": 1024
+  },
+  {
+   "id": "fabricated",
+   "scenario": "fabricated_citation",
+   "why": "Cites a record ID that was never in the retrieved candidate set.",
+   "payload": {
+    "question": "When was Jeff Brouws's Railroad Landscape #33 in Pine Plains, New York made?",
+    "result": {
+     "question": "When was Jeff Brouws's Railroad Landscape #33 in Pine Plains, New York made?",
+     "abstained": false,
+     "answer": "Jeff Brouws's Railroad Landscape #33 in Pine Plains, New York was made in 2009 and printed in 2010, according to the Cleveland Museum of Art record and a matching exhibition record.",
+     "answerable": true,
+     "record_ids_used": [
+      "cma-169223",
+      "aic-99999"
+     ],
+     "limitations": "",
+     "full_provenance": [
+      {
+       "id": "cma-169223",
+       "category": "used",
+       "reason": null
+      },
+      {
+       "id": "cma-157127",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-117571",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-167554",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "aic-59820",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "aic-265559",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-168184",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-160794",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-160059",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      },
+      {
+       "id": "cma-171726",
+       "category": "shown_not_cited",
+       "reason": "NO REASON GIVEN by model -- shown but silently unused, worth scrutinizing whether this should have been cited"
+      }
+     ],
+     "confidence": {
+      "score": 0.54,
+      "label": "medium",
+      "components": {
+       "retrieval_score": 0.33,
+       "verification_score": 0.75,
+       "contradiction_penalty": 0.0,
+       "label_capped_by_failed_check": false
+      }
+     },
+     "verification_checks": {
+      "citation_membership": {
+       "passed": false,
+       "detail": "fabricated citations: {'aic-99999'}"
+      },
+      "not_recorded_violation": {
+       "passed": true,
+       "detail": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+      },
+      "factual_match": {
+       "passed": true,
+       "detail": "years consistent with cited records"
+      },
+      "not_truncated": {
+       "passed": true,
+       "detail": "no truncation signal fired"
+      }
+     },
+     "retrieval_signals": {
+      "dense_similarity": 0.3267674400288541,
+      "bm25_max": 17.62747906249608,
+      "dense_threshold": 0.05,
+      "bm25_threshold": 6.0,
+      "dense_below_threshold": false,
+      "bm25_below_threshold": false,
+      "abstain_reasons": [],
+      "retriever": "fixture (BM25 + TF-IDF, RRF)"
+     },
+     "is_truncated": false,
+     "truncation_recovered": false,
+     "prior_truncation": null,
+     "call_seq": 4,
+     "budget_remaining": null
+    },
+    "candidate_ids": [
+     "cma-169223",
+     "cma-157127",
+     "cma-117571",
+     "cma-167554",
+     "aic-59820",
+     "aic-265559",
+     "cma-168184",
+     "cma-160794",
+     "cma-160059",
+     "cma-171726"
+    ],
+    "context_blocks": [
+     {
+      "id": "cma-169223",
+      "fields": {
+       "title": "Railroad Landscape #33, Newburgh, Dutchess & Connecticut Right-of-Way, Abandoned 1938, MP 16, View South, Winter, Pine Plains, New York",
+       "artist": "Jeff Brouws",
+       "year": "2009, printed 2010",
+       "medium": "inkjet print",
+       "dimensions": "Image: 83.7 x 101.6 cm (32 15/16 x 40 in.); Paper: 93.9 x 111.7 cm (36 15/16 x 44 in.); Mounted: 93.9 x 111.7 cm (36 15/16 x 44 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       2009,
+       2010
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-157127",
+      "fields": {
+       "title": "Coney Island",
+       "artist": "Andreas Feininger",
+       "year": "1949",
+       "medium": "gelatin silver print",
+       "dimensions": "Image: 34.2 x 27.2 cm (13 7/16 x 10 11/16 in.); Matted: 50.8 x 40.6 cm (20 x 16 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       1949
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-117571",
+      "fields": {
+       "title": "Coney Island Beach",
+       "artist": "Reginald Marsh",
+       "year": "1935",
+       "medium": "etching",
+       "dimensions": "[not recorded]",
+       "classification": "Print"
+      },
+      "years": [
+       1935
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-167554",
+      "fields": {
+       "title": "Humming Gold",
+       "artist": "Helen Frankenthaler",
+       "year": "1971",
+       "medium": "acrylic on canvas",
+       "dimensions": "Framed: 208.5 x 277 x 4 cm (82 1/16 x 109 1/16 x 1 9/16 in.); Unframed: 205.7 x 274.2 cm (81 x 107 15/16 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1971
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-59820",
+      "fields": {
+       "title": "Tattoo and Haircut",
+       "artist": "Reginald Marsh",
+       "year": "1932",
+       "medium": "Egg tempera on Masonite",
+       "dimensions": "118.1 × 121.6 cm (46 1/2 × 47 7/8 in.)",
+       "classification": "tempera"
+      },
+      "years": [
+       1932
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-265559",
+      "fields": {
+       "title": "Untitled (Taoist Collages)",
+       "artist": "Ray Johnson",
+       "year": "1955",
+       "medium": "Mixed media",
+       "dimensions": "Dimensions variable",
+       "classification": "collage"
+      },
+      "years": [
+       1955
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-168184",
+      "fields": {
+       "title": "The Casting",
+       "artist": "Omer Fast",
+       "year": "2007",
+       "medium": "Four-channel video installation, color, sound; 14 minutes; edition 4/6 (Commissioned by the Museum Moderner Kunst Stiftung Ludwig Wien)",
+       "dimensions": "[not recorded]",
+       "classification": "Time-based Media"
+      },
+      "years": [
+       2007
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-160794",
+      "fields": {
+       "title": "Untitled",
+       "artist": "Louise Bourgeois",
+       "year": "1995",
+       "medium": "etching and drypoint",
+       "dimensions": "Platemark: 25.1 x 10.2 cm (9 7/8 x 4 in.); Sheet: 29.8 x 29.9 cm (11 3/4 x 11 3/4 in.)",
+       "classification": "Print"
+      },
+      "years": [
+       1995
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-160059",
+      "fields": {
+       "title": "Ste Sebastienne",
+       "artist": "Louise Bourgeois",
+       "year": "1992",
+       "medium": "drypoint",
+       "dimensions": "Sheet: 120.4 x 94.5 cm (47 3/8 x 37 3/16 in.); Platemark: 98.7 x 78.3 cm (38 7/8 x 30 13/16 in.)",
+       "classification": "Print"
+      },
+      "years": [
+       1992
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-171726",
+      "fields": {
+       "title": "Coney Island",
+       "artist": "Leon Levinstein",
+       "year": "c. 1954",
+       "medium": "Gelatin silver print",
+       "dimensions": "Image: 32.3 x 46.5 cm (12 11/16 x 18 5/16 in.); Paper: 38.2 x 50.5 cm (15 1/16 x 19 7/8 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       1954
+      ],
+      "internal_contradiction": false
+     }
+    ],
+    "prompt_audit": {
+     "status": "ok",
+     "system_prompt_dropped_suspected": false,
+     "instruction_tokens_expected": 460,
+     "prompt_tokens_delta": 0,
+     "prompt_tokens_ratio": 1.0,
+     "detail": "reported prompt_tokens 3393 is consistent with the instructions arriving (estimate 3393, delta +0)"
+    },
+    "prompt_tokens": 3393,
+    "llm": {
+     "error_type": null,
+     "is_truncated": false,
+     "truncation_reasons": [],
+     "prior_truncation": null,
+     "truncation_recovered": false,
+     "raw_content": "{\"answer\": \"Jeff Brouws's Railroad Landscape #33 in Pine Plains, New York was made in 2009 and printed in 2010, according to the Cleveland Museum of Art record and a matching exhibition record.\", \"answerable\": true, \"record_ids_used\": [\"cma-169223\", \"aic-99999\"], \"record_ids_excluded\": [], \"limitations\": \"\"}"
+    }
+   },
+   "dropped_by_script": false,
+   "message_format": "prepend",
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "1 valid source record(s) cited: ['cma-169223']"
+    },
+    "citation_groundedness": {
+     "label": "FAIL",
+     "score": 0.5,
+     "explanation": "1/2 citation(s) are NOT in the fused candidate set: ['aic-99999']. Grounded: ['cma-169223']."
+    },
+    "confidence_capping": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "Capped correctly: failed checks ['citation_membership'] -> label 'medium' already below 'high' (score 0.54); effective confidence 0.54."
+    },
+    "prompt_integrity": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "reported prompt_tokens 3393 is consistent with the instructions arriving (estimate 3393, delta +0)"
+    },
+    "verifier.citation_membership": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "fabricated citations: {'aic-99999'}"
+    },
+    "verifier.not_recorded_violation": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+    },
+    "verifier.factual_match": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "years consistent with cited records"
+    },
+    "verifier.not_truncated": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no truncation signal fired"
+    },
+    "deterministic_verdict": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "citation_groundedness: 1/2 citation(s) are NOT in the fused candidate set: ['aic-99999']. Grounded: ['cma-169223'].; verifier.citation_membership: fabricated citations: {'aic-99999'}"
+    },
+    "llm_judge_surrogate": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "PASS -- Answer is relevant, coherent and appears correct."
+    }
+   },
+   "audit_inputs": {
+    "expected_with_instructions": 3393,
+    "expected_without_instructions": 2933,
+    "instruction_tokens": 460
+   },
+   "best_similarity": 0.3267674400288541,
+   "max_tokens": 1024
+  },
+  {
+   "id": "abstain",
+   "scenario": "out_of_corpus_decline",
+   "why": "Out of corpus -- should abstain before any paid call. (On the full public corpus it scores BM25 19.75, just past the 19.5 gate, and is declined instead.)",
+   "payload": {
+    "question": "What is the melting point of gallium arsenide?",
+    "result": {
+     "question": "What is the melting point of gallium arsenide?",
+     "abstained": true,
+     "reason": "Abstained before any paid call: best BM25 score 3.52 is below the fixture threshold 6.0 -- no record shares enough distinctive vocabulary with this question",
+     "retrieval_signals": {
+      "dense_similarity": 0.0713726208248784,
+      "bm25_max": 3.5174363718358626,
+      "dense_threshold": 0.05,
+      "bm25_threshold": 6.0,
+      "dense_below_threshold": false,
+      "bm25_below_threshold": true,
+      "abstain_reasons": [
+       "best BM25 score 3.52 is below the fixture threshold 6.0 -- no record shares enough distinctive vocabulary with this question"
+      ],
+      "retriever": "fixture (BM25 + TF-IDF, RRF)"
+     },
+     "answer": null
+    },
+    "candidate_ids": [
+     "cma-169223",
+     "aic-265559",
+     "cma-160059",
+     "cma-168184",
+     "aic-59820",
+     "cma-167554",
+     "cma-117571",
+     "cma-160794",
+     "cma-157127",
+     "cma-171726"
+    ],
+    "context_blocks": [],
+    "prompt_audit": {},
+    "prompt_tokens": null,
+    "llm": {}
+   },
+   "dropped_by_script": false,
+   "message_format": "prepend",
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Abstained before generation -- no claim was made."
+    },
+    "citation_groundedness": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Abstained -- nothing was cited."
+    },
+    "confidence_capping": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Abstained before generation -- no confidence emitted."
+    },
+    "prompt_integrity": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Abstained -- no prompt was sent."
+    },
+    "verifier.citation_membership": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Abstained -- nothing to verify."
+    },
+    "verifier.not_recorded_violation": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Abstained -- nothing to verify."
+    },
+    "verifier.factual_match": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Abstained -- nothing to verify."
+    },
+    "verifier.not_truncated": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Abstained -- nothing to verify."
+    },
+    "deterministic_verdict": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Nothing was generated, so nothing to verify."
+    },
+    "llm_judge_surrogate": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "No answer was generated to judge."
+    }
+   },
+   "audit_inputs": {
+    "expected_with_instructions": null,
+    "expected_without_instructions": null,
+    "instruction_tokens": null
+   },
+   "best_similarity": 0.0713726208248784,
+   "max_tokens": 1024
+  }
+ ]
+}

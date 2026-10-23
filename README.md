@@ -283,6 +283,49 @@ the clean, zero-sources and dropped-prompt cases, the raw response next to
 both verdicts, the evaluator annotations, and a span waterfall with token
 telemetry.
 
+### Evaluator sandbox: try to fool the verifiers, no key needed
+
+The dashboard's sandbox panel runs the evaluators **in the visitor's
+browser**:
+
+1. Pick one of the five traced runs.
+2. Edit what the model said: strip citations, cite a record that was never
+   retrieved, claim "no violations", state a wrong year, answer in prose, or
+   untick "system prompt delivered".
+3. The pipeline re-scores it as you type, with the judge surrogate next to
+   the deterministic verifier and all eight evaluators listed.
+
+There is no model call and no API key, so it's safe on a public page.
+
+- **Engine.** [`docs/sandbox.js`](docs/sandbox.js) is a line-by-line port of
+  everything after the model call: parsing, truncation detection, the four
+  `reasoning.check_*` verifiers, confidence scoring, the prompt-token audit,
+  and every evaluator in `phoenix_evals.py`.
+- **Data.** [`docs/data/sandbox.json`](docs/data/sandbox.json) holds the
+  payloads recorded on real fixture-mode traces: question, RRF candidate set,
+  context blocks and raw output. Retrieval is fixed to those records;
+  everything after the model call re-runs. Rebuild it with:
+  ```bash
+  python src/export_sandbox_data.py
+  ```
+- **Parity is checked, not claimed.** On load, the page re-scores every
+  exported run and compares each verdict with the Python run's. It shows the
+  result ("50/50 verdicts match"). From the CLI:
+  ```bash
+  node docs/sandbox.js docs/data/sandbox.json
+  ```
+  A wider test of 104 edited answers, run through both the Python pipeline
+  and the JS port, matched on all 1,040 verdicts.
+
+Building it surfaced two real issues, both now fixed in the Python code:
+
+- The fixture's scripted model skipped truncation detection, which
+  `call_haiku()` normally runs, so a scripted answer cut off mid-JSON scored
+  `not_truncated` PASS.
+- `deterministic_verdict` only rolled up the four headline evaluators, so an
+  answer with the wrong year (`verifier.factual_match` FAIL) still showed an
+  overall PASS. The verdict now fails if any deterministic evaluator fails.
+
 Screenshots from a real run go in [`docs/assets/`](docs/assets/README.md),
 which lists each filename and what it should show. The dashboard picks them up
 automatically: a "From a real run" gallery, plus a Phoenix trace image inside
@@ -411,6 +454,8 @@ Original architecture diagram:
 ```
 demo_phoenix_evals.py  Phoenix demo: trace 5 questions, evaluate the traces
 docs/index.html        GitHub Pages diagnostic dashboard
+docs/sandbox.js        in-browser evaluator engine (JS port, parity-checked)
+docs/data/             sandbox.json: real traced payloads + Python verdicts
 docs/assets/           screenshots, shown on the dashboard and here (see its README.md)
 src/
   main.py              CLI: fetch | ingest | ask | demo
@@ -425,6 +470,7 @@ src/
   tracing.py           OpenInference spans + Phoenix session
   phoenix_evals.py     deterministic Phoenix evaluators + judge baseline
   fixture_mode.py      offline retriever and scripted model
+  export_sandbox_data.py  real traced payloads -> docs/data/sandbox.json
   fixtures/            10 public records, normalized (committed)
 test_scripts/          test scripts used during building
 data/                  base.jsonl, normalized.jsonl, SOURCES.json, raw/ API cache (gitignored)

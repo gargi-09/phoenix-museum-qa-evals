@@ -36,7 +36,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from api_client import estimate_tokens_preflight
+from api_client import detect_truncation, estimate_tokens_preflight
 from retrieval import load_records, tokenize
 
 FIXTURE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -217,19 +217,31 @@ class ScriptedModel:
         if system and not spec.get("drop_system"):
             billed += estimate_tokens_preflight(system)
         completion = max(1, len(content) // 4)
+        usage = {"prompt_tokens": billed, "completion_tokens": completion,
+                 "total_tokens": billed + completion}
+
+        # The REAL truncation detector, which call_haiku() would have run.
+        # Without it a scripted response that stops mid-JSON scored
+        # not_truncated=PASS -- found when the dashboard's JS port, which does
+        # run detection, disagreed with this fixture. A scripted retry returns
+        # the same text, so a truncated response stays truncated, exactly as
+        # call_haiku()'s single retry would leave it.
+        is_truncated, reasons = detect_truncation(content, usage, max_tokens,
+                                                  expect_json=expect_json)
 
         self.call_seq += 1
         return {
             "content": content,
-            "usage": {"prompt_tokens": billed, "completion_tokens": completion,
-                      "total_tokens": billed + completion},
-            "is_truncated": False,
-            "truncation_reasons": [],
+            "usage": usage,
+            "is_truncated": is_truncated,
+            "truncation_reasons": reasons,
             "error_type": None,
             "should_retry": False,
             "call_seq": self.call_seq,
             "budget_remaining": None,
-            "prior_truncation": None,
+            "prior_truncation": ({"attempt": 1, "call_seq": self.call_seq,
+                                  "reasons": reasons, "usage": usage}
+                                 if is_truncated else None),
             "truncation_recovered": False,
         }
 

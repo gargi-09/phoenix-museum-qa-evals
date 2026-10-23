@@ -315,14 +315,23 @@ HEADLINE_EVALUATORS = ("zero_source_false_pass", "citation_groundedness",
 
 
 def deterministic_verdict(results):
-    """Rolls the headline evaluators up into one PASS/FAIL for the comparison."""
-    failures = [n for n in HEADLINE_EVALUATORS
-                if n in results and results[n].label == FAIL]
+    """Rolls every deterministic evaluator up into one PASS/FAIL.
+
+    Fails if a headline evaluator OR any of the pipeline's own verifier.*
+    checks fails. It used to count the headline four only, so an answer citing
+    a real record but stating the wrong year -- verifier.factual_match FAIL,
+    confidence capped to medium -- still rolled up to PASS. The dashboard
+    sandbox made that visible: "state a wrong year" showed a passing verdict.
+    INCONCLUSIVE never counts as a failure (or as a pass).
+    """
+    names = [n for n in results if n in HEADLINE_EVALUATORS or n.startswith("verifier.")]
+    failures = [n for n in names if results[n].label == FAIL]
     if failures:
         return _fail("; ".join(f"{n}: {results[n].explanation}" for n in failures))
     if all(results[n].label == NOT_APPLICABLE for n in HEADLINE_EVALUATORS if n in results):
         return EvalResult(NOT_APPLICABLE, None, "Nothing was generated, so nothing to verify.")
-    return _pass("All headline deterministic evaluators passed or were not applicable.")
+    return _pass("All deterministic evaluators passed, or could not run (inconclusive) "
+                 "or did not apply.")
 
 
 # ---------------------------------------------------------------------------
