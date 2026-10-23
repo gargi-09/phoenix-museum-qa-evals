@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Museum QA Verifiers</title>
+  <meta name="description" content="Deterministic verifiers and Arize Phoenix observability for a museum-records QA pipeline: where a standard LLM-as-a-judge passes an answer that cites nothing.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root { color-scheme: dark; }
+    body { background: #09090b; }
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    pre { tab-size: 2; }
+    .scrollbar-thin::-webkit-scrollbar { height: 6px; width: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 999px; }
+    .bar { transition: width .5s cubic-bezier(.2,.8,.2,1), left .5s cubic-bezier(.2,.8,.2,1); }
+    @media (prefers-reduced-motion: reduce) { .bar { transition: none; } }
+  </style>
+</head>
+<body class="min-h-screen text-zinc-300 font-sans antialiased">
+<div class="grid-bg min-h-screen">
+
+  <!-- Header -->
+  <header class="border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur md:sticky md:top-0 z-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div class="flex items-start gap-3 min-w-0">
+        <div class="mt-0.5 shrink-0 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-2 text-emerald-400">
+          <i data-lucide="shield-check" class="w-5 h-5"></i>
+        </div>
+        <div class="min-w-0">
+          <h1 class="text-base sm:text-lg font-semibold text-zinc-50 tracking-tight">
+            Museum QA: Deterministic Verifiers &amp; Phoenix Observability
+          </h1>
+          <p class="text-xs sm:text-sm text-zinc-500 font-mono">by Gargi Vipat · OpenInference traces · custom Phoenix evaluators</p>
+        </div>
+      </div>
+      <nav class="flex flex-wrap gap-2" aria-label="Author links">
+        <a href="https://github.com/gargi-09/museum-qa-agent" target="_blank" rel="noopener"
+           class="inline-flex items-center gap-2 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 hover:border-zinc-500 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+          GitHub Repo
+        </a>
+        <a href="https://www.linkedin.com/in/gargi-vipat/" target="_blank" rel="noopener"
+           class="inline-flex items-center gap-2 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 hover:border-zinc-500 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13ZM7.12 20.45H3.56V9h3.56v11.45ZM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0Z"/></svg>
+          LinkedIn
+        </a>
+        <a href="https://gargi-vipat.framer.website/" target="_blank" rel="noopener"
+           class="inline-flex items-center gap-2 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-1.5 text-sm text-emerald-300 hover:bg-emerald-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
+          <i data-lucide="globe" class="w-4 h-4"></i>
+          Portfolio
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+
+    <!-- Intro -->
+    <section class="max-w-3xl">
+      <p class="font-mono text-xs uppercase tracking-widest text-emerald-400/90 mb-2">// diagnostic console</p>
+      <h2 class="text-2xl sm:text-3xl font-semibold text-zinc-50 tracking-tight leading-tight">
+        An LLM judge reads the answer. A deterministic verifier reads the evidence.
+      </h2>
+      <p class="mt-3 text-zinc-400 leading-relaxed">
+        "No violations found" is fluent, on-topic and confident, so a reference-free judge passes it.
+        It also cites zero records. Pick a scenario below to see the raw model output, both verdicts,
+        and the OpenTelemetry spans Phoenix records for it.
+      </p>
+    </section>
+
+    <!-- Metric highlights -->
+    <section aria-label="Metric highlights" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3" id="metrics"></section>
+
+    <!-- Scenario studio -->
+    <section aria-labelledby="studio-title" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-4 space-y-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="flask-conical" class="w-4 h-4 text-zinc-500"></i>
+          <h3 id="studio-title" class="font-mono text-xs uppercase tracking-widest text-zinc-500">Scenario studio</h3>
+        </div>
+        <div id="scenario-list" role="tablist" aria-orientation="vertical" class="space-y-2"></div>
+        <div class="rounded-lg border border-zinc-800 bg-zinc-900/40 p-4 text-xs text-zinc-500 leading-relaxed">
+          <p class="flex items-center gap-1.5 text-zinc-400 font-medium mb-1"><i data-lucide="info" class="w-3.5 h-3.5"></i> Where this data comes from</p>
+          The clean answer is from the recorded live run in <code class="font-mono text-zinc-400">src/demo/transcript.md</code>.
+          The two failure cases are injected with the scripted model in <code class="font-mono text-zinc-400">src/fixture_mode.py</code>
+          and run through the real verification code. Run <code class="font-mono text-zinc-400">python demo_phoenix_evals.py</code> to reproduce them in Phoenix.
+        </div>
+      </div>
+
+      <div class="lg:col-span-8 space-y-4" id="scenario-panel" role="tabpanel" aria-live="polite"></div>
+    </section>
+
+    <!-- Trace waterfall -->
+    <section aria-labelledby="waterfall-title" class="rounded-xl border border-zinc-800 bg-zinc-900/60 overflow-hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-zinc-800 px-4 sm:px-5 py-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="activity" class="w-4 h-4 text-zinc-500"></i>
+          <h3 id="waterfall-title" class="font-mono text-xs uppercase tracking-widest text-zinc-400">Trace waterfall · OpenInference spans</h3>
+        </div>
+        <span class="font-mono text-[11px] text-zinc-500" id="trace-meta"></span>
+      </div>
+      <div class="px-4 sm:px-5 py-4 overflow-x-auto scrollbar-thin">
+        <div class="min-w-[640px]" id="waterfall"></div>
+      </div>
+      <div class="border-t border-zinc-800 px-4 sm:px-5 py-3 text-[11px] text-zinc-500 font-mono">
+        Simulated trace: span names, kinds and attributes match <span class="text-zinc-400">src/tracing.py</span>; latencies are illustrative, token counts are modelled on measured call sizes.
+      </div>
+    </section>
+
+    <!-- Architecture -->
+    <section aria-labelledby="arch-title" class="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 sm:p-5">
+      <div class="flex items-center gap-2 mb-4">
+        <i data-lucide="workflow" class="w-4 h-4 text-zinc-500"></i>
+        <h3 id="arch-title" class="font-mono text-xs uppercase tracking-widest text-zinc-400">Pipeline</h3>
+      </div>
+      <ol class="grid grid-cols-1 md:grid-cols-4 gap-3 text-sm" id="arch"></ol>
+    </section>
+  </main>
+
+  <footer class="border-t border-zinc-800/80 mt-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between text-sm text-zinc-500">
+      <p><span class="text-zinc-300">Museum QA: Deterministic Verifiers &amp; Phoenix Observability</span> · Gargi Vipat</p>
+      <div class="flex flex-wrap gap-4 font-mono text-xs">
+        <a class="hover:text-zinc-200" href="https://github.com/gargi-09/museum-qa-agent" target="_blank" rel="noopener">github</a>
+        <a class="hover:text-zinc-200" href="https://www.linkedin.com/in/gargi-vipat/" target="_blank" rel="noopener">linkedin</a>
+        <a class="hover:text-zinc-200" href="https://gargi-vipat.framer.website/" target="_blank" rel="noopener">portfolio</a>
+        <a class="hover:text-zinc-200" href="https://docs.arize.com/phoenix" target="_blank" rel="noopener">arize phoenix</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------------------------------------------------------------------
+  // Data
+  // ---------------------------------------------------------------------
+  var METRICS = [
+    { icon: 'timer', value: '60s → 2s', label: 'End-to-end latency', note: 'local BM25 + dense RRF narrows 5,000 records to 10 before one model call' },
+    { icon: 'scissors', value: '60%', label: 'Token cut', note: '≈ $450/mo saved at projected volume' },
+    { icon: 'shield-alert', value: '100%', label: 'False-pass catch rate', note: 'zero-citation and dropped-prompt cases in the demo set' },
+    { icon: 'cpu', value: '0', label: 'Extra tokens to verify', note: 'all 4 verifiers are deterministic code' },
+  ];
+
+  var ARCH = [
+    { icon: 'search', title: 'Retrieval', body: 'BM25 + bge-small dense, fused by Reciprocal Rank Fusion, with an abstention gate.' },
+    { icon: 'sparkles', title: 'LLM generation', body: 'One bounded call; instructions folded into the user turn (MESSAGE_FORMAT=prepend).' },
+    { icon: 'radio-tower', title: 'OpenInference tracing', body: 'RETRIEVER → GUARDRAIL → LLM → EVALUATOR spans, exported over OTLP.' },
+    { icon: 'gavel', title: 'Phoenix evaluators', body: 'Deterministic verdicts re-run from each trace, logged as span annotations.' },
+  ];
+
+  var SCENARIOS = [
+    {
+      id: 'clean',
+      title: 'Clean answer with citations',
+      tag: 'live run',
+      icon: 'badge-check',
+      question: 'What year was Coney Island Beach by Reginald Marsh made?',
+      raw: {
+        answer: 'According to the museum records, Coney Island Beach by Reginald Marsh was made in 1935.',
+        answerable: true,
+        record_ids_used: ['cma-117571'],
+        record_ids_excluded: [
+          { id: 'cma-171726', reason: "Leon Levinstein photograph 'Coney Island', c. 1954 — not the Marsh work" },
+          { id: 'aic-59820', reason: "different Reginald Marsh work ('Tattoo and Haircut', 1932)" },
+          '… 7 more'
+        ],
+        limitations: ''
+      },
+      judge: { pass: true, headline: 'PASS', detail: 'Answer is relevant, coherent and appears correct.' },
+      verifier: { pass: true, headline: 'PASSED', detail: '1 citation, grounded in the 10-record RRF candidate set. Confidence 0.88 (high).' },
+      evals: [
+        ['zero_source_false_pass', 'PASS', '1 valid source record cited: cma-117571'],
+        ['citation_groundedness', 'PASS', '1/1 citations in the fused candidate set'],
+        ['confidence_capping', 'PASS', 'no cap required; 0.88 (high)'],
+        ['prompt_integrity', 'PASS', 'prompt_tokens consistent with instructions arriving'],
+        ['verifier.citation_membership', 'PASS', 'all citations valid'],
+        ['verifier.not_recorded_violation', 'PASS', '2 [not recorded] fields in scope, no violation'],
+        ['verifier.factual_match', 'PASS', 'years consistent with cited records'],
+        ['verifier.not_truncated', 'PASS', 'no truncation signal fired'],
+      ],
+      trace: {
+        totalMs: 2140,
+        spans: [
+          { name: 'museum_qa.answer_question', kind: 'CHAIN', start: 0, dur: 2140, depth: 0, attrs: { 'museum_qa.citations.count': 1, 'museum_qa.confidence.score': 0.88 } },
+          { name: 'retrieval.hybrid_rrf', kind: 'RETRIEVER', start: 6, dur: 212, depth: 1, attrs: { 'candidate_count': 10, 'bm25_max': 45.89, 'best_dense_similarity': 0.753 } },
+          { name: 'prompt.token_audit', kind: 'GUARDRAIL', start: 230, dur: 4, depth: 1, attrs: { 'prompt_tokens_expected': 2650, 'instruction_tokens_expected': 460 } },
+          { name: 'llm.generate', kind: 'LLM', start: 238, dur: 1880, depth: 1, attrs: { 'llm.token_count.prompt': 2641, 'llm.token_count.completion': 214, 'museum_qa.prompt_audit.status': 'ok' } },
+          { name: 'verifier.deterministic_suite', kind: 'EVALUATOR', start: 2122, dur: 9, depth: 1, attrs: { 'citations.count': 1, 'verification': '4/4 passed' } },
+        ]
+      }
+    },
+    {
+      id: 'zero',
+      title: 'The "Zero-Sources" false-pass trap',
+      tag: 'injected',
+      icon: 'triangle-alert',
+      question: 'Are there any violations in the Louise Bourgeois Ode to My Mother records?',
+      raw: {
+        answer: 'No violations found. The Ode to My Mother records are consistent across both institutions, and every field is complete and verified.',
+        answerable: true,
+        record_ids_used: [],
+        record_ids_excluded: [],
+        limitations: ''
+      },
+      judge: { pass: true, headline: 'PASS', detail: 'No violations reported; answer is on-topic and confident.' },
+      verifier: { pass: false, headline: 'FAILED', detail: 'Zero sources cited, confidence capped to 0.0.' },
+      evals: [
+        ['zero_source_false_pass', 'FAIL', 'asserts an all-clear ("no violations") but cites 0 valid source records'],
+        ['citation_groundedness', 'FAIL', 'answer asserts a claim with 0 citations — nothing grounds it'],
+        ['confidence_capping', 'PASS', 'capped correctly: score withheld → effective 0.00'],
+        ['prompt_integrity', 'PASS', 'prompt_tokens consistent with instructions arriving'],
+        ['verifier.citation_membership', 'INCONCLUSIVE', 'cited no records — could not run, did not pass'],
+        ['verifier.not_recorded_violation', 'INCONCLUSIVE', 'cited no records — could not run, did not pass'],
+        ['verifier.factual_match', 'INCONCLUSIVE', 'cited no records — could not run, did not pass'],
+        ['verifier.not_truncated', 'PASS', 'no truncation signal fired'],
+      ],
+      trace: {
+        totalMs: 1960,
+        spans: [
+          { name: 'museum_qa.answer_question', kind: 'CHAIN', start: 0, dur: 1960, depth: 0, attrs: { 'museum_qa.citations.count': 0, 'museum_qa.confidence.label': 'not_applicable' } },
+          { name: 'retrieval.hybrid_rrf', kind: 'RETRIEVER', start: 5, dur: 198, depth: 1, attrs: { 'candidate_count': 10, 'bm25_max': 43.06, 'best_dense_similarity': 0.826 } },
+          { name: 'prompt.token_audit', kind: 'GUARDRAIL', start: 210, dur: 4, depth: 1, attrs: { 'prompt_tokens_expected': 2590, 'instruction_tokens_expected': 460 } },
+          { name: 'llm.generate', kind: 'LLM', start: 218, dur: 1724, depth: 1, attrs: { 'llm.token_count.prompt': 2586, 'llm.token_count.completion': 61, 'museum_qa.prompt_audit.status': 'ok' } },
+          { name: 'verifier.deterministic_suite', kind: 'EVALUATOR', start: 1945, dur: 6, depth: 1, attrs: { 'citations.count': 0, 'verification': '1/1 scorable · 3 inconclusive' }, flag: true },
+        ]
+      }
+    },
+    {
+      id: 'dropped',
+      title: 'Silently dropped system prompt',
+      tag: 'injected',
+      icon: 'file-x-2',
+      question: "When was Omer Fast's The Casting made?",
+      raw: "Omer Fast's The Casting was made in 2007. It is a four-channel video installation interweaving a soldier's recollections with staged tableaux.",
+      judge: { pass: true, headline: 'PASS', detail: 'Answer is relevant, coherent and appears correct.' },
+      verifier: { pass: false, headline: 'FAILED', detail: 'System prompt dropped: prompt_tokens 2,190 vs ~2,650 expected. No JSON contract, 0 citations, the record’s internal date contradiction (2001 vs 2007) never mentioned.' },
+      evals: [
+        ['zero_source_false_pass', 'FAIL', 'asserts an answer in unparseable output but cites 0 valid source records'],
+        ['citation_groundedness', 'FAIL', 'answer asserts a claim with 0 citations — nothing grounds it'],
+        ['confidence_capping', 'PASS', 'no confidence emitted for an unparseable response → effective 0.00'],
+        ['prompt_integrity', 'FAIL', 'billed prompt_tokens below the with/without-instructions midpoint: the ~460-token instruction block was not delivered'],
+        ['verifier.citation_membership', 'FAIL', 'no response to check'],
+        ['verifier.not_recorded_violation', 'FAIL', 'no response to check'],
+        ['verifier.factual_match', 'FAIL', 'no response to check'],
+        ['verifier.not_truncated', 'PASS', 'no truncation signal fired'],
+      ],
+      trace: {
+        totalMs: 1710,
+        spans: [
+          { name: 'museum_qa.answer_question', kind: 'CHAIN', start: 0, dur: 1710, depth: 0, attrs: { 'museum_qa.outcome': 'error', 'museum_qa.system_prompt_dropped_suspected': true } },
+          { name: 'retrieval.hybrid_rrf', kind: 'RETRIEVER', start: 5, dur: 204, depth: 1, attrs: { 'candidate_count': 10, 'bm25_max': 31.61, 'best_dense_similarity': 0.781 } },
+          { name: 'prompt.token_audit', kind: 'GUARDRAIL', start: 214, dur: 4, depth: 1, attrs: { 'prompt_tokens_expected': 2650, 'instruction_tokens_expected': 460 } },
+          { name: 'llm.generate', kind: 'LLM', start: 222, dur: 1480, depth: 1, attrs: { 'llm.token_count.prompt': 2190, 'llm.token_count.completion': 36, 'museum_qa.prompt_audit.status': 'dropped_suspected' }, flag: true },
+          { name: 'verifier.deterministic_suite', kind: 'EVALUATOR', start: 1704, dur: 0, depth: 1, attrs: { 'skipped': 'response failed to parse — failed_to_parse_response: no_json_found' }, skipped: true },
+        ]
+      }
+    }
+  ];
+
+  var KIND_STYLE = {
+    CHAIN:     { bar: 'bg-zinc-500',    text: 'text-zinc-300',    chip: 'border-zinc-600 text-zinc-300' },
+    RETRIEVER: { bar: 'bg-sky-500',     text: 'text-sky-300',     chip: 'border-sky-500/40 text-sky-300' },
+    GUARDRAIL: { bar: 'bg-amber-400',   text: 'text-amber-300',   chip: 'border-amber-400/40 text-amber-300' },
+    LLM:       { bar: 'bg-violet-500',  text: 'text-violet-300',  chip: 'border-violet-500/40 text-violet-300' },
+    EVALUATOR: { bar: 'bg-emerald-500', text: 'text-emerald-300', chip: 'border-emerald-500/40 text-emerald-300' },
+  };
+
+  // ---------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function pill(label) {
+    var map = {
+      PASS: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30',
+      FAIL: 'bg-rose-500/10 text-rose-300 border-rose-500/30',
+      INCONCLUSIVE: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
+      NOT_APPLICABLE: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/30',
+    };
+    return '<span class="inline-flex items-center rounded-full border px-2 py-0.5 font-mono text-[10px] font-semibold tracking-wide ' +
+      (map[label] || map.NOT_APPLICABLE) + '">' + esc(label) + '</span>';
+  }
+
+  function highlightJson(obj) {
+    var json = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
+    if (typeof obj === 'string') return esc(json);
+    return esc(json)
+      .replace(/(&quot;[^&]*?&quot;)(\s*:)/g, '<span class="text-sky-300">$1</span>$2')
+      .replace(/:\s(&quot;.*?&quot;)/g, ': <span class="text-emerald-300/90">$1</span>')
+      .replace(/\b(true|false|null)\b/g, '<span class="text-violet-300">$1</span>')
+      .replace(/(\[\])/g, '<span class="text-rose-300 font-semibold">$1</span>');
+  }
+
+  function renderIcons() {
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      try { window.lucide.createIcons(); } catch (e) { /* icons are decorative */ }
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Static sections
+  // ---------------------------------------------------------------------
+  function renderMetrics() {
+    document.getElementById('metrics').innerHTML = METRICS.map(function (m) {
+      return '<div class="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">' +
+        '<div class="flex items-center gap-2 text-zinc-500"><i data-lucide="' + m.icon + '" class="w-4 h-4"></i>' +
+        '<span class="text-xs font-medium uppercase tracking-wider">' + esc(m.label) + '</span></div>' +
+        '<div class="mt-2 font-mono text-2xl sm:text-3xl font-semibold text-zinc-50">' + esc(m.value) + '</div>' +
+        '<div class="mt-1 text-xs text-zinc-500 leading-snug">' + esc(m.note) + '</div></div>';
+    }).join('');
+  }
+
+  function renderArch() {
+    document.getElementById('arch').innerHTML = ARCH.map(function (a, i) {
+      return '<li class="relative rounded-lg border border-zinc-800 bg-zinc-950/60 p-4">' +
+        '<div class="flex items-center gap-2 text-zinc-200 font-medium"><span class="font-mono text-xs text-zinc-600">0' + (i + 1) + '</span>' +
+        '<i data-lucide="' + a.icon + '" class="w-4 h-4 text-emerald-400"></i>' + esc(a.title) + '</div>' +
+        '<p class="mt-1.5 text-xs text-zinc-500 leading-relaxed">' + esc(a.body) + '</p></li>';
+    }).join('');
+  }
+
+  function renderList(activeId) {
+    document.getElementById('scenario-list').innerHTML = SCENARIOS.map(function (s, i) {
+      var active = s.id === activeId;
+      var tagCls = s.tag === 'live run' ? 'text-emerald-400 border-emerald-500/30' : 'text-amber-300 border-amber-400/30';
+      return '<button type="button" role="tab" id="tab-' + s.id + '" aria-selected="' + active + '" aria-controls="scenario-panel" tabindex="' + (active ? 0 : -1) + '" data-id="' + s.id + '" ' +
+        'class="w-full text-left rounded-lg border p-3.5 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ' +
+        (active ? 'border-zinc-500 bg-zinc-800/70' : 'border-zinc-800 bg-zinc-900/40 hover:border-zinc-700 hover:bg-zinc-900') + '">' +
+        '<div class="flex items-start justify-between gap-2">' +
+          '<span class="flex items-center gap-2 text-sm font-medium text-zinc-100"><i data-lucide="' + s.icon + '" class="w-4 h-4 ' + (s.verifier.pass ? 'text-emerald-400' : 'text-rose-400') + '"></i>' +
+          '<span class="font-mono text-xs text-zinc-600">0' + (i + 1) + '</span>' + esc(s.title) + '</span>' +
+          '<span class="shrink-0 rounded border px-1.5 py-0.5 font-mono text-[10px] ' + tagCls + '">' + esc(s.tag) + '</span>' +
+        '</div>' +
+        '<p class="mt-1.5 font-mono text-xs text-zinc-500 leading-snug">' + esc(s.question) + '</p>' +
+        '<div class="mt-2 flex gap-1.5">' + pill(s.judge.pass ? 'PASS' : 'FAIL').replace('>PASS<', '>JUDGE PASS<').replace('>FAIL<', '>JUDGE FAIL<') +
+          pill(s.verifier.pass ? 'PASS' : 'FAIL').replace('>PASS<', '>VERIFIER PASS<').replace('>FAIL<', '>VERIFIER FAIL<') + '</div>' +
+        '</button>';
+    }).join('');
+  }
+
+  // ---------------------------------------------------------------------
+  // Scenario panel
+  // ---------------------------------------------------------------------
+  function verdictCard(kind, v) {
+    var pass = v.pass;
+    var color = pass ? 'emerald' : 'rose';
+    var title = kind === 'judge' ? 'Standard LLM-as-a-Judge' : "Gargi's Deterministic Verifier";
+    var sub = kind === 'judge' ? 'sees question + answer only' : 'sees citations, candidate set, prompt_tokens';
+    var icon = kind === 'judge' ? 'scale' : 'shield-check';
+    var headline = kind === 'judge'
+      ? v.headline + (pass ? ' — ' + v.detail : ' — ' + v.detail)
+      : v.headline + ' — ' + v.detail;
+    return '<div class="rounded-xl border border-' + color + '-500/30 bg-' + color + '-500/[0.06] p-4">' +
+      '<div class="flex items-center justify-between gap-2">' +
+        '<div class="flex items-center gap-2"><i data-lucide="' + icon + '" class="w-4 h-4 text-zinc-400"></i>' +
+        '<div><div class="text-sm font-medium text-zinc-100">' + title + '</div><div class="text-[11px] text-zinc-500 font-mono">' + sub + '</div></div></div>' +
+        '<span class="inline-flex items-center gap-1 rounded-full bg-' + color + '-500/15 border border-' + color + '-500/40 px-2.5 py-1 font-mono text-xs font-semibold text-' + color + '-300">' +
+          '<i data-lucide="' + (pass ? 'circle-check' : 'circle-x') + '" class="w-3.5 h-3.5"></i>' + esc(v.headline) + '</span>' +
+      '</div>' +
+      '<p class="mt-3 font-mono text-[13px] leading-relaxed text-' + color + '-200/90">' + esc(headline) + '</p>' +
+    '</div>';
+  }
+
+  function renderPanel(s) {
+    var isProse = typeof s.raw === 'string';
+    var disagree = s.judge.pass && !s.verifier.pass;
+    var html = '';
+
+    html += '<div class="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">' +
+      '<div class="flex items-center gap-2 text-[11px] font-mono uppercase tracking-widest text-zinc-500"><i data-lucide="terminal" class="w-3.5 h-3.5"></i>query</div>' +
+      '<p class="mt-1.5 font-mono text-sm text-zinc-100">&gt; ' + esc(s.question) + '</p></div>';
+
+    if (disagree) {
+      html += '<div class="flex items-start gap-2 rounded-lg border border-rose-500/30 bg-rose-500/[0.06] px-3.5 py-2.5 text-sm text-rose-200">' +
+        '<i data-lucide="siren" class="w-4 h-4 mt-0.5 shrink-0 text-rose-400"></i>' +
+        '<span><span class="font-semibold">Verdicts disagree.</span> The judge passed an output the verifier failed. This is the case the Phoenix evaluators exist to surface.</span></div>';
+    }
+
+    html += '<div class="rounded-xl border border-zinc-800 bg-zinc-950 overflow-hidden">' +
+      '<div class="flex items-center justify-between border-b border-zinc-800 px-4 py-2">' +
+        '<span class="flex items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-zinc-500"><i data-lucide="file-json" class="w-3.5 h-3.5"></i>1 · raw LLM response</span>' +
+        '<span class="font-mono text-[11px] ' + (isProse ? 'text-rose-300' : 'text-zinc-500') + '">' + (isProse ? 'prose — no JSON contract' : 'application/json') + '</span>' +
+      '</div>' +
+      '<pre class="scrollbar-thin overflow-x-auto px-4 py-3 font-mono text-[12.5px] leading-relaxed text-zinc-300 whitespace-pre-wrap break-words">' + highlightJson(s.raw) + '</pre></div>';
+
+    html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
+      '<div><div class="mb-1.5 font-mono text-[11px] uppercase tracking-widest text-zinc-500">2 · judge verdict</div>' + verdictCard('judge', s.judge) + '</div>' +
+      '<div><div class="mb-1.5 font-mono text-[11px] uppercase tracking-widest text-zinc-500">3 · deterministic verdict</div>' + verdictCard('verifier', s.verifier) + '</div>' +
+    '</div>';
+
+    html += '<details class="group rounded-xl border border-zinc-800 bg-zinc-900/40" open>' +
+      '<summary class="flex cursor-pointer list-none items-center justify-between px-4 py-2.5 font-mono text-[11px] uppercase tracking-widest text-zinc-500 hover:text-zinc-300">' +
+        '<span class="flex items-center gap-2"><i data-lucide="list-checks" class="w-3.5 h-3.5"></i>Phoenix span annotations · ' + s.evals.length + ' evaluators</span>' +
+        '<i data-lucide="chevron-down" class="w-4 h-4 transition group-open:rotate-180"></i></summary>' +
+      '<div class="border-t border-zinc-800 divide-y divide-zinc-800/70">' +
+      s.evals.map(function (e) {
+        return '<div class="grid grid-cols-1 sm:grid-cols-12 gap-1 sm:gap-3 px-4 py-2 items-start">' +
+          '<code class="sm:col-span-5 font-mono text-xs text-zinc-300 break-all">' + esc(e[0]) + '</code>' +
+          '<div class="sm:col-span-2">' + pill(e[1]) + '</div>' +
+          '<div class="sm:col-span-5 text-xs text-zinc-500 leading-snug">' + esc(e[2]) + '</div></div>';
+      }).join('') + '</div></details>';
+
+    document.getElementById('scenario-panel').innerHTML = html;
+  }
+
+  // ---------------------------------------------------------------------
+  // Waterfall
+  // ---------------------------------------------------------------------
+  function renderWaterfall(s) {
+    var t = s.trace;
+    var totalTokens = 0;
+    t.spans.forEach(function (sp) {
+      var a = sp.attrs || {};
+      totalTokens += (a['llm.token_count.prompt'] || 0) + (a['llm.token_count.completion'] || 0);
+    });
+    document.getElementById('trace-meta').textContent =
+      t.spans.length + ' spans · ' + t.totalMs.toLocaleString() + ' ms · ' + totalTokens.toLocaleString() + ' tokens';
+
+    var ticks = [0, 0.25, 0.5, 0.75, 1].map(function (f) {
+      return '<span class="absolute -translate-x-1/2 font-mono text-[10px] text-zinc-600" style="left:' + (f * 100) + '%">' +
+        Math.round(t.totalMs * f) + 'ms</span>';
+    }).join('');
+
+    var rows = t.spans.map(function (sp) {
+      var st = KIND_STYLE[sp.kind] || KIND_STYLE.CHAIN;
+      var left = (sp.start / t.totalMs) * 100;
+      var width = Math.max((sp.dur / t.totalMs) * 100, 0.6);
+      var attrs = Object.keys(sp.attrs || {}).map(function (k) {
+        var v = sp.attrs[k];
+        var bad = (v === 'dropped_suspected' || v === true && /dropped/.test(k) || (k === 'museum_qa.citations.count' || k === 'citations.count') && v === 0);
+        return '<span class="inline-flex items-center gap-1 rounded border ' + (bad ? 'border-rose-500/40 bg-rose-500/10 text-rose-300' : 'border-zinc-800 bg-zinc-950 text-zinc-400') + ' px-1.5 py-0.5 font-mono text-[10.5px]">' +
+          esc(k) + '=<span class="' + (bad ? 'text-rose-200' : 'text-zinc-200') + '">' + esc(typeof v === 'number' ? v.toLocaleString() : v) + '</span></span>';
+      }).join(' ');
+      return '<div class="grid grid-cols-12 gap-3 py-2 border-b border-zinc-800/60 last:border-0">' +
+        '<div class="col-span-4 min-w-0" style="padding-left:' + (sp.depth * 16) + 'px">' +
+          '<div class="flex items-center gap-1.5 min-w-0">' +
+            (sp.depth ? '<span class="text-zinc-700 font-mono text-xs">└</span>' : '') +
+            '<span class="truncate font-mono text-xs ' + (sp.flag ? 'text-rose-300' : 'text-zinc-200') + '" title="' + esc(sp.name) + '">' + esc(sp.name) + '</span>' +
+          '</div>' +
+          '<span class="ml-' + (sp.depth ? '4' : '0') + ' inline-block mt-1 rounded border px-1.5 font-mono text-[9.5px] tracking-wider ' + st.chip + '">' + sp.kind + '</span>' +
+        '</div>' +
+        '<div class="col-span-8">' +
+          '<div class="relative h-5 rounded bg-zinc-950 border border-zinc-800/80">' +
+            '<div class="bar absolute top-0.5 bottom-0.5 rounded-sm ' + (sp.skipped ? 'bg-zinc-700' : sp.flag ? 'bg-rose-500' : st.bar) + '" style="left:' + left + '%;width:' + width + '%"></div>' +
+            '<span class="absolute right-1.5 top-0.5 font-mono text-[10px] text-zinc-400">' + (sp.skipped ? 'skipped' : sp.dur.toLocaleString() + ' ms') + '</span>' +
+          '</div>' +
+          '<div class="mt-1.5 flex flex-wrap gap-1">' + attrs + '</div>' +
+        '</div></div>';
+    }).join('');
+
+    document.getElementById('waterfall').innerHTML =
+      '<div class="grid grid-cols-12 gap-3 pb-2 mb-1 border-b border-zinc-800">' +
+        '<div class="col-span-4 font-mono text-[10px] uppercase tracking-widest text-zinc-600">span</div>' +
+        '<div class="col-span-8 relative h-4">' + ticks + '</div></div>' + rows;
+  }
+
+  // ---------------------------------------------------------------------
+  // Wiring
+  // ---------------------------------------------------------------------
+  var activeId = SCENARIOS[1].id;
+
+  function select(id, focus) {
+    var s = SCENARIOS.filter(function (x) { return x.id === id; })[0];
+    if (!s) return;
+    activeId = id;
+    renderList(id);
+    renderPanel(s);
+    renderWaterfall(s);
+    renderIcons();
+    if (focus) {
+      var btn = document.getElementById('tab-' + id);
+      if (btn) btn.focus();
+    }
+    try { history.replaceState(null, '', '#' + id); } catch (e) { /* file:// or sandboxed */ }
+  }
+
+  document.getElementById('scenario-list').addEventListener('click', function (ev) {
+    var btn = ev.target.closest('button[data-id]');
+    if (btn) select(btn.getAttribute('data-id'), false);
+  });
+
+  document.getElementById('scenario-list').addEventListener('keydown', function (ev) {
+    if (['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft', 'Home', 'End'].indexOf(ev.key) === -1) return;
+    ev.preventDefault();
+    var i = SCENARIOS.findIndex(function (s) { return s.id === activeId; });
+    if (ev.key === 'ArrowDown' || ev.key === 'ArrowRight') i = (i + 1) % SCENARIOS.length;
+    else if (ev.key === 'ArrowUp' || ev.key === 'ArrowLeft') i = (i - 1 + SCENARIOS.length) % SCENARIOS.length;
+    else if (ev.key === 'Home') i = 0;
+    else i = SCENARIOS.length - 1;
+    select(SCENARIOS[i].id, true);
+  });
+
+  renderMetrics();
+  renderArch();
+  var fromHash = (location.hash || '').slice(1);
+  select(SCENARIOS.some(function (s) { return s.id === fromHash; }) ? fromHash : activeId, false);
+})();
+</script>
+</body>
+</html>

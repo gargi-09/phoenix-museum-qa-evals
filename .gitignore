@@ -1,0 +1,9 @@
+.env
+data/
+__pycache__/
+*.pyc
+cache/
+venv/
+for_me.txt
+.claude/
+outputs/
