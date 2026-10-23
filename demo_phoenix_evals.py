@@ -6,7 +6,8 @@ deterministic verifiers and a standard LLM-as-a-judge, side by side.
     pip install -r requirements.txt
     python demo_phoenix_evals.py                     # offline: 10-record fixture + scripted model
     python demo_phoenix_evals.py --mode corpus       # full public corpus + bge-small, scripted model
-    python demo_phoenix_evals.py --mode live --dev   # full public corpus + a real model endpoint
+    python demo_phoenix_evals.py --mode live         # full public corpus + a real model
+                                                     # (ANTHROPIC_API_KEY in .env -> Claude Haiku 5.5)
 
 Steps:
   1. Start Phoenix (phoenix.launch_app(), or attach to a running `phoenix serve`).
@@ -29,11 +30,13 @@ Modes:
            python src/main.py ingest`) and the real BM25 + bge-small retriever,
            with the same scripted model. No credentials needed; first run
            embeds the corpus (~4-5 min on CPU, then cached).
-  live     data/normalized.jsonl + bge-small + the real endpoint. The model
+  live     data/normalized.jsonl + bge-small + a real model: the Anthropic API
+           (ANTHROPIC_API_KEY, default claude-haiku-5-5) or the original proxy
+           (API_KEY + MODEL_ENDPOINT). Five paid calls per run. The model
            answers for itself, so whether the false-pass trap fires depends on
            what it actually says -- the evaluators report it either way.
-  auto     live if the corpus and credentials are present, else fixture.
-           (corpus is never picked automatically: it is slow on first run.)
+  auto     (default) fixture. Never live -- a key in .env must not make the
+           default command spend money -- and never corpus (slow first run).
 """
 import argparse
 import json
@@ -76,7 +79,8 @@ def parse_args():
                    help="baseline judge: deterministic offline surrogate, or a real "
                         "LLM call per span through the same endpoint (costs budget)")
     p.add_argument("--dev", action="store_true",
-                   help="live mode: send X-Mode: dev (free sandbox budget)")
+                   help="live mode on the original proxy only: send X-Mode: dev "
+                        "(its free sandbox budget). Ignored by the Anthropic API.")
     p.add_argument("--project", default=None, help="Phoenix project name")
     p.add_argument("--no-launch", action="store_true",
                    help="do not call phoenix.launch_app(); attach to a running server")
@@ -86,11 +90,15 @@ def parse_args():
 
 
 def resolve_mode(requested):
+    """auto never picks live: putting a key in .env must not turn the default
+    command into a paid run. It also never picks corpus (slow first run)."""
     if requested != "auto":
         return requested
-    from api_client import REQUIRED_ENV_VARS
-    has_creds = all(os.getenv(v) for v in REQUIRED_ENV_VARS)
-    return "live" if (os.path.exists(NORMALIZED_PATH) and has_creds) else "fixture"
+    from api_client import check_credentials
+    if os.path.exists(NORMALIZED_PATH) and check_credentials(quiet=True):
+        print("[demo] Credentials found, but auto mode stays offline -- pass "
+              "--mode live to make paid calls.")
+    return "fixture"
 
 
 def build_retriever(mode):
@@ -201,7 +209,18 @@ def main():
         from fixture_mode import ScriptedModel
         model = ScriptedModel()
         reasoning.call_haiku = model
-    instrument_pipeline()
+    if mode == "live":
+        from api_client import PROVIDER, active_model, check_credentials
+        if not check_credentials():
+            print("[demo] ERROR: live mode needs credentials -- ANTHROPIC_API_KEY in .env "
+                  "for the Anthropic API, or API_KEY + MODEL_ENDPOINT for the proxy.")
+            return 1
+        extra = " + 5 judge calls" if args.judge == "live" else ""
+        print(f"[demo] LIVE: {len(DEMO_QUERIES)} paid call(s){extra} on {active_model()} "
+              f"via {PROVIDER}")
+    # Exact token counts only for a real model: the scripted one bills by the
+    # character estimate, so its audit must use the same estimate.
+    instrument_pipeline(exact_token_counts=(mode == "live"))
 
     # 3. Run the five questions
     results = []
@@ -282,6 +301,10 @@ def main():
             "judge_pass_verifier_fail": [r["n"] for r in caught],
         }, f, indent=2, ensure_ascii=False)
     print(f"[demo] Report written to {os.path.relpath(REPORT_PATH, REPO_ROOT)}")
+    if mode == "live" or args.judge == "live":
+        from api_client import get_tracker
+        for line in get_tracker().summary().splitlines():
+            print(f"[demo] {line}")
 
     print(f"\n  Traces + evals:  {url}/projects  (project: {project})")
     print("  Open a trace -> Annotations tab to see every evaluator's verdict.\n")

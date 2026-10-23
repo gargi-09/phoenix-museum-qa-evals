@@ -43,6 +43,85 @@ except ImportError:
 # public APIs (src/fetch_public_corpus.py), not from the endpoint's host.
 REQUIRED_ENV_VARS = ["API_KEY", "MODEL_ENDPOINT"]
 
+
+# ---------------------------------------------------------------------------
+# Provider -- the original hosted proxy, or the Anthropic API directly
+# ---------------------------------------------------------------------------
+#
+# "proxy"     the wire contract documented at the top of this file
+#             (API_KEY + MODEL_ENDPOINT). The pipeline was built against it.
+# "anthropic" the official Anthropic SDK (ANTHROPIC_API_KEY). Everything above
+#             call_haiku() -- truncation detection, the budget gate, token
+#             tracking, the return shape -- is shared, so nothing downstream
+#             knows which one answered.
+#
+# Auto-detected: anthropic when ANTHROPIC_API_KEY is set and MODEL_ENDPOINT is
+# not; LLM_PROVIDER overrides.
+def _detect_provider():
+    explicit = os.getenv("LLM_PROVIDER", "").strip().lower()
+    if explicit in ("proxy", "anthropic"):
+        return explicit
+    if os.getenv("ANTHROPIC_API_KEY") and not os.getenv("MODEL_ENDPOINT"):
+        return "anthropic"
+    return "proxy"
+
+
+PROVIDER = _detect_provider()
+
+# Claude Haiku 5.5: the current Haiku and the cheapest current model, which is
+# what a few demo runs need. Override with ANTHROPIC_MODEL.
+ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-haiku-5-5")
+
+# Haiku 5.5 thinks by default and thinking counts toward max_tokens. Low
+# effort keeps it short; the headroom below keeps a long think from eating the
+# JSON answer and tripping truncation detection -- whose retry is a second
+# PAID call. Headroom costs nothing unless tokens are actually generated.
+ANTHROPIC_EFFORT = os.getenv("ANTHROPIC_EFFORT", "low")
+ANTHROPIC_THINKING_HEADROOM = int(os.getenv("ANTHROPIC_THINKING_HEADROOM", "2048"))
+
+_anthropic_client = None
+
+
+def _get_anthropic_client():
+    global _anthropic_client
+    if _anthropic_client is None:
+        import anthropic
+        # max_retries=2 is the SDK default: it already retries 408/409/429/5xx
+        # and connection errors with backoff, so the proxy path's manual 5xx
+        # retry is not repeated here.
+        _anthropic_client = anthropic.Anthropic(timeout=REQUEST_TIMEOUT_SECONDS)
+    return _anthropic_client
+
+
+def active_model():
+    """The model name the active provider will use, for logs and spans."""
+    return ANTHROPIC_MODEL if PROVIDER == "anthropic" else MODEL_NAME
+
+
+def count_prompt_tokens(messages, system=None):
+    """Exact (with_system, without_system) input-token counts for a prompt,
+    or None when no exact counter is available.
+
+    Only the Anthropic provider has one: the count_tokens endpoint is free and
+    uses the model's real tokenizer. The prompt-token audit uses it to replace
+    the ~4 chars/token estimate, which on this model's tokenizer can be off by
+    more than the instruction block it is trying to detect.
+    """
+    if PROVIDER != "anthropic" or not check_credentials(quiet=True):
+        return None
+    try:
+        client = _get_anthropic_client()
+        without = client.messages.count_tokens(model=ANTHROPIC_MODEL,
+                                               messages=messages).input_tokens
+        with_sys = (client.messages.count_tokens(model=ANTHROPIC_MODEL, system=system,
+                                                 messages=messages).input_tokens
+                    if system else without)
+        return with_sys, without
+    except Exception as e:  # noqa: BLE001 -- audit falls back to the estimate
+        print(f"[api_client] count_tokens unavailable ({type(e).__name__}: {e}); "
+              f"prompt audit will use the character estimate.")
+        return None
+
 MAX_RETRIES_5XX = 2
 RETRY_DELAY_5XX_SECONDS = 2
 RETRY_DELAY_TRUNCATION_SECONDS = 1.5
@@ -115,12 +194,22 @@ SEND_MODEL_FIELD = os.getenv("SEND_MODEL", "0") != "0"
 # Credentials
 # ---------------------------------------------------------------------------
 
-def check_credentials():
-    """Checks whether all required credentials are present in .env.
+def check_credentials(quiet=False):
+    """Checks whether the active provider's credentials are present in .env.
     Returns True if all present, False otherwise -- prints a clear,
     specific message about what's missing rather than crashing.
     """
+    if PROVIDER == "anthropic":
+        if os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_AUTH_TOKEN"):
+            return True
+        if not quiet:
+            print("[api_client] LLM_PROVIDER=anthropic but ANTHROPIC_API_KEY is not set. "
+                  "Add it to .env (never commit that file).")
+        return False
+
     missing = [var for var in REQUIRED_ENV_VARS if not os.getenv(var)]
+    if missing and quiet:
+        return False
     if missing:
         print(f"[api_client] Missing required .env variable(s): {', '.join(missing)}")
         print("[api_client] Add these to your .env file before calling the real API.")
@@ -717,6 +806,12 @@ def call_haiku(messages, max_tokens=1024, dev_mode=False, stage="unspecified",
                 "budget_remaining": get_tracker().last_known_budget_remaining,
             }
 
+    if PROVIDER == "anthropic":
+        return _call_anthropic(messages, max_tokens=max_tokens, stage=stage,
+                               expect_json=expect_json, system=system,
+                               _retry_count=_retry_count,
+                               _prior_truncation=_prior_truncation)
+
     if requests is None:
         print("[api_client] 'requests' library not available -- cannot make real calls.")
         return {
@@ -907,6 +1002,112 @@ def call_haiku(messages, max_tokens=1024, dev_mode=False, stage="unspecified",
         # None on the common path. When present with is_truncated=False it means
         # "the fault fired and we recovered", which is a materially different
         # story from "the fault never fired" and must not look the same.
+        "prior_truncation": _prior_truncation,
+        "truncation_recovered": bool(_prior_truncation) and not is_truncated,
+    }
+
+
+def _anthropic_error(error_type, detail=None):
+    if detail:
+        print(f"[api_client] Anthropic call failed: {error_type} -- {detail}")
+    return {
+        "content": None, "usage": None, "is_truncated": False,
+        "truncation_reasons": [], "error_type": error_type,
+        "should_retry": False, "call_seq": None, "budget_remaining": None,
+        "error_detail": detail,
+    }
+
+
+def _call_anthropic(messages, max_tokens, stage, expect_json, system,
+                    _retry_count=0, _prior_truncation=None):
+    """The Anthropic-API half of call_haiku(): same return contract, same
+    truncation detection and single truncation retry, same token tracking.
+
+    Differences from the proxy path, each deliberate:
+      - The system prompt goes in the top-level `system` field. The Anthropic
+        API honours it, so MESSAGE_FORMAT=prepend (a workaround for a proxy
+        that dropped it) does not apply.
+      - No temperature. Claude Haiku 5.5 rejects any non-default sampling
+        parameter with a 400, and so does every model on API version
+        2026-10-21. Determinism comes from the prompt and the JSON contract.
+      - Thinking stays on (the model's default) at low effort, with headroom
+        added to max_tokens so thinking cannot crowd out the answer. Thinking
+        blocks are skipped when assembling `content`.
+      - A `refusal` stop reason is an error, not an answer: Haiku 5.5's safety
+        classifiers can decline, and there is no server-side fallback for it.
+    """
+    try:
+        import anthropic
+    except ImportError:
+        return _anthropic_error("missing_anthropic_sdk",
+                                "pip install -r requirements.txt (needs `anthropic`)")
+
+    sent_max_tokens = max_tokens + ANTHROPIC_THINKING_HEADROOM
+    kwargs = {
+        "model": ANTHROPIC_MODEL,
+        "max_tokens": sent_max_tokens,
+        "messages": list(messages),
+        "output_config": {"effort": ANTHROPIC_EFFORT},
+    }
+    if system:
+        kwargs["system"] = system
+
+    try:
+        response = _get_anthropic_client().messages.create(**kwargs)
+    except anthropic.AuthenticationError as e:
+        return _anthropic_error("bad_key", str(e))
+    except anthropic.PermissionDeniedError as e:
+        return _anthropic_error("permission_denied", str(e))
+    except anthropic.NotFoundError as e:
+        return _anthropic_error("model_not_found", f"{ANTHROPIC_MODEL}: {e}")
+    except anthropic.BadRequestError as e:
+        return _anthropic_error("unexpected_status_400", str(e))
+    except anthropic.RateLimitError as e:
+        return _anthropic_error("rate_limited", str(e))
+    except anthropic.APIStatusError as e:
+        kind = "server_error" if e.status_code >= 500 else f"unexpected_status_{e.status_code}"
+        return _anthropic_error(kind, str(e))
+    except anthropic.APIConnectionError as e:
+        return _anthropic_error("network_error", str(e))
+
+    if response.stop_reason == "refusal":
+        details = getattr(response, "stop_details", None)
+        category = getattr(details, "category", None) if details else None
+        return _anthropic_error("refusal", f"model declined (category={category})")
+
+    content = "".join(b.text for b in response.content if b.type == "text")
+    usage = {
+        "prompt_tokens": response.usage.input_tokens,
+        "completion_tokens": response.usage.output_tokens,
+        "total_tokens": response.usage.input_tokens + response.usage.output_tokens,
+    }
+    call_seq = getattr(response, "_request_id", None) or response.id
+
+    is_truncated, truncation_reasons = detect_truncation(
+        content, usage, sent_max_tokens, stop_reason=response.stop_reason,
+        expect_json=expect_json)
+    get_tracker().record(stage, usage, call_seq, None)
+
+    if is_truncated and _retry_count < 1:
+        print(f"[api_client] Possible truncation detected ({truncation_reasons}) -- "
+              f"retrying once (this retry is a second paid call)...")
+        time.sleep(RETRY_DELAY_TRUNCATION_SECONDS)
+        return _call_anthropic(messages, max_tokens, stage, expect_json, system,
+                               _retry_count=_retry_count + 1,
+                               _prior_truncation={"attempt": _retry_count + 1,
+                                                  "call_seq": call_seq,
+                                                  "reasons": truncation_reasons,
+                                                  "usage": usage})
+
+    return {
+        "content": content,
+        "usage": usage,
+        "is_truncated": is_truncated,
+        "truncation_reasons": truncation_reasons,
+        "error_type": None,
+        "should_retry": False,
+        "call_seq": call_seq,
+        "budget_remaining": None,
         "prior_truncation": _prior_truncation,
         "truncation_recovered": bool(_prior_truncation) and not is_truncated,
     }

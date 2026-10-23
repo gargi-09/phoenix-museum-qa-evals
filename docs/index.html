@@ -38,6 +38,24 @@
     .bar { transition: width .5s cubic-bezier(.2,.8,.2,1), left .5s cubic-bezier(.2,.8,.2,1); }
     @media (prefers-reduced-motion: reduce) { .bar { transition: none; } }
   </style>
+  <script>
+    // In <head> so it exists before any gallery image can fail to load.
+    // Drops the figure; hides the gallery section once it is empty.
+    window.__dropShot = function (img) {
+      var fig = img.closest('figure');
+      if (fig) fig.remove();
+      var grid = document.getElementById('gallery-grid');
+      if (!grid) return;
+      var figs = grid.querySelectorAll('figure');
+      if (!figs.length) {
+        document.getElementById('gallery').hidden = true;
+        return;
+      }
+      // The first figure is full width; if an odd one is left after it,
+      // widen it too rather than leave half a row empty.
+      if ((figs.length - 1) % 2 === 1) figs[figs.length - 1].classList.add('md:col-span-2');
+    };
+  </script>
 </head>
 <body class="min-h-screen text-zinc-300 font-sans antialiased">
 <div class="grid-bg min-h-screen">
@@ -127,6 +145,30 @@
       </div>
       <div class="border-t border-zinc-800 px-4 sm:px-5 py-3 text-[11px] text-zinc-500 font-mono">
         Simulated trace: span names, kinds and attributes match <span class="text-zinc-400">src/tracing.py</span>; latencies are illustrative, token counts are modelled on measured call sizes.
+      </div>
+    </section>
+
+    <!-- Screenshots from a real run. Each figure removes itself if its image
+         is missing, and the section hides when none are left, so the page
+         is clean before docs/assets/ is populated. -->
+    <section aria-labelledby="gallery-title" id="gallery" class="space-y-3">
+      <div class="flex items-center gap-2">
+        <i data-lucide="images" class="w-4 h-4 text-zinc-500"></i>
+        <h3 id="gallery-title" class="font-mono text-xs uppercase tracking-widest text-zinc-400">From a real run · Arize Phoenix</h3>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="gallery-grid">
+        <figure class="md:col-span-2 rounded-xl border border-zinc-800 bg-zinc-950 overflow-hidden">
+          <a href="assets/phoenix-trace.png" target="_blank" rel="noopener"><img src="assets/phoenix-trace.png" alt="Phoenix trace view: span tree for one question with the evaluator annotations" class="block w-full h-auto" onerror="window.__dropShot(this)"></a>
+          <figcaption class="border-t border-zinc-800 px-4 py-2.5 text-xs text-zinc-400">Live run on Claude Haiku 5.5: RETRIEVER → GUARDRAIL → LLM → EVALUATOR spans, with all 10 evaluator verdicts as span annotations. The real model cited its sources here, and every check passed.</figcaption>
+        </figure>
+        <figure class="rounded-xl border border-zinc-800 bg-zinc-950 overflow-hidden">
+          <a href="assets/phoenix-annotations.png" target="_blank" rel="noopener"><img src="assets/phoenix-annotations.png" alt="Phoenix project view with span annotation averages for the judge and the deterministic verdict" class="block w-full h-auto" onerror="window.__dropShot(this)"></a>
+          <figcaption class="border-t border-zinc-800 px-4 py-2.5 text-xs text-zinc-400">The live project's 5 traces and each evaluator's average. Real answers on real records, all checks passing: the verifiers only fail answers that earn it.</figcaption>
+        </figure>
+        <figure class="rounded-xl border border-zinc-800 bg-zinc-950 overflow-hidden">
+          <a href="assets/side-by-side.png" target="_blank" rel="noopener"><img src="assets/side-by-side.png" alt="Terminal output of demo_phoenix_evals.py comparing judge and verifier verdicts" class="block w-full h-auto" onerror="window.__dropShot(this)"></a>
+          <figcaption class="border-t border-zinc-800 px-4 py-2.5 text-xs text-zinc-400"><code class="font-mono">demo_phoenix_evals.py</code> side-by-side in the terminal.</figcaption>
+        </figure>
       </div>
     </section>
 
@@ -417,6 +459,16 @@
       '<div><div class="mb-1.5 font-mono text-[11px] uppercase tracking-widest text-zinc-500">2 · judge verdict</div>' + verdictCard('judge', s.judge) + '</div>' +
       '<div><div class="mb-1.5 font-mono text-[11px] uppercase tracking-widest text-zinc-500">3 · deterministic verdict</div>' + verdictCard('verifier', s.verifier) + '</div>' +
     '</div>';
+
+    // A real Phoenix screenshot for this scenario, if one has been added at
+    // docs/assets/trace-<id>.png. Removed on load failure, so the panel never
+    // shows a broken image before the screenshots exist.
+    html += '<figure class="rounded-xl border border-zinc-800 bg-zinc-950 overflow-hidden">' +
+      '<figcaption class="flex items-center gap-2 border-b border-zinc-800 px-4 py-2 font-mono text-[11px] uppercase tracking-widest text-zinc-500">' +
+        '<i data-lucide="image" class="w-3.5 h-3.5"></i>this scenario in Phoenix · ' + (s.tag === 'injected' ? 'fixture run, scripted model' : 'fixture run') + '</figcaption>' +
+      '<a href="assets/trace-' + s.id + '.png" target="_blank" rel="noopener">' +
+        '<img src="assets/trace-' + s.id + '.png" alt="Phoenix trace view for the ' + esc(s.title) + ' scenario" ' +
+        'class="block w-full h-auto" onerror="this.closest(\'figure\').remove()"></a></figure>';
 
     html += '<details class="group rounded-xl border border-zinc-800 bg-zinc-900/40" open>' +
       '<summary class="flex cursor-pointer list-none items-center justify-between px-4 py-2.5 font-mono text-[11px] uppercase tracking-widest text-zinc-500 hover:text-zinc-300">' +

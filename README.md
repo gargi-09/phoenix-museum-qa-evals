@@ -15,8 +15,9 @@ passes it. It also cites **zero** source records. The deterministic verifiers
 see the citations, the retrieved candidate set and the billed `prompt_tokens`,
 so they fail it, and Phoenix shows both verdicts on the same trace.
 
-![Dashboard](assets/dashboard.png)
-<!-- screenshot placeholder: docs/index.html at desktop width -->
+![The zero-sources trap in Phoenix: the LLM judge scores 1.00 while zero_source_false_pass and citation_groundedness score 0.00](docs/assets/trace-zero.png)
+
+*The zero-sources trap in Phoenix. The reference-free judge (`llm_judge_surrogate`) scores the answer 1.00; the deterministic verifiers score it 0.00.*
 
 ## 60-second quickstart
 
@@ -38,7 +39,7 @@ python src/main.py fetch && python src/main.py ingest && python demo_phoenix_eva
 | Flag | Effect |
 |---|---|
 | `--mode corpus` | full public corpus + the real BM25 + bge-small retriever, scripted model, no credentials |
-| `--mode live --dev` | full public corpus + a real model endpoint (see [Live mode](#live-mode-bring-your-own-endpoint)) |
+| `--mode live` | full public corpus + a real model, Claude Haiku 5.5 by default (see [Live mode](#live-mode)). Paid, opt-in only |
 | `--judge live` | replace the offline judge surrogate with a real LLM judge call per trace |
 | `--no-launch` | attach to a Phoenix you started yourself (`phoenix serve`) |
 | `--exit` | exit when done instead of keeping Phoenix alive |
@@ -77,8 +78,9 @@ flowchart LR
 Retrieval (BM25 + Dense RRF) → LLM Generation → OpenInference Tracing → Phoenix Deterministic Evaluators
 ```
 
-![Phoenix trace view](assets/phoenix-trace.png)
-<!-- screenshot placeholder: one trace open in Phoenix, span tree on the left -->
+![Phoenix trace view of a live Claude Haiku 5.5 run](docs/assets/phoenix-trace.png)
+
+*A live run on Claude Haiku 5.5: the span tree on the left, and all 10 evaluator verdicts as span annotations.*
 
 ### What gets traced
 
@@ -151,8 +153,14 @@ In fixture mode, the project's span-annotation summary in Phoenix shows the gap 
 `llm_judge_surrogate` averages **1.00**, while `deterministic_verdict` averages
 **0.25** (1 of the 4 generated answers passes).
 
-![Side-by-side in the terminal](assets/side-by-side.png)
-<!-- screenshot placeholder: the SIDE-BY-SIDE block printed by demo_phoenix_evals.py -->
+![The dropped-system-prompt case: prompt_integrity scores 0.00 while the judge scores 1.00](docs/assets/trace-dropped.png)
+
+**On a real model.** In a live run on Claude Haiku 5.5, every evaluator scored
+1.00 on all 5 questions. Asked "Are there any violations…", Haiku answered
+from the records it was shown and cited them, so it never fell into the
+zero-sources trap. The verifiers passed it because the answer earned it. The
+fixture run is what demonstrates the failure modes; the live run shows that the
+verifiers don't produce false alarms on good answers.
 
 ### Demo modes
 
@@ -275,6 +283,12 @@ the clean, zero-sources and dropped-prompt cases, the raw response next to
 both verdicts, the evaluator annotations, and a span waterfall with token
 telemetry.
 
+Screenshots from a real run go in [`docs/assets/`](docs/assets/README.md),
+which lists each filename and what it should show. The dashboard picks them up
+automatically: a "From a real run" gallery, plus a Phoenix trace image inside
+each scenario. Any image that isn't there yet is hidden rather than shown
+broken.
+
 To deploy it, open the repo's **Settings → Pages**, choose **Deploy from a
 branch**, then `main` / `/docs`.
 
@@ -309,10 +323,44 @@ no credentials:
 python src/retrieval.py data/normalized.jsonl "What year was Coney Island Beach made?"
 ```
 
-### Live mode: bring your own endpoint
+### Live mode
 
-Generating answers needs a model endpoint. `src/api_client.py` speaks one
-small HTTP contract:
+Live mode makes real model calls, so it needs credentials of your own. It
+never runs unless you ask for it: the default `auto` mode stays offline even
+when a key is present.
+
+**Anthropic API (recommended).** Put your key in `.env` in the repo root.
+`.env` is gitignored, so it is never committed:
+
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+Then run:
+
+```bash
+python demo_phoenix_evals.py --mode live
+```
+
+- **Model.** `claude-haiku-5-5` by default (Claude Haiku 5.5, the cheapest
+  current model). Change it with `ANTHROPIC_MODEL`.
+- **Cost.** A demo run is 5 calls of roughly 3,500 input and a few hundred
+  output tokens each, which comes to well under a cent at Haiku 5.5's rates.
+  `--judge live` adds 5 short judge calls. The demo prints the total tokens it
+  spent. Setting a spend limit in the Anthropic Console is a sensible cap.
+- **What's different on this path** (all of it is in `_call_anthropic()` in
+  [`src/api_client.py`](src/api_client.py)):
+  - It uses the official `anthropic` SDK.
+  - The system prompt goes in the real `system` field.
+  - No `temperature` is sent; Haiku 5.5 rejects sampling parameters.
+  - Thinking runs at `low` effort (`ANTHROPIC_EFFORT`), with headroom so it
+    can't crowd out the JSON answer.
+  - A safety refusal is reported as an error, not parsed as an answer.
+- **Prompt-token audit.** On this path the audit uses the free `count_tokens`
+  endpoint for exact expected counts instead of the ~4 chars/token estimate.
+
+**The original proxy.** The pipeline was first built against a hosted proxy
+that speaks a small HTTP contract:
 
 ```
 POST {MODEL_ENDPOINT}
@@ -321,32 +369,19 @@ Authorization: Bearer {API_KEY}
 -> {"content": "...", "usage": {"prompt_tokens": N, "completion_tokens": N}}
 ```
 
-`budget_remaining`, `call_seq` and `stop_reason` are read if they are present.
-The pipeline was built against a hosted proxy with exactly this shape, so any
-gateway that exposes it will work. A provider SDK, such as the Anthropic API
-directly, would need `build_payload()` and the response parsing in
-`call_haiku()` adapted.
-
-`.env` in the repo root:
-
-```
-API_KEY=...
-MODEL_ENDPOINT=...
-MESSAGE_FORMAT=prepend
-```
-
-`MESSAGE_FORMAT=prepend` folds the instructions into the user message. The
-original proxy silently discarded a separately supplied system prompt
-(measured both ways: `prompt_tokens` didn't move for a top-level `system` key
-or for a `{"role": "system"}` entry). If your endpoint honours a system
-prompt, `anthropic` or `openai` is a cleaner placement. See the header of
-[`src/api_client.py`](src/api_client.py).
+Any gateway with that shape works. Set `API_KEY`, `MODEL_ENDPOINT` and
+`MESSAGE_FORMAT=prepend` in `.env`, or `LLM_PROVIDER=proxy` to force this
+path. `prepend` folds the instructions into the user message, because that
+proxy silently discarded a separately supplied system prompt (measured both
+ways: `prompt_tokens` didn't move for a top-level `system` key or for a
+`{"role": "system"}` entry). That measurement is why the prompt-token audit
+exists. See the header of [`src/api_client.py`](src/api_client.py).
 
 ### Usage
 
 ```bash
 python src/main.py ask "What year was Coney Island Beach made?"
-python src/main.py ask --dev "What year was Coney Island Beach made?"   # sends X-Mode: dev
+python src/main.py ask --dev "What year was Coney Island Beach made?"   # proxy only: sends X-Mode: dev
 python src/main.py demo                                                  # 10-question suite
 ```
 
@@ -376,7 +411,7 @@ Original architecture diagram:
 ```
 demo_phoenix_evals.py  Phoenix demo: trace 5 questions, evaluate the traces
 docs/index.html        GitHub Pages diagnostic dashboard
-assets/                README screenshots
+docs/assets/           screenshots, shown on the dashboard and here (see its README.md)
 src/
   main.py              CLI: fetch | ingest | ask | demo
   fetch_public_corpus.py  CMA + AIC public APIs -> data/base.jsonl

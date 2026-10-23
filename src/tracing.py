@@ -52,6 +52,7 @@ ROOT_SPAN_NAME = "museum_qa.answer_question"
 
 _tracer = None
 _instrumented = False
+_use_exact_counts = True
 
 # Per-question scratch state shared between the wrapped stages. A ContextVar
 # rather than a global so concurrent questions (threads, asyncio) cannot read
@@ -368,7 +369,7 @@ def _wrap_build_prompt(build_prompt):
     the endpoint should bill with and without the instruction block. The LLM
     span compares the real count against these."""
     from openinference.semconv.trace import OpenInferenceSpanKindValues, SpanAttributes
-    from api_client import MESSAGE_FORMAT, estimate_tokens_preflight
+    from api_client import MESSAGE_FORMAT, count_prompt_tokens, estimate_tokens_preflight
 
     @functools.wraps(build_prompt)
     def traced_build_prompt(question, context_blocks, *args, **kwargs):
@@ -382,10 +383,23 @@ def _wrap_build_prompt(build_prompt):
                 _record_exception(span, e)
                 raise
 
-            instruction_tokens = estimate_tokens_preflight(instructions)
-            message_tokens = estimate_tokens_preflight(messages)
-            expected = instruction_tokens + message_tokens
+            # Exact counts from the provider's own tokenizer when it has one
+            # (free count_tokens on the Anthropic API). The ~4 chars/token
+            # estimate is the fallback -- and the ONLY source when a scripted
+            # model is being traced, because the scripted model bills by that
+            # same estimate and mixing the two would fake a dropped prompt.
+            exact = count_prompt_tokens(messages, instructions) if _use_exact_counts else None
+            if exact:
+                expected, message_tokens = exact
+                instruction_tokens = expected - message_tokens
+                method = "count_tokens"
+            else:
+                instruction_tokens = estimate_tokens_preflight(instructions)
+                message_tokens = estimate_tokens_preflight(messages)
+                expected = instruction_tokens + message_tokens
+                method = "chars_div_4_estimate"
 
+            _set(span, f"{NS}.prompt.estimate_method", method)
             _set(span, f"{NS}.prompt.instruction_tokens_expected", instruction_tokens)
             _set(span, f"{NS}.prompt.context_tokens_expected", message_tokens)
             _set(span, f"{NS}.prompt_tokens_expected", expected)
@@ -418,14 +432,16 @@ def _wrap_call_haiku(call_haiku):
     from openinference.semconv.trace import (MessageAttributes,
                                              OpenInferenceSpanKindValues,
                                              SpanAttributes)
-    from api_client import MESSAGE_FORMAT, MODEL_NAME
+    from api_client import MESSAGE_FORMAT, PROVIDER, active_model
 
     @functools.wraps(call_haiku)
     def traced_call_haiku(messages, *args, **kwargs):
         with get_tracer().start_as_current_span("llm.generate") as span:
             _set(span, SpanAttributes.OPENINFERENCE_SPAN_KIND,
                  OpenInferenceSpanKindValues.LLM.value)
-            _set(span, SpanAttributes.LLM_MODEL_NAME, MODEL_NAME)
+            _set(span, SpanAttributes.LLM_MODEL_NAME, active_model())
+            _set(span, SpanAttributes.LLM_PROVIDER, "anthropic" if PROVIDER == "anthropic" else "custom")
+            _set(span, f"{NS}.llm.provider", PROVIDER)
             _set(span, SpanAttributes.LLM_INVOCATION_PARAMETERS, {
                 "max_tokens": kwargs.get("max_tokens"),
                 "temperature": kwargs.get("temperature"),
@@ -627,14 +643,18 @@ def _wrap_answer_question(answer_question):
     return traced_answer_question
 
 
-def instrument_pipeline():
+def instrument_pipeline(exact_token_counts=True):
     """Wraps reasoning's stage functions with OpenInference spans. Idempotent.
 
     Call AFTER any test double has been installed on reasoning.call_haiku (as
-    the fixture demo does), so the double is what gets traced.
+    the fixture demo does), so the double is what gets traced -- and pass
+    exact_token_counts=False then: a scripted model bills by the character
+    estimate, so the audit must compare it against the same estimate.
     """
-    global _instrumented
+    global _instrumented, _use_exact_counts
     import reasoning
+
+    _use_exact_counts = exact_token_counts
 
     for name, wrapper in (("answer_question", _wrap_answer_question),
                           ("build_prompt", _wrap_build_prompt),
