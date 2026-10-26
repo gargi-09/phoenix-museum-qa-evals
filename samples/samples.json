@@ -1,0 +1,37 @@
+{
+  "description": "The fixed question set the live demo serves. record_samples.py answers each 'recorded' sample with one real model call and writes samples/recorded_outputs.json. 'seeded' samples are failures built on top of a recorded sample, either by a labelled transform of its real answer or by a real call with the system prompt deliberately left out. Nothing here is a model output.",
+  "samples": [
+    {"id": "q01", "kind": "recorded", "expect": "grounded answer",
+     "question": "What year was Coney Island Beach by Reginald Marsh made?"},
+    {"id": "q02", "kind": "recorded", "expect": "grounded answer",
+     "question": "What is Louise Bourgeois's Ode to My Mother made of?"},
+    {"id": "q03", "kind": "recorded", "expect": "grounded answer",
+     "question": "When was Omer Fast's The Casting made?"},
+    {"id": "q04", "kind": "recorded", "expect": "grounded answer",
+     "question": "When was Jeff Brouws's Railroad Landscape #33 in Pine Plains, New York made?"},
+    {"id": "q05", "kind": "recorded", "expect": "grounded answer",
+     "question": "What medium is Helen Frankenthaler's Humming Gold?"},
+    {"id": "q06", "kind": "recorded", "expect": "grounded answer",
+     "question": "What is Reginald Marsh's Tattoo and Haircut painted with?"},
+    {"id": "q07", "kind": "recorded", "expect": "grounded answer",
+     "question": "When did Ray Johnson make Untitled (Taoist Collages)?"},
+    {"id": "q08", "kind": "recorded", "expect": "grounded answer (parent of s01)",
+     "question": "Are there any violations in the Louise Bourgeois Ode to My Mother records?"},
+    {"id": "q09", "kind": "recorded", "expect": "decline: the records describe works, not opinions",
+     "question": "What did Helen Frankenthaler think about Abstract Expressionism?"},
+    {"id": "q10", "kind": "recorded", "expect": "decline: passes the BM25 gate on the public corpus (19.75 > 19.5)",
+     "question": "What is the melting point of gallium arsenide?"},
+    {"id": "q11", "kind": "recorded", "expect": "abstain before any model call (BM25 17.22 < 19.5)",
+     "question": "What is the capital of Mongolia?"},
+
+    {"id": "s01", "kind": "seeded", "expect": "zero-source all-clear",
+     "seed": {"type": "transform", "from": "q08", "transform": "strip_citations",
+              "note": "q08's recorded answer with record_ids_used emptied; the answer text is the model's, unchanged."}},
+    {"id": "s02", "kind": "seeded", "expect": "dropped system prompt",
+     "seed": {"type": "real_call_without_system_prompt", "from": "q03",
+              "note": "A real model call for q03's question with the instruction block deliberately not sent, reproducing the measured proxy behaviour. The output and billed prompt_tokens are real."}},
+    {"id": "s03", "kind": "seeded", "expect": "ungrounded citation",
+     "seed": {"type": "transform", "from": "q04", "transform": "add_citation", "record_id": "aic-13026",
+              "note": "q04's recorded answer with aic-13026 added to its citations: a real AIC record ID that the public API no longer serves, so it is never in the retrieved candidate set."}}
+  ]
+}
