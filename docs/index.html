@@ -148,9 +148,13 @@
       </div>
     </section>
 
-    <!-- Evaluator Sandbox: re-scores an edited model answer in the browser.
-         Engine: sandbox.js (JS port of the Python evaluators). Data:
-         data/sandbox.json (real traced payloads, src/export_sandbox_data.py). -->
+    <!-- Evaluator panel. Two engines, same data:
+           Live API  -- POST {API_BASE}/evaluate on Cloud Run (server/app.py):
+                        the Python evaluators, computed per request.
+           Sandbox   -- sandbox.js in this page: the parity-checked JS port.
+         Data: data/recorded_samples.json (recorded model outputs,
+         record_samples.py), or data/sandbox.json (scripted fixture) if no
+         recording has been published. Neither engine ever calls a model. -->
     <section aria-labelledby="sandbox-title" id="sandbox" class="rounded-xl border border-emerald-500/20 bg-zinc-900/60 overflow-hidden">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 border-b border-zinc-800 px-4 sm:px-5 py-3">
         <div class="min-w-0">
@@ -158,10 +162,14 @@
             <i data-lucide="flask-conical" class="w-4 h-4 text-emerald-400"></i>
             <h3 id="sandbox-title" class="font-mono text-xs uppercase tracking-widest text-zinc-300">Evaluator sandbox · try to fool the verifiers</h3>
           </div>
-          <p class="mt-1 text-xs text-zinc-500">Edit what the model said and re-score it in your browser, against the records a real run retrieved. No model, no API key.</p>
+          <p class="mt-1 text-xs text-zinc-500">Edit what the model said and re-score it against the records the real run retrieved. Model answers are recorded samples; the evaluators run live. No model is called.</p>
         </div>
-        <span id="sb-parity" class="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-zinc-700 px-2.5 py-1 font-mono text-[11px] text-zinc-400">checking parity…</span>
+        <div class="flex flex-wrap gap-1.5 shrink-0">
+          <span id="sb-mode" class="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 px-2.5 py-1 font-mono text-[11px] text-zinc-400" title="Which engine computes the verdicts">connecting…</span>
+          <span id="sb-parity" class="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 px-2.5 py-1 font-mono text-[11px] text-zinc-400">checking parity…</span>
+        </div>
       </div>
+      <div id="sb-notice" class="hidden border-b border-amber-500/20 bg-amber-500/[0.06] px-4 sm:px-5 py-2 text-xs text-amber-200" role="status"></div>
 
       <div id="sb-error" class="hidden px-5 py-6 text-sm text-amber-300"></div>
 
@@ -169,8 +177,10 @@
         <!-- Left: scenario, question, retrieved records, edits -->
         <div class="lg:col-span-5 border-b lg:border-b-0 lg:border-r border-zinc-800 p-4 sm:p-5 space-y-4">
           <div>
-            <div class="mb-2 font-mono text-[11px] uppercase tracking-widest text-zinc-500">1 · pick a traced run</div>
-            <div id="sb-tabs" class="flex flex-wrap gap-1.5" role="tablist" aria-label="Sandbox scenarios"></div>
+            <label for="sb-pick" class="mb-2 block font-mono text-[11px] uppercase tracking-widest text-zinc-500">1 · pick a sample</label>
+            <select id="sb-pick" class="block w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/40"></select>
+            <p id="sb-sample-note" class="mt-1.5 text-[11.5px] leading-snug text-zinc-500"></p>
+            <p id="sb-datalabel" class="mt-1 font-mono text-[10.5px] text-zinc-600"></p>
           </div>
           <div class="rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2.5">
             <div class="font-mono text-[10px] uppercase tracking-widest text-zinc-600">question</div>
@@ -642,13 +652,25 @@
   select(SCENARIOS.some(function (s) { return s.id === fromHash; }) ? fromHash : activeId, false);
 
   // ---------------------------------------------------------------------
-  // Evaluator sandbox
+  // Evaluator sandbox: Live API (Cloud Run) with in-browser fallback
   // ---------------------------------------------------------------------
-  var SB_LABELS = {
+  // The ONE config constant: the Cloud Run service URL, no trailing slash.
+  // Empty string = no live API; the page runs the in-browser sandbox only.
+  var API_BASE = '';
+  // Local development only: ?api=http://localhost:8080 points the page at a
+  // local server. Restricted to localhost so a crafted link cannot send a
+  // visitor's edits to some other host.
+  (function () {
+    var m = /[?&]api=([^&#]+)/.exec(location.search);
+    var v = m ? decodeURIComponent(m[1]).replace(/\/+$/, '') : '';
+    if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/.test(v)) API_BASE = v;
+  })();
+
+  var FIXTURE_LABELS = {
     clean: 'Clean answer', zero: 'Zero-sources trap', dropped: 'Dropped system prompt',
     fabricated: 'Fabricated citation', abstain: 'Out of corpus'
   };
-  var sb = { data: null, scenario: null, timer: null };
+  var sb = { data: null, scenario: null, timer: null, mode: 'sandbox', seq: 0, firstLive: true };
 
   function $(id) { return document.getElementById(id); }
 
@@ -657,6 +679,40 @@
     $('sb-error').classList.remove('hidden');
     $('sb-error').textContent = msg;
     $('sb-parity').textContent = 'unavailable';
+  }
+
+  function sbSetMode(mode, notice) {
+    sb.mode = mode;
+    var live = mode === 'live';
+    var badge = $('sb-mode');
+    badge.className = 'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[11px] ' +
+      (live ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300' : 'border-zinc-600 bg-zinc-800/60 text-zinc-300');
+    badge.innerHTML = '<span class="inline-block w-1.5 h-1.5 rounded-full ' + (live ? 'bg-emerald-400' : 'bg-zinc-400') + '"></span>' +
+      (live ? 'Live API (recorded samples)' : 'Sandbox');
+    badge.title = live ? 'Verdicts are computed by the Python evaluators on Cloud Run, per request.'
+      : 'Verdicts are computed in this page by sandbox.js, the parity-checked JS port.';
+    var n = $('sb-notice');
+    if (notice) {
+      n.innerHTML = esc(notice) + (API_BASE ? ' <button type="button" id="sb-retry" class="ml-2 underline hover:text-amber-50">Retry live API</button>' : '');
+      n.classList.remove('hidden');
+    } else {
+      n.classList.add('hidden');
+    }
+  }
+
+  function fetchJson(url, opts, timeoutMs) {
+    var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, timeoutMs);
+    opts = opts || {};
+    if (ctrl) opts.signal = ctrl.signal;
+    return fetch(url, opts).then(function (r) {
+      clearTimeout(timer);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }, function (e) {
+      clearTimeout(timer);
+      throw new Error(e && e.name === 'AbortError' ? 'timed out after ' + Math.round(timeoutMs / 1000) + 's' : 'network error');
+    });
   }
 
   // The recorded raw output, pretty-printed when it is a bare JSON object so it
@@ -707,18 +763,29 @@
     }).join('');
   }
 
-  function sbRenderTabs() {
-    $('sb-tabs').innerHTML = sb.data.scenarios.map(function (s) {
-      var on = sb.scenario && s.id === sb.scenario.id;
-      return '<button type="button" role="tab" aria-selected="' + on + '" data-sb="' + s.id + '" class="rounded-md border px-2.5 py-1.5 text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ' +
-        (on ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-200' : 'border-zinc-700 bg-zinc-950 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500') + '">' +
-        esc(SB_LABELS[s.id] || s.id) + '</button>';
+  function sbLabelOf(s) {
+    if (s.expect) return s.expect;
+    return FIXTURE_LABELS[s.id] || s.id;
+  }
+
+  function sbRenderPicker() {
+    var groups = {}, order = [];
+    sb.data.scenarios.forEach(function (s) {
+      var g = s.kind === 'seeded' ? 'Seeded failures (labelled)'
+        : s.kind === 'recorded' ? 'Recorded model outputs' : 'Scripted fixture runs';
+      if (!groups[g]) { groups[g] = []; order.push(g); }
+      groups[g].push(s);
+    });
+    $('sb-pick').innerHTML = order.map(function (g) {
+      return '<optgroup label="' + esc(g) + '">' + groups[g].map(function (s) {
+        var q = s.payload.question;
+        return '<option value="' + esc(s.id) + '">' + esc(s.id + ' · ' + sbLabelOf(s) + ' — ' + (q.length > 60 ? q.slice(0, 57) + '…' : q)) + '</option>';
+      }).join('') + '</optgroup>';
     }).join('');
   }
 
-  function sbRenderCands() {
+  function sbRenderCands(cited) {
     var s = sb.scenario, blocks = s.payload.context_blocks || [];
-    var cited = (sbParsedOrTemplate().record_ids_used || []).map(String);
     var titleOf = {};
     blocks.forEach(function (b) { titleOf[b.id] = (b.fields || {}).title; });
     var ids = s.payload.candidate_ids || [];
@@ -742,12 +809,37 @@
       '<p class="mt-2 text-[12.5px] leading-snug text-' + color + '-200/90 break-words">' + esc(r.explanation) + '</p></div>';
   }
 
-  function sbRun() {
-    var s = sb.scenario, api = window.MuseumQASandbox;
-    var raw = $('sb-raw').value, delivered = $('sb-delivered').checked;
-    var payload = api.runPipeline(s, raw, delivered);
-    var ev = api.evaluate(payload), r = payload.result || {};
+  // Both engines produce this view: {ev, result, audit, engine}.
+  function sbSandboxView(raw, delivered) {
+    var api = window.MuseumQASandbox;
+    var payload = api.runPipeline(sb.scenario, raw, delivered);
+    return { ev: api.evaluate(payload), result: payload.result || {}, audit: payload.prompt_audit || {},
+             engine: 'sandbox.js in your browser' };
+  }
 
+  function sbLiveView(raw, delivered) {
+    var s = sb.scenario;
+    var body = { sample_id: s.id, system_prompt_delivered: delivered };
+    if (raw !== sbRaw(s)) body.answer = raw;     // unchanged text: let the API use the recording
+    var timeout = sb.firstLive ? 15000 : 8000;   // first call may hit a cold start
+    return fetchJson(API_BASE + '/evaluate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    }, timeout).then(function (r) {
+      sb.firstLive = false;
+      var ev = {};
+      Object.keys(r.evaluations || {}).forEach(function (k) { ev[k] = r.evaluations[k]; });
+      ev.deterministic_verdict = r.deterministic_verdict;
+      ev.llm_judge_surrogate = r.llm_judge_surrogate;
+      return { ev: ev, audit: (r.pipeline || {}).prompt_audit || {},
+               result: { abstained: (r.retrieval || {}).abstained, error: (r.output || {}).error,
+                         record_ids_used: (r.output || {}).record_ids_used,
+                         confidence: (r.pipeline || {}).confidence },
+               engine: 'Python evaluators via the live API (' + r.evaluated_in_ms + ' ms compute)' };
+    });
+  }
+
+  function sbRender(view, delivered) {
+    var s = sb.scenario, ev = view.ev, r = view.result;
     $('sb-verdicts').innerHTML = sbCard('judge', ev.llm_judge_surrogate) + sbCard('verifier', ev.deterministic_verdict);
 
     var chips = [];
@@ -761,9 +853,9 @@
       chips.push([c.length + ' cited · ' + fab.length + ' not retrieved', fab.length || !c.length ? 'rose' : 'emerald']);
       var conf = r.confidence;
       chips.push([conf ? (conf.score === null ? 'confidence withheld (' + conf.label + ')' : 'confidence ' + conf.score + ' (' + conf.label + ')') : 'no confidence emitted', conf && conf.score !== null ? 'zinc' : 'amber']);
-      var a = payload.prompt_audit || {};
-      chips.push(['prompt audit: ' + (a.status || 'n/a'), a.status === 'dropped_suspected' ? 'rose' : 'emerald']);
+      chips.push(['prompt audit: ' + (view.audit.status || 'n/a'), view.audit.status === 'dropped_suspected' ? 'rose' : 'emerald']);
     }
+    chips.push(['computed by ' + view.engine, 'zinc']);
     $('sb-pipeline').innerHTML = chips.map(function (ch) {
       return '<span class="rounded-full border border-' + ch[1] + '-500/30 bg-' + ch[1] + '-500/10 px-2.5 py-1 font-mono text-[11px] text-' + ch[1] + '-300">' + esc(ch[0]) + '</span>';
     }).join('');
@@ -782,51 +874,108 @@
       ? 'billed prompt_tokens ' + (delivered ? t.expected_with_instructions : t.expected_without_instructions) +
         ' (with instructions ≈' + t.expected_with_instructions + ', without ≈' + t.expected_without_instructions + ')'
       : 'no prompt was sent';
-    sbRenderCands();
+    sbRenderCands((sbParsedOrTemplate().record_ids_used || []).map(String));
     renderIcons();
+  }
+
+  function sbRun() {
+    var raw = $('sb-raw').value, delivered = $('sb-delivered').checked;
+    var seq = ++sb.seq;
+    if (sb.mode !== 'live') return sbRender(sbSandboxView(raw, delivered), delivered);
+    $('sb-pipeline').style.opacity = '0.6';
+    sbLiveView(raw, delivered).then(function (view) {
+      if (seq !== sb.seq) return;                // a newer edit superseded this one
+      $('sb-pipeline').style.opacity = '';
+      sbRender(view, delivered);
+    }, function (e) {
+      $('sb-pipeline').style.opacity = '';
+      if (seq !== sb.seq) return;
+      sbSetMode('sandbox', 'Live API unavailable, using the in-browser sandbox (' + e.message + ').');
+      sbRender(sbSandboxView(raw, delivered), delivered);
+    });
+  }
+
+  function sbSchedule() {
+    clearTimeout(sb.timer);
+    sb.timer = setTimeout(sbRun, sb.mode === 'live' ? 500 : 200);
   }
 
   function sbSelect(id) {
     var s = sb.data.scenarios.filter(function (x) { return x.id === id; })[0];
     if (!s) return;
     sb.scenario = s;
+    $('sb-pick').value = id;
     var abstained = !!(s.payload.result || {}).abstained;
     $('sb-question').textContent = s.payload.question;
+    var note = sbLabelOf(s);
+    if (s.seed && s.seed.note) note += '. ' + s.seed.note;
+    $('sb-sample-note').textContent = note;
     $('sb-raw').value = abstained ? '' : sbRaw(s);
     $('sb-raw').disabled = abstained;
     $('sb-raw').placeholder = abstained ? 'No model call was made: the abstention gate stopped this question (' + ((s.payload.result || {}).reason || '') + ')' : '';
     $('sb-delivered').checked = !s.dropped_by_script;
     $('sb-delivered').disabled = abstained;
     Array.prototype.forEach.call($('sb-actions').querySelectorAll('button'), function (b) { b.disabled = abstained; b.classList.toggle('opacity-40', abstained); });
-    sbRenderTabs();
     sbRun();
+  }
+
+  function sbParity(data) {
+    var t = window.MuseumQASandbox.selfTest(data);
+    var ok = t.matched === t.total;
+    var badge = $('sb-parity');
+    badge.className = 'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[11px] ' +
+      (ok ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300' : 'border-amber-500/40 bg-amber-500/10 text-amber-300');
+    badge.innerHTML = '<i data-lucide="' + (ok ? 'shield-check' : 'triangle-alert') + '" class="w-3.5 h-3.5"></i>' +
+      'JS port parity: ' + t.matched + '/' + t.total + ' verdicts match Python';
+    badge.title = ok ? 'On load, every sample is re-scored by sandbox.js and compared with the verdicts the Python evaluators produced.'
+      : JSON.stringify(t.mismatches);
+  }
+
+  function sbLoadData() {
+    // Recorded model outputs when published; the scripted fixture otherwise.
+    return fetchJson('data/recorded_samples.json', { cache: 'no-cache' }, 10000)
+      .catch(function () { return fetchJson('data/sandbox.json', { cache: 'no-cache' }, 10000); });
+  }
+
+  function sbConnect() {
+    if (!API_BASE) { sbSetMode('sandbox', null); return Promise.resolve(); }
+    sbSetMode('sandbox', null);
+    $('sb-mode').textContent = 'Sandbox · connecting to live API…';
+    return fetchJson(API_BASE + '/samples', {}, 15000).then(function (r) {
+      var apiIds = (r.samples || []).map(function (s) { return s.id; }).sort().join(',');
+      var pageIds = sb.data.scenarios.map(function (s) { return s.id; }).sort().join(',');
+      if (apiIds !== pageIds) throw new Error('the API serves a different sample set');
+      sb.firstLive = false;
+      sbSetMode('live', null);
+    }).catch(function (e) {
+      sbSetMode('sandbox', 'Live API unavailable, using the in-browser sandbox (' + e.message + ').');
+    });
   }
 
   function sbInit() {
     if (!window.MuseumQASandbox) return sbFail('The sandbox engine (sandbox.js) did not load.');
-    fetch('data/sandbox.json', { cache: 'no-cache' })
-      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(function (data) {
-        sb.data = data;
-        var t = window.MuseumQASandbox.selfTest(data);
-        var ok = t.matched === t.total;
-        var badge = $('sb-parity');
-        badge.className = 'shrink-0 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[11px] ' +
-          (ok ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300' : 'border-amber-500/40 bg-amber-500/10 text-amber-300');
-        badge.innerHTML = '<i data-lucide="' + (ok ? 'shield-check' : 'triangle-alert') + '" class="w-3.5 h-3.5"></i>' +
-          'JS port parity: ' + t.matched + '/' + t.total + ' verdicts match the Python run';
-        badge.title = ok ? 'On load, every exported scenario is re-scored by sandbox.js and compared with the verdicts the Python evaluators produced.'
-          : JSON.stringify(t.mismatches);
-        sbRenderActions();
-        sbSelect('zero');
-      })
-      .catch(function (e) {
-        sbFail('Could not load data/sandbox.json (' + e.message + '). Serve docs/ over HTTP, e.g. python -m http.server --directory docs.');
-      });
+    sbLoadData().then(function (data) {
+      sb.data = data;
+      var label = data.label || data.source || 'sample data';
+      var first = (data.scenarios[0] || {}).recorded || {};
+      $('sb-datalabel').textContent = 'data: ' + label + (data.model ? ' · ' + data.model : '') +
+        (first.recorded_at ? ' · recorded ' + String(first.recorded_at).slice(0, 10) : '');
+      sbParity(data);
+      sbRenderActions();
+      sbRenderPicker();
+      // Render with the in-browser engine straight away, then upgrade to the
+      // live API once it answers: a cold start never shows an empty panel.
+      var seeded = data.scenarios.filter(function (s) { return s.kind === 'seeded'; })[0];
+      var zero = data.scenarios.filter(function (s) { return s.id === 'zero'; })[0];
+      sbSelect((seeded || zero || data.scenarios[0]).id);
+      return sbConnect().then(function () { if (sb.mode === 'live') sbRun(); });
+    }).catch(function (e) {
+      sbFail('Could not load sample data (' + e.message + '). Serve docs/ over HTTP, e.g. python -m http.server --directory docs.');
+    });
 
-    $('sb-tabs').addEventListener('click', function (ev) {
-      var b = ev.target.closest('button[data-sb]');
-      if (b) sbSelect(b.getAttribute('data-sb'));
+    $('sb-pick').addEventListener('change', function () { sbSelect($('sb-pick').value); });
+    $('sb-notice').addEventListener('click', function (ev) {
+      if (ev.target && ev.target.id === 'sb-retry') sbConnect().then(sbRun);
     });
     $('sb-actions').addEventListener('click', function (ev) {
       var b = ev.target.closest('button[data-act]');
@@ -846,10 +995,7 @@
       o.record_ids_used = ids.indexOf(id) === -1 ? ids.concat([id]) : ids.filter(function (x) { return x !== id; });
       sbWrite(o);
     });
-    $('sb-raw').addEventListener('input', function () {
-      clearTimeout(sb.timer);
-      sb.timer = setTimeout(sbRun, 200);
-    });
+    $('sb-raw').addEventListener('input', sbSchedule);
     $('sb-delivered').addEventListener('change', sbRun);
     $('sb-reset').addEventListener('click', function () { if (sb.scenario) sbSelect(sb.scenario.id); });
   }
