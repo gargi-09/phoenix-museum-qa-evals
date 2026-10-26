@@ -24,19 +24,31 @@ import re
 import json
 import time
 
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    print("[api_client] python-dotenv not installed -- run 'pip install python-dotenv' "
-          "if you're using a .env file. Falling back to system environment variables only.")
+# LLM_PROVIDER=disabled is the serving mode (server/app.py sets it before any
+# import). It is decided FIRST, before .env is loaded, because loading .env is
+# what would put a local ANTHROPIC_API_KEY into this process. In this mode the
+# module never loads .env, never imports an HTTP client, never reads a key, and
+# every model call returns an error without touching the network -- while the
+# pure helpers the verifiers need (detect_truncation, estimate_tokens_preflight)
+# keep working.
+MODEL_CALLS_DISABLED = os.getenv("LLM_PROVIDER", "").strip().lower() == "disabled"
 
-try:
-    import requests
-except ImportError:
+if MODEL_CALLS_DISABLED:
     requests = None
-    print("[api_client] 'requests' not installed -- run 'pip install requests' "
-          "before real API calls will work. check_credentials() still works without it.")
+else:
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        print("[api_client] python-dotenv not installed -- run 'pip install python-dotenv' "
+              "if you're using a .env file. Falling back to system environment variables only.")
+
+    try:
+        import requests
+    except ImportError:
+        requests = None
+        print("[api_client] 'requests' not installed -- run 'pip install requests' "
+              "before real API calls will work. check_credentials() still works without it.")
 
 
 # DATA_BASE is no longer required: the corpus now comes from the museums'
@@ -58,6 +70,8 @@ REQUIRED_ENV_VARS = ["API_KEY", "MODEL_ENDPOINT"]
 # Auto-detected: anthropic when ANTHROPIC_API_KEY is set and MODEL_ENDPOINT is
 # not; LLM_PROVIDER overrides.
 def _detect_provider():
+    if MODEL_CALLS_DISABLED:
+        return "disabled"
     explicit = os.getenv("LLM_PROVIDER", "").strip().lower()
     if explicit in ("proxy", "anthropic"):
         return explicit
@@ -199,6 +213,8 @@ def check_credentials(quiet=False):
     Returns True if all present, False otherwise -- prints a clear,
     specific message about what's missing rather than crashing.
     """
+    if PROVIDER == "disabled":
+        return False          # no key is read in serving mode, so none is "present"
     if PROVIDER == "anthropic":
         if os.getenv("ANTHROPIC_API_KEY") or os.getenv("ANTHROPIC_AUTH_TOKEN"):
             return True
@@ -775,6 +791,15 @@ def call_haiku(messages, max_tokens=1024, dev_mode=False, stage="unspecified",
     used -- this file is safe to import and test against even with zero
     real credentials configured.
     """
+    if PROVIDER == "disabled":
+        # Serving mode: refuse before credentials, budget, or any network code.
+        return {
+            "content": None, "usage": None, "is_truncated": False,
+            "truncation_reasons": [], "error_type": "model_calls_disabled",
+            "should_retry": False, "call_seq": None, "budget_remaining": None,
+            "error_detail": "LLM_PROVIDER=disabled: this process serves recorded samples only",
+        }
+
     if not check_credentials():
         return {
             "content": None, "usage": None, "is_truncated": False,
