@@ -1,0 +1,4 @@
+# Keep LF for files executed inside Linux (Cloud Build / the container), even
+# on a Windows checkout with core.autocrlf=true.
+Dockerfile text eol=lf
+*.sh text eol=lf
