@@ -140,3 +140,14 @@ def test_image_never_contains_the_recorder_or_secrets():
     reqs = open(os.path.join(REPO_ROOT, "requirements-server.txt"), encoding="utf-8").read().lower()
     for pkg in ("anthropic", "requests", "python-dotenv", "torch", "sentence-transformers"):
         assert f"\n{pkg}=" not in reqs and not reqs.startswith(f"{pkg}=")
+
+
+def test_deploy_script_pins_safe_cloud_run_settings():
+    sh = open(os.path.join(REPO_ROOT, "deploy.sh"), encoding="utf-8").read()
+    assert 'REQUIRED_ACCOUNT="gargivipat@gmail.com"' in sh
+    assert "--set-env-vars LLM_PROVIDER=disabled" in sh      # replaces all other env vars
+    assert "ANTHROPIC" not in sh.replace("an Anthropic key", "")
+    assert "--set-secrets" not in sh and "--update-env-vars" not in sh
+    for flag in ("--max-instances 2", "--timeout 60", "--memory 512Mi", "--concurrency 20"):
+        assert flag in sh
+    assert '[ "${1:-}" != "--yes" ]' in sh                    # dry run unless --yes
