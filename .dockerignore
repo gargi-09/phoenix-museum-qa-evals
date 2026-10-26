@@ -1,0 +1,16 @@
+# Allow-list: the build context is ONLY what the image needs. Everything else
+# (.git, venv/, .env, data/, cache/, outputs/, notebooks, record_samples.py and
+# its local outputs other than the committed recording) never enters a build.
+*
+!Dockerfile
+!requirements-server.txt
+!server/
+!server/**
+!src/
+!src/*.py
+!samples/
+!samples/recorded_outputs.json
+**/__pycache__
+**/*.pyc
+src/demo/
+src/fixtures/

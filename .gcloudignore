@@ -1,0 +1,16 @@
+# gcloud run deploy --source uploads ONLY these files: the same allow-list as
+# .dockerignore. Without this file gcloud derives the upload set from
+# .gitignore, which was never written as a security boundary.
+*
+!Dockerfile
+!requirements-server.txt
+!server/
+!server/**
+!src/
+!src/*.py
+!samples/
+!samples/recorded_outputs.json
+**/__pycache__
+**/*.pyc
+src/demo/
+src/fixtures/
