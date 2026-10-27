@@ -1,8 +1,9 @@
 # Museum QA live demo API -- Cloud Run image (sample-queries-only).
 #
-# Contains: the FastAPI app, the pipeline modules the evaluators import, and
-# the recorded samples. Does NOT contain: record_samples.py, any .env, the
-# corpus, embedding models, torch, the Anthropic SDK, or an HTTP client.
+# Contains: the FastAPI app, the pipeline modules the evaluators import, the
+# recorded samples, and the slim corpus (samples/corpus.jsonl.gz) the live
+# BM25 endpoint indexes. Does NOT contain: record_samples.py, any .env, the
+# embedding model or embeddings, torch, the Anthropic SDK, or an HTTP client.
 FROM python:3.12-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -24,7 +25,7 @@ COPY src/rescore.py src/reasoning.py src/retrieval.py src/entity_resolution.py \
      src/contradiction.py src/ingest.py src/memory.py src/api_client.py \
      src/phoenix_evals.py src/tracing.py ./src/
 COPY server/ ./server/
-COPY samples/recorded_outputs.json ./samples/recorded_outputs.json
+COPY samples/recorded_outputs.json samples/corpus.jsonl.gz ./samples/
 
 USER app
 EXPOSE 8080

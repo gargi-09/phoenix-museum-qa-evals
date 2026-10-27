@@ -74,18 +74,25 @@ GUARD_SCRIPT = textwrap.dedent(r"""
     socket.socket.connect_ex = guarded_connect_ex
     socket.getaddrinfo = no_dns
 
+    # High enough that every request below reaches its handler: a 429 would
+    # skip the code under test and pass the guard vacuously.
+    os.environ["RATE_LIMIT_PER_MINUTE"] = "1000"
     import server.app as appmod                  # module-level app + warm-up run here
     from fastapi.testclient import TestClient    # in-process ASGI: no sockets
     c = TestClient(appmod.app)
 
     out = {"health": c.get("/health").status_code}
     samples = c.get("/samples").json()["samples"]
+    codes = []
     for s in samples:
-        c.get(f"/samples/{s['id']}")
-        c.post("/evaluate", json={"sample_id": s["id"]})
-        c.post("/evaluate", json={"sample_id": s["id"], "system_prompt_delivered": False,
-                                  "answer": "Free prose with no citations."})
-    c.get("/ask?q=anything")
+        codes.append(c.get(f"/samples/{s['id']}").status_code)
+        codes.append(c.post("/evaluate", json={"sample_id": s["id"]}).status_code)
+        codes.append(c.post("/evaluate", json={"sample_id": s["id"], "system_prompt_delivered": False,
+                                               "answer": "Free prose with no citations."}).status_code)
+    out["sample_codes"] = sorted(set(codes))
+    out["ask"] = c.get("/ask?q=anything").status_code
+    out["retrieve"] = [c.post("/retrieve", json={"question": q}).status_code
+                       for q in ("What is the capital of Mongolia?", "Coney Island Beach Reginald Marsh")]
 
     # Belt and braces: even called directly, the client refuses.
     import api_client
@@ -112,6 +119,9 @@ def test_serving_path_never_reads_keys_imports_clients_or_opens_sockets():
     assert r["tripped"] == [], r["tripped"]
     assert r["loaded"] == []
     assert r["samples"] > 0 and r["out"]["health"] == 200
+    assert r["out"]["sample_codes"] == [200]                  # every call reached its handler
+    assert r["out"]["ask"] == 400
+    assert r["out"]["retrieve"] == [200, 200]                 # live BM25 ran, under the tripwires
 
 
 def test_model_client_is_disabled_in_the_serving_process():

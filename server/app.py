@@ -7,18 +7,23 @@ SAMPLE-QUERIES-ONLY. This service never calls a model:
     ANTHROPIC_API_KEY, and refuses every model call.
   - It serves the fixed samples in samples/recorded_outputs.json ("recorded
     model outputs", written offline by record_samples.py) selected BY ID.
-    Free-text questions are refused.
+    Free-text questions are not answered.
   - What runs live, per request: the post-generation pipeline (parse,
     verification checks, confidence, prompt-token audit) and all 8
     deterministic evaluators plus the judge baseline, on either the recorded
     answer or a visitor's edited one (src/rescore.py, which composes the
     pipeline's own functions). Retrieval is replayed from the recording.
+  - One free-text path, for RETRIEVAL ONLY: POST /retrieve runs the BM25
+    half of the retriever and its abstention floor live over the 5,010
+    records (server/live_retrieval.py). It generates no answer and calls no
+    model; the question is not stored or logged.
 
 Endpoints:
   GET  /health                 liveness; no I/O
   GET  /samples                the sample list
   GET  /samples/{sample_id}    a recorded sample, evaluated live
   POST /evaluate               {"sample_id", "answer"?, "system_prompt_delivered"?}
+  POST /retrieve               {"question"} -> live BM25 candidates + gate
 
 Run locally:
   uvicorn server.app:app --port 8080
@@ -45,8 +50,10 @@ from pydantic import BaseModel, ConfigDict, Field
 
 REPO_ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 sys.path.insert(0, os.path.join(REPO_ROOT, "src"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from rescore import evaluate, rescore  # noqa: E402  (after LLM_PROVIDER is set)
+from live_retrieval import LiveBM25, default_path as default_corpus_path  # noqa: E402
 
 SAMPLES_ONLY = "Live demo runs on recorded samples only."
 DEFAULT_SAMPLES_PATH = os.path.join(REPO_ROOT, "samples", "recorded_outputs.json")
@@ -57,6 +64,7 @@ LOCALHOST_ORIGIN_REGEX = r"^http://(localhost|127\.0\.0\.1)(:\d{1,5})?$"
 
 MAX_BODY_BYTES = 16 * 1024
 MAX_ANSWER_CHARS = 8000
+MAX_QUESTION_CHARS = 300
 EVALUATOR_NAMES = ("zero_source_false_pass", "citation_groundedness", "confidence_capping",
                    "prompt_integrity", "verifier.citation_membership",
                    "verifier.not_recorded_violation", "verifier.factual_match",
@@ -235,8 +243,18 @@ class EvaluateRequest(BaseModel):
     system_prompt_delivered: Optional[bool] = None
 
 
-def create_app(samples_path=None, rate_limit_per_minute=None):
+class RetrieveRequest(BaseModel):
+    # A visitor's question, for live BM25 retrieval only. It is never sent to
+    # a model, never stored and never logged.
+    model_config = ConfigDict(extra="forbid")
+
+    question: str = Field(min_length=1, max_length=MAX_QUESTION_CHARS)
+
+
+def create_app(samples_path=None, rate_limit_per_minute=None, corpus_path=None):
     store = SampleStore(samples_path or os.getenv("SAMPLES_PATH") or DEFAULT_SAMPLES_PATH)
+    corpus_file = corpus_path or default_corpus_path(REPO_ROOT)
+    live = LiveBM25(corpus_file) if os.path.exists(corpus_file) else None
     limiter = RateLimiter(rate_limit_per_minute
                           or int(os.getenv("RATE_LIMIT_PER_MINUTE", "30")))
 
@@ -246,8 +264,13 @@ def create_app(samples_path=None, rate_limit_per_minute=None):
     @app.exception_handler(RequestValidationError)
     async def validation_error(request: Request, exc: RequestValidationError):
         extra = [e for e in exc.errors() if e.get("type") == "extra_forbidden"]
-        detail = (SAMPLES_ONLY + " Send a sample_id from GET /samples." if extra
-                  else "Invalid request: expected {sample_id, answer?, system_prompt_delivered?}.")
+        retrieve = request.url.path == "/retrieve"
+        if retrieve:
+            detail = (f"Invalid request: expected {{question}}, 1-{MAX_QUESTION_CHARS} characters. "
+                      "It is used for retrieval only; no answer is generated.")
+        else:
+            detail = (SAMPLES_ONLY + " Send a sample_id from GET /samples." if extra
+                      else "Invalid request: expected {sample_id, answer?, system_prompt_delivered?}.")
         return JSONResponse({"detail": detail}, status_code=422 if not extra else 400)
 
     @app.exception_handler(404)
@@ -260,7 +283,9 @@ def create_app(samples_path=None, rate_limit_per_minute=None):
     @app.get("/health")
     def health():
         return {"status": "ok", "samples": len(store.samples), "data_label": store.label,
-                "model_calls": "disabled"}
+                "model_calls": "disabled",
+                "live_retrieval": "bm25" if live else "unavailable",
+                "records": len(live.records) if live else 0}
 
     @app.get("/samples")
     def list_samples():
@@ -291,6 +316,23 @@ def create_app(samples_path=None, rate_limit_per_minute=None):
         payload = rescore(s, req.answer if req.answer is not None else (recorded_raw or ""), delivered)
         return _view(store, s, payload, "edited")
 
+    # Seeded samples reuse a recorded question (s01 is q01's); point at the recorded one.
+    by_question = {}
+    for sid, s in sorted(store.samples.items(), key=lambda kv: kv[1].get("kind") != "recorded"):
+        by_question.setdefault(s["payload"]["question"].strip().lower(), sid)
+
+    @app.post("/retrieve")
+    def retrieve(req: RetrieveRequest):
+        if live is None:
+            raise HTTPException(503, "Live retrieval is not available on this deployment.")
+        question = req.question.strip()
+        if not question:
+            raise HTTPException(422, "Empty question.")
+        out = live.search(question)
+        # A recorded sample asks this exact question: the UI can show its answer.
+        out["recorded_sample_id"] = by_question.get(question.lower())
+        return out
+
     @app.api_route("/ask", methods=["GET", "POST"])
     @app.api_route("/query", methods=["GET", "POST"])
     @app.api_route("/answer", methods=["GET", "POST"])
@@ -306,6 +348,7 @@ def create_app(samples_path=None, rate_limit_per_minute=None):
                        allow_methods=["GET", "POST", "OPTIONS"],
                        allow_headers=["Content-Type"], allow_credentials=False, max_age=600)
     app.state.store = store
+    app.state.live = live
     app.state.limiter = limiter
 
     # Warm-up: the first evaluation imports the pipeline modules (measured

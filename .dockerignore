@@ -9,7 +9,9 @@
 !src/
 !src/*.py
 !samples/
+samples/*
 !samples/recorded_outputs.json
+!samples/corpus.jsonl.gz
 **/__pycache__
 **/*.pyc
 src/demo/
