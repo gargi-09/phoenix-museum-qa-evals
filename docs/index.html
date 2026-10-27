@@ -105,7 +105,9 @@
       <p class="mt-3 text-zinc-400 leading-relaxed">
         "No violations found" is fluent, on-topic and confident, so a reference-free judge passes it.
         It also cites zero records. Pick a scenario below to see the raw model output, both verdicts,
-        and the OpenTelemetry spans Phoenix records for it.
+        and the OpenTelemetry spans Phoenix records for it. The judge shown here is a rule-based
+        stand-in that sees what an LLM judge sees; the real LLM judge, run once on the three seeded
+        false passes, approved 2 of 3.
       </p>
     </section>
 
@@ -162,7 +164,7 @@
             <i data-lucide="flask-conical" class="w-4 h-4 text-emerald-400"></i>
             <h3 id="sandbox-title" class="font-mono text-xs uppercase tracking-widest text-zinc-300">Evaluator sandbox · try to fool the verifiers</h3>
           </div>
-          <p class="mt-1 text-xs text-zinc-500">Edit what the model said and re-score it against the records the real run retrieved. Model answers are recorded samples; the evaluators run live. No model is called.</p>
+          <p class="mt-1 text-xs text-zinc-500">Edit what the model said and re-score it. Retrieval is replayed: each sample keeps the candidates the real retriever returned when it was recorded. Model answers are recorded samples; the evaluators run live. No model is called.</p>
         </div>
         <div class="flex flex-wrap gap-1.5 shrink-0">
           <span id="sb-mode" class="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 px-2.5 py-1 font-mono text-[11px] text-zinc-400" title="Which engine computes the verdicts">connecting…</span>
@@ -490,8 +492,8 @@
   function verdictCard(kind, v) {
     var pass = v.pass;
     var color = pass ? 'emerald' : 'rose';
-    var title = kind === 'judge' ? 'Standard LLM-as-a-Judge' : "Gargi's Deterministic Verifier";
-    var sub = kind === 'judge' ? 'sees question + answer only' : 'sees citations, candidate set, prompt_tokens';
+    var title = kind === 'judge' ? 'Baseline judge (rule-based stand-in)' : "Gargi's Deterministic Verifier";
+    var sub = kind === 'judge' ? 'stands in for an LLM judge · sees question + answer only' : 'sees citations, candidate set, prompt_tokens';
     var icon = kind === 'judge' ? 'scale' : 'shield-check';
     var headline = kind === 'judge'
       ? v.headline + (pass ? ' — ' + v.detail : ' — ' + v.detail)
@@ -800,7 +802,7 @@
   function sbCard(kind, r) {
     var pass = r.label === 'PASS', na = r.label === 'NOT_APPLICABLE';
     var color = na ? 'zinc' : pass ? 'emerald' : 'rose';
-    var title = kind === 'judge' ? 'Standard LLM-as-a-Judge' : 'Deterministic verifier';
+    var title = kind === 'judge' ? 'Baseline judge (rule-based stand-in)' : 'Deterministic verifier';
     var sub = kind === 'judge' ? 'surrogate · sees question + answer only' : 'sees citations, candidates, prompt_tokens';
     return '<div class="rounded-xl border border-' + color + '-500/30 bg-' + color + '-500/[0.06] p-3.5">' +
       '<div class="flex items-center justify-between gap-2">' +
