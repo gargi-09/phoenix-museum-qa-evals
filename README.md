@@ -3,6 +3,7 @@
 [![Live dashboard](https://img.shields.io/badge/live%20dashboard-gargi--09.github.io-10b981?style=flat-square&logo=githubpages&logoColor=white)](https://gargi-09.github.io/phoenix-museum-qa-evals/)
 [![Arize Phoenix](https://img.shields.io/badge/observability-Arize%20Phoenix-6d28d9?style=flat-square)](https://docs.arize.com/phoenix)
 [![OpenInference](https://img.shields.io/badge/tracing-OpenInference%20%2B%20OTel-0ea5e9?style=flat-square)](https://github.com/Arize-ai/openinference)
+[![release-gate](https://github.com/gargi-09/phoenix-museum-qa-evals/actions/workflows/release-gate.yml/badge.svg)](https://github.com/gargi-09/phoenix-museum-qa-evals/actions/workflows/release-gate.yml)
 
 A museum-records QA pipeline (~5,000 records from the Cleveland Museum of Art
 and the Art Institute of Chicago) instrumented end to end with OpenInference,
@@ -387,24 +388,135 @@ nearly all of that time is network and container startup. The image is
 - Request bodies are never logged.
 - Cloud Run settings: at most 2 instances, scales to zero, 60 s timeout,
   512 MiB.
+- The rate limit is counted per instance, so with 2 instances the ceiling is
+  up to 60 requests a minute per IP.
+- It runs as `museum-qa-api-runtime`, a dedicated service account with **no
+  IAM roles** and no user-managed keys, not the project's default compute
+  account, which has Editor on the project. The service calls no Google API.
 - If the API is down or slow, the dashboard falls back to the in-browser
   sandbox.
 
 **Deploy your own:**
 1. Set a **GCP budget alert** first: Billing → Budgets & alerts, e.g. $5.
 2. Record the samples with `python record_samples.py --yes`.
-3. Preview the billable commands with `bash deploy.sh`, then run them with
-   `bash deploy.sh --yes`.
+3. Preview the billable and IAM commands with `bash deploy.sh`, then run
+   them with `bash deploy.sh --yes`. They create the no-role service account
+   if it's missing.
 
-Tests:
+---
+
+## Harness, release gate and metrics
+
+### Harness
+
+[`harness/`](harness/) runs the pipeline's own steps around a typed loop:
+retrieve → answer → verify → accept, retry or abstain → trace. It has a
+timeout per step and a bounded retry budget with backoff.
+
+- **The gate:** an answer is accepted only when `deterministic_verdict`, the
+  roll-up of all 8 evaluators, is PASS. No LLM judge is involved.
+- **Abstentions:** every one carries its reason: `retrieval_gate`,
+  `retrieval_failed`, `no_further_recorded_attempt` or
+  `retry_budget_exhausted`.
+- **The pipeline itself is unchanged:** `reasoning.answer_question` still
+  makes one model call per answer.
+
 ```bash
-pip install -r requirements-dev.txt
+python -m harness
+```
+
+**The public demo shows accepted or abstained outcomes only.** Each sample
+has one recorded answer, so in replay a failed check abstains (no further
+recorded attempt) instead of retrying. The retry path (retry then accept,
+retry then abstain, timeouts, malformed output) is covered by scripted tests
+in [`tests/test_harness.py`](tests/test_harness.py).
+
+### Release gate (CI)
+
+[`.github/workflows/release-gate.yml`](.github/workflows/release-gate.yml)
+runs on every push to `main` and every pull request, with no secrets and
+`LLM_PROVIDER=disabled`. It does four things:
+
+1. checks that no model SDK, HTTP client or torch is installed;
+2. checks that the committed `docs/sandbox.js` is the build of
+   `docs/src/sandbox.ts`;
+3. runs the test suite;
+4. runs [`scripts/release_gate.py`](scripts/release_gate.py), with the
+   thresholds in [`samples/release_gate.json`](samples/release_gate.json).
+
+The gate blocks a release if:
+
+- any seeded false pass (s01–s03) gets a PASS verdict or is accepted;
+- fewer than **6 of the 7** known-good recorded answers (q01–q07) pass. q06
+  stays in the count and stays failing: it's the year check's known false
+  positive;
+- the identity regression goes undetected: s02, sent without its system
+  prompt, must fail `prompt_integrity`, and its control q03 must pass it.
+
+The fixture set gets the same seeded and identity checks, plus 1/1
+known-good. A separate code-level test checks that the instruction block is
+sent to the model in every message format.
+
+```bash
+python scripts/release_gate.py
+```
+
+### Measured results
+
+[`scripts/run_metrics.py`](scripts/run_metrics.py) writes
+[`docs/data/metrics.json`](docs/data/metrics.json). The committed run used
+50 timed runs per sample, on one laptop.
+
+| | Result |
+|---|---|
+| Harness outcomes (14 samples) | 9 accepted, 5 abstained (4 no further recorded attempt: q06, s01–s03; 1 retrieval gate: q11), 0 retried |
+| `deterministic_verdict` | 9 PASS, 4 FAIL, plus q11 (abstained) |
+| Harness run latency, **measured** | p50 1.263 ms, p95 1.962 ms over 700 runs |
+| Recorded tokens per answer (11 calls) | mean 4,995.8 total; prompt mean 4,394.6, range 3,694–4,900 |
+
+- **What the latency covers:** retrieval replay, the evaluators and the
+  harness loop only. There is no model call and no network.
+- **The first run:** it includes importing the pipeline modules (243.9 ms),
+  so it's reported separately.
+- **Concurrent vs sequential:** the harness runs the 8 evaluators
+  concurrently for isolation, not speed. Its verify step (p50 1.225 ms) is
+  slower than the same evaluators run in sequence (p50 0.247 ms).
+- **Tokens:** recorded when each answer was made, not measured here.
+
+The design, failure modes and limits are in
+[`docs/DESIGN.md`](docs/DESIGN.md).
+
+### Tests
+
+```bash
+pip install -r requirements-ci.txt
 ```
 ```bash
 python -m pytest
 ```
-They include a guard that runs the server with tripwires on key reads,
-client imports and outbound sockets.
+
+There are 62 tests. They include:
+
+- a guard that runs the server with tripwires on key reads, client imports,
+  outbound sockets and imports of the recorder scripts;
+- the 1,040/1,040 parity test;
+- the harness and gate tests.
+
+`requirements-ci.txt` is the dev set plus scikit-learn for the fixture
+retriever. It has no torch and no model SDK.
+
+### Limitations
+
+- **A small fixed set:** 14 samples. Two of the three seeded failures (s01,
+  s03) are labelled edits of real answers, and the real LLM judge was run
+  once, on those three.
+- **Not a live system:** the deployed service replays recorded candidates
+  and answers. It never runs retrieval or a model, and it refuses free-text
+  questions.
+- **One known false positive:** q06 is a correct answer that the year check
+  fails. It's documented, not tuned away.
+- **Latency comes from one client and one laptop**, and it varies run to
+  run. There's no load test and no shared rate limit across instances.
 
 ---
 
@@ -432,8 +544,10 @@ browser**:
 
 There is no model call and no API key, so it's safe on a public page.
 
-- **Engine.** [`docs/sandbox.js`](docs/sandbox.js) is a line-by-line port of
-  everything after the model call: parsing, truncation detection, the four
+- **Engine.** [`docs/src/sandbox.ts`](docs/src/sandbox.ts), strict
+  TypeScript, compiled with `npm run build:sandbox` to the committed
+  [`docs/sandbox.js`](docs/sandbox.js), which Pages serves. It's a
+  line-by-line port of everything after the model call: parsing, truncation detection, the four
   `reasoning.check_*` verifiers, confidence scoring, the prompt-token audit,
   and every evaluator in `phoenix_evals.py`.
 - **Data.** [`docs/data/sandbox.json`](docs/data/sandbox.json) holds the
@@ -593,8 +707,21 @@ Original architecture diagram:
 ```
 demo_phoenix_evals.py  Phoenix demo: trace 5 questions, evaluate the traces
 docs/index.html        GitHub Pages diagnostic dashboard
-docs/sandbox.js        in-browser evaluator engine (JS port, parity-checked)
-docs/data/             sandbox.json: real traced payloads + Python verdicts
+docs/src/sandbox.ts    in-browser evaluator engine, strict TypeScript (parity-checked)
+docs/sandbox.js        its compiled build, committed (Pages serves it; CI checks it matches)
+docs/data/             sandbox.json, recorded_samples.json, metrics.json
+docs/DESIGN.md         components, harness contract, failure modes, limits
+harness/               retrieve -> answer -> verify -> accept | retry | abstain (python -m harness)
+server/app.py          the Cloud Run API (recorded samples only, LLM_PROVIDER=disabled)
+samples/               samples.json, recorded_outputs.json, recorded_llm_judge.json, release_gate.json
+record_samples.py      LOCAL ONLY: records the model answers (needs your key)
+scripts/
+  record_llm_judge.py  LOCAL ONLY: records the real LLM judge on s01-s03 (needs your key)
+  release_gate.py      the CI release gate
+  run_metrics.py       measured metrics -> docs/data/metrics.json
+  measure_latency.py   HTTP latency of the deployed API
+tests/                 pytest suite (no key, no network)
+deploy.sh              Cloud Run deploy: dry run unless --yes
 docs/assets/           screenshots, shown on the dashboard and here (see its README.md)
 src/
   main.py              CLI: fetch | ingest | ask | demo
