@@ -1,0 +1,66 @@
+# Builds the public demo (web/, React + strict TypeScript) and deploys it to
+# GitHub Pages. Pull requests build and type-check only. The previous
+# dashboard is kept at /classic.html, served from the same data files.
+#
+# One-time setting: Settings -> Pages -> Build and deployment -> Source:
+# "GitHub Actions". Until then Pages keeps serving main:/docs.
+name: pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install
+        run: npm ci --prefix web --no-audit --no-fund
+
+      - name: Type-check (strict) and build
+        run: npm run --prefix web build
+
+      - name: Assemble the site
+        run: |
+          mkdir -p site
+          cp -r web/dist/. site/
+          cp docs/index.html site/classic.html
+          mkdir -p site/data && cp docs/data/*.json site/data/
+          test -f site/index.html && test -f site/sandbox.js && test -f site/data/recorded_samples.json
+
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
