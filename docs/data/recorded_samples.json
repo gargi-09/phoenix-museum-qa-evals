@@ -1,0 +1,4552 @@
+{
+ "label": "recorded model outputs",
+ "notice": "Every 'recorded' answer is a real model output captured by record_samples.py; 'seeded' samples are labelled transforms or a labelled real call without the system prompt. The live API serves these and computes the evaluators live; it never calls a model.",
+ "generated_by": "record_samples.py",
+ "model": "claude-haiku-5-5",
+ "corpus": {
+  "generated_at": "2026-10-23T16:48:08.942870+00:00",
+  "output": "data/base.jsonl",
+  "record_count": 5010,
+  "by_institution": {
+   "Cleveland Museum of Art": 2508,
+   "Art Institute of Chicago": 2502
+  },
+  "seed_ids_requested": [
+   "cma-117571",
+   "cma-171726",
+   "cma-157127",
+   "aic-59820",
+   "cma-160794",
+   "cma-160059",
+   "cma-168184",
+   "cma-169223",
+   "cma-167554",
+   "aic-265559"
+  ],
+  "seed_ids_missing": [],
+  "skipped_by_reason": {
+   "cma: no description": 8
+  },
+  "network_calls": 0,
+  "cache_hits": 38,
+  "sources": {
+   "Cleveland Museum of Art": {
+    "api": "https://openaccess-api.clevelandart.org/api/artworks/",
+    "license": "CC0 1.0 (metadata)",
+    "terms": "https://www.clevelandart.org/open-access"
+   },
+   "Art Institute of Chicago": {
+    "api": "https://api.artic.edu/api/v1/artworks",
+    "license": "CC0 1.0, except `description`: CC BY 4.0",
+    "attribution": "Descriptions courtesy of the Art Institute of Chicago, licensed CC BY 4.0",
+    "terms": "https://www.artic.edu/terms"
+   }
+  }
+ },
+ "total_model_calls": 11,
+ "total_tokens": 54954,
+ "scenarios": [
+  {
+   "payload": {
+    "question": "What year was Coney Island Beach by Reginald Marsh made?",
+    "result": {
+     "question": "What year was Coney Island Beach by Reginald Marsh made?",
+     "abstained": false,
+     "answer": "According to record cma-117571, Coney Island Beach by Reginald Marsh was made in 1935. The record lists its medium as etching and classifies it as a Print.",
+     "answerable": true,
+     "record_ids_used": [
+      "cma-117571"
+     ],
+     "limitations": "Only one record matches the title and artist; the dimensions field is not recorded for this work, though that does not affect the answer.",
+     "full_provenance": [
+      {
+       "id": "cma-117571",
+       "category": "used",
+       "reason": null
+      },
+      {
+       "id": "cma-157127",
+       "category": "shown_not_cited",
+       "reason": "Coney Island photograph by Andreas Feininger; different title, artist, and year (1949)."
+      },
+      {
+       "id": "cma-171726",
+       "category": "shown_not_cited",
+       "reason": "Coney Island photograph by Leon Levinstein; different artist and date (c. 1954)."
+      },
+      {
+       "id": "aic-59820",
+       "category": "shown_not_cited",
+       "reason": "Reginald Marsh work, but titled Tattoo and Haircut (1932), not Coney Island Beach."
+      },
+      {
+       "id": "cma-92936",
+       "category": "shown_not_cited",
+       "reason": "Rockwell Kent painting unrelated to the question."
+      },
+      {
+       "id": "cma-125234",
+       "category": "shown_not_cited",
+       "reason": "Monet painting of Pourville, unrelated to the question."
+      },
+      {
+       "id": "cma-86544",
+       "category": "shown_not_cited",
+       "reason": "Carl Gaertner painting of Euclid Beach Park, unrelated to the question."
+      },
+      {
+       "id": "aic-39691",
+       "category": "shown_not_cited",
+       "reason": "Emil Carlsen painting Nantasket Beach, unrelated to the question."
+      },
+      {
+       "id": "aic-14598",
+       "category": "shown_not_cited",
+       "reason": "Monet painting The Beach at Sainte-Adresse, unrelated to the question."
+      },
+      {
+       "id": "aic-39247",
+       "category": "shown_not_cited",
+       "reason": "Diebenkorn painting Ocean Park #45, unrelated to the question."
+      }
+     ],
+     "confidence": {
+      "score": 0.88,
+      "label": "high",
+      "components": {
+       "retrieval_score": 0.77,
+       "verification_score": 1.0,
+       "contradiction_penalty": 0.0,
+       "label_capped_by_failed_check": false
+      }
+     },
+     "verification_checks": {
+      "citation_membership": {
+       "passed": true,
+       "detail": "all citations valid"
+      },
+      "not_recorded_violation": {
+       "passed": true,
+       "detail": "no violations detected across 1 [not recorded] field(s) in scope: ['cma-117571.dimensions']"
+      },
+      "factual_match": {
+       "passed": true,
+       "detail": "years consistent with cited records"
+      },
+      "not_truncated": {
+       "passed": true,
+       "detail": "no truncation signal fired"
+      }
+     },
+     "retrieval_signals": {
+      "dense_similarity": 0.7670131325721741,
+      "bm25_max": 50.93200618459332,
+      "dense_threshold": 0.35,
+      "bm25_threshold": 19.5,
+      "dense_below_threshold": false,
+      "bm25_below_threshold": false,
+      "abstain_reasons": []
+     },
+     "is_truncated": false,
+     "truncation_recovered": false,
+     "prior_truncation": null,
+     "call_seq": "req_011CgS1qzxKXbfXEUw1zTd6f",
+     "budget_remaining": null
+    },
+    "candidate_ids": [
+     "cma-117571",
+     "cma-157127",
+     "cma-171726",
+     "aic-59820",
+     "cma-92936",
+     "cma-125234",
+     "cma-86544",
+     "aic-39691",
+     "aic-14598",
+     "aic-39247"
+    ],
+    "context_blocks": [
+     {
+      "id": "cma-117571",
+      "fields": {
+       "title": "Coney Island Beach",
+       "artist": "Reginald Marsh",
+       "year": "1935",
+       "medium": "etching",
+       "dimensions": "[not recorded]",
+       "classification": "Print"
+      },
+      "years": [
+       1935
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-157127",
+      "fields": {
+       "title": "Coney Island",
+       "artist": "Andreas Feininger",
+       "year": "1949",
+       "medium": "gelatin silver print",
+       "dimensions": "Image: 34.2 x 27.2 cm (13 7/16 x 10 11/16 in.); Matted: 50.8 x 40.6 cm (20 x 16 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       1949
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-171726",
+      "fields": {
+       "title": "Coney Island",
+       "artist": "Leon Levinstein",
+       "year": "c. 1954",
+       "medium": "Gelatin silver print",
+       "dimensions": "Image: 32.3 x 46.5 cm (12 11/16 x 18 5/16 in.); Paper: 38.2 x 50.5 cm (15 1/16 x 19 7/8 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       1954
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-59820",
+      "fields": {
+       "title": "Tattoo and Haircut",
+       "artist": "Reginald Marsh",
+       "year": "1932",
+       "medium": "Egg tempera on Masonite",
+       "dimensions": "118.1 × 121.6 cm (46 1/2 × 47 7/8 in.)",
+       "classification": "tempera"
+      },
+      "years": [
+       1932
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-92936",
+      "fields": {
+       "title": "Maine Coast",
+       "artist": "Rockwell Kent",
+       "year": "1907",
+       "medium": "oil on canvas",
+       "dimensions": "Framed: 104.5 x 130.2 x 6.5 cm (41 1/8 x 51 1/4 x 2 9/16 in.); Unframed: 86.4 x 111.7 cm (34 x 44 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1907
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-125234",
+      "fields": {
+       "title": "Low Tide at Pourville, near Dieppe, 1882",
+       "artist": "Claude Monet",
+       "year": "1882",
+       "medium": "oil on fabric",
+       "dimensions": "Framed: 65.4 x 106.7 x 10.5 cm (25 3/4 x 42 x 4 1/8 in.); Unframed: 59.9 x 81.3 cm (23 9/16 x 32 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1882
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-86544",
+      "fields": {
+       "title": "Flying Ponies (Euclid Beach Park)",
+       "artist": "Carl Gaertner",
+       "year": "1932",
+       "medium": "oil on canvas",
+       "dimensions": "Unframed: 113 x 169.5 cm (44 1/2 x 66 3/4 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1932
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-39691",
+      "fields": {
+       "title": "Nantasket Beach",
+       "artist": "Emil Carlsen",
+       "year": "1876",
+       "medium": "Oil on canvas",
+       "dimensions": "38.7 × 66.8 cm (15 1/4 × 26 5/16 in.)",
+       "classification": "painting"
+      },
+      "years": [
+       1876
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-14598",
+      "fields": {
+       "title": "The Beach at Sainte-Adresse",
+       "artist": "Claude Monet",
+       "year": "1867",
+       "medium": "Oil on canvas",
+       "dimensions": "75.8 × 102.5 cm (29 13/16 × 40 5/16 in.); Framed: 104.1 × 130.2 × 11.4 cm (41 × 51 1/2 × 4 1/2 in.)",
+       "classification": "painting"
+      },
+      "years": [
+       1867
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-39247",
+      "fields": {
+       "title": "Ocean Park #45",
+       "artist": "Richard Diebenkorn",
+       "year": "1971",
+       "medium": "Oil on canvas",
+       "dimensions": "254 × 205.7 cm (100 × 81 in.)",
+       "classification": "painting"
+      },
+      "years": [
+       1971
+      ],
+      "internal_contradiction": false
+     }
+    ],
+    "prompt_audit": {
+     "status": "ok",
+     "system_prompt_dropped_suspected": false,
+     "instruction_tokens_expected": 625,
+     "prompt_tokens_delta": 0,
+     "prompt_tokens_ratio": 1.0,
+     "detail": "reported prompt_tokens 4515 is consistent with the instructions arriving (estimate 4515, delta +0)"
+    },
+    "prompt_tokens": 4515,
+    "llm": {
+     "error_type": null,
+     "is_truncated": false,
+     "truncation_reasons": [],
+     "prior_truncation": null,
+     "truncation_recovered": false,
+     "raw_content": "{\n  \"answer\": \"According to record cma-117571, Coney Island Beach by Reginald Marsh was made in 1935. The record lists its medium as etching and classifies it as a Print.\",\n  \"answerable\": true,\n  \"record_ids_used\": [\"cma-117571\"],\n  \"record_ids_excluded\": [\n    {\"id\": \"cma-157127\", \"reason\": \"Coney Island photograph by Andreas Feininger; different title, artist, and year (1949).\"},\n    {\"id\": \"cma-171726\", \"reason\": \"Coney Island photograph by Leon Levinstein; different artist and date (c. 1954).\"},\n    {\"id\": \"aic-59820\", \"reason\": \"Reginald Marsh work, but titled Tattoo and Haircut (1932), not Coney Island Beach.\"},\n    {\"id\": \"cma-92936\", \"reason\": \"Rockwell Kent painting unrelated to the question.\"},\n    {\"id\": \"cma-125234\", \"reason\": \"Monet painting of Pourville, unrelated to the question.\"},\n    {\"id\": \"cma-86544\", \"reason\": \"Carl Gaertner painting of Euclid Beach Park, unrelated to the question.\"},\n    {\"id\": \"aic-39691\", \"reason\": \"Emil Carlsen painting Nantasket Beach, unrelated to the question.\"},\n    {\"id\": \"aic-14598\", \"reason\": \"Monet painting The Beach at Sainte-Adresse, unrelated to the question.\"},\n    {\"id\": \"aic-39247\", \"reason\": \"Diebenkorn painting Ocean Park #45, unrelated to the question.\"}\n  ],\n  \"limitations\": \"Only one record matches the title and artist; the dimensions field is not recorded for this work, though that does not affect the answer.\"\n}"
+    }
+   },
+   "audit_inputs": {
+    "expected_with_instructions": 4515,
+    "expected_without_instructions": 3890,
+    "instruction_tokens": 625
+   },
+   "best_similarity": 0.7670131325721741,
+   "max_tokens": 1024,
+   "dropped_by_script": false,
+   "recorded": {
+    "model": "claude-haiku-5-5",
+    "provider": "anthropic",
+    "recorded_at": "2026-10-27T03:15:51.846032+00:00",
+    "model_calls": 1,
+    "tokens": 5088
+   },
+   "id": "q01",
+   "kind": "recorded",
+   "expect": "grounded answer (parent of s01)",
+   "question": "What year was Coney Island Beach by Reginald Marsh made?",
+   "seed": null,
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "1 valid source record(s) cited: ['cma-117571']"
+    },
+    "citation_groundedness": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All 1 citation(s) found in the 10-record RRF candidate set."
+    },
+    "confidence_capping": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "No cap required; confidence 0.88 (high)."
+    },
+    "prompt_integrity": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "reported prompt_tokens 4515 is consistent with the instructions arriving (estimate 4515, delta +0)"
+    },
+    "verifier.citation_membership": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "all citations valid"
+    },
+    "verifier.not_recorded_violation": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no violations detected across 1 [not recorded] field(s) in scope: ['cma-117571.dimensions']"
+    },
+    "verifier.factual_match": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "years consistent with cited records"
+    },
+    "verifier.not_truncated": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no truncation signal fired"
+    },
+    "deterministic_verdict": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All deterministic evaluators passed, or could not run (inconclusive) or did not apply."
+    },
+    "llm_judge_surrogate": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "PASS -- Answer is relevant, coherent and appears correct."
+    }
+   }
+  },
+  {
+   "payload": {
+    "question": "What is Louise Bourgeois's Ode to My Mother made of?",
+    "result": {
+     "question": "What is Louise Bourgeois's Ode to My Mother made of?",
+     "abstained": false,
+     "answer": "The corpus does not record what Louise Bourgeois's Ode to My Mother is made of. The only record that mentions Ode to My Mother (cma-160794) is a catalog entry for an etching and drypoint print titled \"Untitled\" (1995). That record describes the work as one of nine illustrations issued in a portfolio with poetic text, and it discusses the spider as a mother figure in Ode to My Mother. It does not state the materials of the Ode to My Mother series as a whole. The medium it lists (etching and drypoint) belongs to that specific print, and I cannot confirm from the corpus that it applies to the whole Ode to My Mother work.",
+     "answerable": false,
+     "record_ids_used": [
+      "cma-160794"
+     ],
+     "limitations": "The corpus has no record for Ode to My Mother itself, so its overall material is not recorded. The only related record is a print (etching and drypoint) from the same series, and its medium should not be assumed to describe the whole series. The record also does not list a title for the print beyond 'Untitled,' and its link to Ode to My Mother rests on its description.",
+     "full_provenance": [
+      {
+       "id": "cma-162294",
+       "category": "shown_not_cited",
+       "reason": "Bourgeois record for a wood sculpture, Blind Man's Buff (base); unrelated to Ode to My Mother."
+      },
+      {
+       "id": "cma-160794",
+       "category": "used",
+       "reason": null
+      },
+      {
+       "id": "cma-160059",
+       "category": "shown_not_cited",
+       "reason": "Bourgeois drypoint Sainte Sebastienne; a different work, does not mention Ode to My Mother."
+      },
+      {
+       "id": "aic-16324",
+       "category": "shown_not_cited",
+       "reason": "Corneille de Lyon portrait; unrelated artist and work."
+      },
+      {
+       "id": "aic-9320",
+       "category": "shown_not_cited",
+       "reason": "George Bellows painting My Mother; unrelated artist and work."
+      },
+      {
+       "id": "aic-23684",
+       "category": "shown_not_cited",
+       "reason": "Arshile Gorky charcoal drawing; unrelated artist and work."
+      },
+      {
+       "id": "aic-14647",
+       "category": "shown_not_cited",
+       "reason": "Renoir painting Young Woman Sewing; unrelated artist and work."
+      },
+      {
+       "id": "cma-132648",
+       "category": "shown_not_cited",
+       "reason": "Lipchitz bronze Mother and Child; unrelated artist and work."
+      },
+      {
+       "id": "cma-162292",
+       "category": "folded_into_group",
+       "reason": "Same title+artist match as representative cma-162294 -- treated as a duplicate record, not shown to the model independently (see entity_resolution.py)"
+      },
+      {
+       "id": "cma-162293",
+       "category": "folded_into_group",
+       "reason": "Same title+artist match as representative cma-162294 -- treated as a duplicate record, not shown to the model independently (see entity_resolution.py)"
+      }
+     ],
+     "confidence": {
+      "score": null,
+      "label": "not_applicable",
+      "reason": "the model set answerable=false, so no factual claim was asserted and there is nothing to be confident about. Records WERE cited (see record_ids_used), so the checks below did run against them -- but a pass rate on a response that asserts nothing is not evidence about anything, and is deliberately not converted into a score.",
+      "components": null
+     },
+     "verification_checks": {
+      "citation_membership": {
+       "passed": true,
+       "detail": "all citations valid"
+      },
+      "not_recorded_violation": {
+       "passed": true,
+       "detail": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+      },
+      "factual_match": {
+       "passed": true,
+       "detail": "years consistent with cited records"
+      },
+      "not_truncated": {
+       "passed": true,
+       "detail": "no truncation signal fired"
+      }
+     },
+     "retrieval_signals": {
+      "dense_similarity": 0.7964347004890442,
+      "bm25_max": 40.36045738505037,
+      "dense_threshold": 0.35,
+      "bm25_threshold": 19.5,
+      "dense_below_threshold": false,
+      "bm25_below_threshold": false,
+      "abstain_reasons": []
+     },
+     "is_truncated": false,
+     "truncation_recovered": false,
+     "prior_truncation": null,
+     "call_seq": "req_011CgS1rFF4nn9nJC9H8gtEV",
+     "budget_remaining": null
+    },
+    "candidate_ids": [
+     "cma-160794",
+     "cma-160059",
+     "cma-162292",
+     "aic-16324",
+     "aic-9320",
+     "cma-162294",
+     "aic-23684",
+     "cma-162293",
+     "aic-14647",
+     "cma-132648"
+    ],
+    "context_blocks": [
+     {
+      "id": "cma-162294",
+      "fields": {
+       "title": "Blind Man's Buff (base)",
+       "artist": "Louise Bourgeois",
+       "year": "1984",
+       "medium": "wood",
+       "dimensions": "Overall: 49 x 80 x 49 cm (19 5/16 x 31 1/2 x 19 5/16 in.)",
+       "classification": "Sculpture"
+      },
+      "years": [
+       1984
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-160794",
+      "fields": {
+       "title": "Untitled",
+       "artist": "Louise Bourgeois",
+       "year": "1995",
+       "medium": "etching and drypoint",
+       "dimensions": "Platemark: 25.1 x 10.2 cm (9 7/8 x 4 in.); Sheet: 29.8 x 29.9 cm (11 3/4 x 11 3/4 in.)",
+       "classification": "Print"
+      },
+      "years": [
+       1995
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-160059",
+      "fields": {
+       "title": "Ste Sebastienne",
+       "artist": "Louise Bourgeois",
+       "year": "1992",
+       "medium": "drypoint",
+       "dimensions": "Sheet: 120.4 x 94.5 cm (47 3/8 x 37 3/16 in.); Platemark: 98.7 x 78.3 cm (38 7/8 x 30 13/16 in.)",
+       "classification": "Print"
+      },
+      "years": [
+       1992
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-16324",
+      "fields": {
+       "title": "Portrait of Louise de Halluin, dame de Cipierre",
+       "artist": "Corneille de Lyon",
+       "year": "c. 1555",
+       "medium": "Oil on panel",
+       "dimensions": "21.4 × 17.8 cm (8 7/16 × 7 in.)",
+       "classification": "oil on panel"
+      },
+      "years": [
+       1555
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-9320",
+      "fields": {
+       "title": "My Mother",
+       "artist": "George Wesley Bellows",
+       "year": "March 1921",
+       "medium": "Oil on canvas",
+       "dimensions": "210.8 × 124.5 cm (83 × 49 in.)",
+       "classification": "painting"
+      },
+      "years": [
+       1921
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-23684",
+      "fields": {
+       "title": "The Artist's Mother",
+       "artist": "Arshile Gorky",
+       "year": "1926 or 1936",
+       "medium": "Charcoal on ivory laid paper",
+       "dimensions": "63 × 48.5 cm (24 13/16 × 19 1/8 in.)",
+       "classification": "charcoal"
+      },
+      "years": [
+       1926,
+       1936
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-14647",
+      "fields": {
+       "title": "Young Woman Sewing",
+       "artist": "Pierre-Auguste Renoir",
+       "year": "1879",
+       "medium": "Oil on canvas",
+       "dimensions": "61.4 × 50.5 cm (24 3/16 × 19 7/8 in.); Framed: 84.2 × 75 × 10.5 cm (33 1/8 × 29 1/2 × 4 1/8 in.)",
+       "classification": "painting"
+      },
+      "years": [
+       1879
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-132648",
+      "fields": {
+       "title": "Mother and Child",
+       "artist": "Jacques Lipchitz",
+       "year": "1929–1930",
+       "medium": "bronze",
+       "dimensions": "Overall: 130.2 x 90.2 x 87.7 cm (51 1/4 x 35 1/2 x 34 1/2 in.)",
+       "classification": "Sculpture"
+      },
+      "years": [
+       1929,
+       1930
+      ],
+      "internal_contradiction": false
+     }
+    ],
+    "prompt_audit": {
+     "status": "ok",
+     "system_prompt_dropped_suspected": false,
+     "instruction_tokens_expected": 625,
+     "prompt_tokens_delta": 0,
+     "prompt_tokens_ratio": 1.0,
+     "detail": "reported prompt_tokens 4136 is consistent with the instructions arriving (estimate 4136, delta +0)"
+    },
+    "prompt_tokens": 4136,
+    "llm": {
+     "error_type": null,
+     "is_truncated": false,
+     "truncation_reasons": [],
+     "prior_truncation": null,
+     "truncation_recovered": false,
+     "raw_content": "{\n  \"answer\": \"The corpus does not record what Louise Bourgeois's Ode to My Mother is made of. The only record that mentions Ode to My Mother (cma-160794) is a catalog entry for an etching and drypoint print titled \\\"Untitled\\\" (1995). That record describes the work as one of nine illustrations issued in a portfolio with poetic text, and it discusses the spider as a mother figure in Ode to My Mother. It does not state the materials of the Ode to My Mother series as a whole. The medium it lists (etching and drypoint) belongs to that specific print, and I cannot confirm from the corpus that it applies to the whole Ode to My Mother work.\",\n  \"answerable\": false,\n  \"record_ids_used\": [\"cma-160794\"],\n  \"record_ids_excluded\": [\n    {\"id\": \"cma-162294\", \"reason\": \"Bourgeois record for a wood sculpture, Blind Man's Buff (base); unrelated to Ode to My Mother.\"},\n    {\"id\": \"cma-160059\", \"reason\": \"Bourgeois drypoint Sainte Sebastienne; a different work, does not mention Ode to My Mother.\"},\n    {\"id\": \"aic-16324\", \"reason\": \"Corneille de Lyon portrait; unrelated artist and work.\"},\n    {\"id\": \"aic-9320\", \"reason\": \"George Bellows painting My Mother; unrelated artist and work.\"},\n    {\"id\": \"aic-23684\", \"reason\": \"Arshile Gorky charcoal drawing; unrelated artist and work.\"},\n    {\"id\": \"aic-14647\", \"reason\": \"Renoir painting Young Woman Sewing; unrelated artist and work.\"},\n    {\"id\": \"cma-132648\", \"reason\": \"Lipchitz bronze Mother and Child; unrelated artist and work.\"}\n  ],\n  \"limitations\": \"The corpus has no record for Ode to My Mother itself, so its overall material is not recorded. The only related record is a print (etching and drypoint) from the same series, and its medium should not be assumed to describe the whole series. The record also does not list a title for the print beyond 'Untitled,' and its link to Ode to My Mother rests on its description.\"\n}"
+    }
+   },
+   "audit_inputs": {
+    "expected_with_instructions": 4136,
+    "expected_without_instructions": 3511,
+    "instruction_tokens": 625
+   },
+   "best_similarity": 0.7964347004890442,
+   "max_tokens": 1024,
+   "dropped_by_script": false,
+   "recorded": {
+    "model": "claude-haiku-5-5",
+    "provider": "anthropic",
+    "recorded_at": "2026-10-27T03:15:55.629882+00:00",
+    "model_calls": 1,
+    "tokens": 4856
+   },
+   "id": "q02",
+   "kind": "recorded",
+   "expect": "grounded answer",
+   "question": "What is Louise Bourgeois's Ode to My Mother made of?",
+   "seed": null,
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "1 valid source record(s) cited: ['cma-160794']"
+    },
+    "citation_groundedness": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All 1 citation(s) found in the 10-record RRF candidate set."
+    },
+    "confidence_capping": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "No cap required; confidence None (not_applicable)."
+    },
+    "prompt_integrity": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "reported prompt_tokens 4136 is consistent with the instructions arriving (estimate 4136, delta +0)"
+    },
+    "verifier.citation_membership": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "all citations valid"
+    },
+    "verifier.not_recorded_violation": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+    },
+    "verifier.factual_match": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "years consistent with cited records"
+    },
+    "verifier.not_truncated": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no truncation signal fired"
+    },
+    "deterministic_verdict": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All deterministic evaluators passed, or could not run (inconclusive) or did not apply."
+    },
+    "llm_judge_surrogate": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "PASS -- Answer is relevant, coherent and appears correct."
+    }
+   }
+  },
+  {
+   "payload": {
+    "question": "When was Omer Fast's The Casting made?",
+    "result": {
+     "question": "When was Omer Fast's The Casting made?",
+     "abstained": false,
+     "answer": "The corpus records Omer Fast's The Casting with a year of 2007 (record cma-168184, Cleveland Museum of Art, accession 2009.8).",
+     "answerable": true,
+     "record_ids_used": [
+      "cma-168184"
+     ],
+     "limitations": "The record gives the year 2007 for the work, which is the creation date as listed; the record does not separately specify a month or day. The record is for a four-channel video installation edition 4/6, and the year refers to that catalog entry.",
+     "full_provenance": [
+      {
+       "id": "cma-453146",
+       "category": "shown_not_cited",
+       "reason": "Catalog entry for a different work (Standing Apostle by the Master of the Saint-Omer Apostles); not relevant to Omer Fast's The Casting."
+      },
+      {
+       "id": "cma-168184",
+       "category": "used",
+       "reason": null
+      },
+      {
+       "id": "aic-41711",
+       "category": "shown_not_cited",
+       "reason": "Engraving 'Omer Talon' by Claude Mellan; shares the name 'Omer' but is unrelated to the requested work."
+      },
+      {
+       "id": "cma-453144",
+       "category": "shown_not_cited",
+       "reason": "Catalog entry for a different alabaster sculpture pair; not relevant."
+      },
+      {
+       "id": "cma-124115",
+       "category": "shown_not_cited",
+       "reason": "Roelant Savery drawings; not relevant."
+      },
+      {
+       "id": "cma-160089",
+       "category": "shown_not_cited",
+       "reason": "Herter Brothers fire screen; not relevant."
+      },
+      {
+       "id": "cma-134703",
+       "category": "shown_not_cited",
+       "reason": "Pre-Columbian lime dipper; not relevant."
+      },
+      {
+       "id": "aic-38141",
+       "category": "shown_not_cited",
+       "reason": "August Sander photograph; not relevant."
+      },
+      {
+       "id": "aic-46992",
+       "category": "shown_not_cited",
+       "reason": "August Sander photograph; not relevant."
+      },
+      {
+       "id": "cma-453145",
+       "category": "folded_into_group",
+       "reason": "Same title+artist match as representative cma-453146 -- treated as a duplicate record, not shown to the model independently (see entity_resolution.py)"
+      }
+     ],
+     "confidence": {
+      "score": 0.89,
+      "label": "high",
+      "components": {
+       "retrieval_score": 0.78,
+       "verification_score": 1.0,
+       "contradiction_penalty": 0.0,
+       "label_capped_by_failed_check": false
+      }
+     },
+     "verification_checks": {
+      "citation_membership": {
+       "passed": true,
+       "detail": "all citations valid"
+      },
+      "not_recorded_violation": {
+       "passed": true,
+       "detail": "no violations detected across 1 [not recorded] field(s) in scope: ['cma-168184.dimensions']"
+      },
+      "factual_match": {
+       "passed": true,
+       "detail": "years consistent with cited records"
+      },
+      "not_truncated": {
+       "passed": true,
+       "detail": "no truncation signal fired"
+      }
+     },
+     "retrieval_signals": {
+      "dense_similarity": 0.776326596736908,
+      "bm25_max": 26.989251760642162,
+      "dense_threshold": 0.35,
+      "bm25_threshold": 19.5,
+      "dense_below_threshold": false,
+      "bm25_below_threshold": false,
+      "abstain_reasons": []
+     },
+     "is_truncated": false,
+     "truncation_recovered": false,
+     "prior_truncation": null,
+     "call_seq": "req_011CgS1rWteCrhJsbru7NcPy",
+     "budget_remaining": null
+    },
+    "candidate_ids": [
+     "cma-168184",
+     "cma-453145",
+     "aic-41711",
+     "cma-453144",
+     "cma-453146",
+     "cma-124115",
+     "cma-160089",
+     "cma-134703",
+     "aic-38141",
+     "aic-46992"
+    ],
+    "context_blocks": [
+     {
+      "id": "cma-453146",
+      "fields": {
+       "title": "Standing Apostle (Probably Saint John the Evangelist)",
+       "artist": "Master of the Saint-Omer Apostles",
+       "year": "c. 1430",
+       "medium": "Alabaster",
+       "dimensions": "Overall: 23.7 x 10.2 x 5.9 cm (9 5/16 x 4 x 2 5/16 in.)",
+       "classification": "Sculpture"
+      },
+      "years": [
+       1430
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-168184",
+      "fields": {
+       "title": "The Casting",
+       "artist": "Omer Fast",
+       "year": "2007",
+       "medium": "Four-channel video installation, color, sound; 14 minutes; edition 4/6 (Commissioned by the Museum Moderner Kunst Stiftung Ludwig Wien)",
+       "dimensions": "[not recorded]",
+       "classification": "Time-based Media"
+      },
+      "years": [
+       2007
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-41711",
+      "fields": {
+       "title": "Omer Talon",
+       "artist": "Claude Mellan",
+       "year": "1645/52",
+       "medium": "Engraving on paper",
+       "dimensions": "Plate: 27.4 × 19.7 cm (10 13/16 × 7 13/16 in.); Sheet: 31.5 × 23.4 cm (12 7/16 × 9 1/4 in.)",
+       "classification": "etching"
+      },
+      "years": [
+       1645,
+       1652
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-453144",
+      "fields": {
+       "title": "Two Standing Apostles (probably Saint John the Evangelist and St. Paul)",
+       "artist": "Master of the Saint-Omer Apostles",
+       "year": "c. 1430",
+       "medium": "Alabaster",
+       "dimensions": "Overall: 23.7 x 9.3 x 5.8 cm (9 5/16 x 3 11/16 x 2 5/16 in.); Overall: 23.7 x 10.2 x 5.9 cm (9 5/16 x 4 x 2 5/16 in.)",
+       "classification": "Sculpture"
+      },
+      "years": [
+       1430
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-124115",
+      "fields": {
+       "title": "Two Bohemian Peasants in Half-Length",
+       "artist": "Roelant Savery",
+       "year": "c. 1600",
+       "medium": "Pen and light- and dark-brown inks over preliminary drawing in black chalk; framing lines in pen and brown ink",
+       "dimensions": "Sheet: 15.1 x 18.8 cm (5 15/16 x 7 3/8 in.)",
+       "classification": "Drawing"
+      },
+      "years": [
+       1600
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-160089",
+      "fields": {
+       "title": "Fire Screen",
+       "artist": "Herter Brothers",
+       "year": "c. 1878–80",
+       "medium": "gilded wood, painted and gilded wood panels, brocaded silk, embossed paper",
+       "dimensions": "Overall: 131.8 x 76.2 x 58.3 cm (51 7/8 x 30 x 22 15/16 in.)",
+       "classification": "Furniture and woodwork"
+      },
+      "years": [
+       1878,
+       1880
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-134703",
+      "fields": {
+       "title": "Lime Dipper",
+       "artist": "[not recorded]",
+       "year": "c. 1–800 CE",
+       "medium": "gold",
+       "dimensions": "Overall: 25.6 cm (10 1/16 in.)",
+       "classification": "Metalwork"
+      },
+      "years": [],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-38141",
+      "fields": {
+       "title": "The Woman of Advanced Intellect (The Intellectual) (Die Frau im fortgeschrittenen Intellekt [Die Intellektuelle])",
+       "artist": "August Sander",
+       "year": "1914, printed later",
+       "medium": "Gelatin silver print",
+       "dimensions": "Image: 29.4 × 23.2 cm (11 5/8 × 9 3/16 in.); Paper: 30 × 23.9 cm (11 13/16 × 9 7/16 in.)",
+       "classification": "gelatin silver (developing-out-paper) pr"
+      },
+      "years": [
+       1914
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-46992",
+      "fields": {
+       "title": "Peasant Children, Westerwald",
+       "artist": "August Sander",
+       "year": "1927/31, printed later",
+       "medium": "Gelatin silver print, printed by the artist's son, Gunther Sander",
+       "dimensions": "Image/paper: 26.7 × 35.7 cm (10 9/16 × 14 1/16 in.); Mount: 32.5 × 43.1 cm (12 13/16 × 17 in.)",
+       "classification": "gelatin silver (developing-out-paper) pr"
+      },
+      "years": [
+       1927,
+       1931
+      ],
+      "internal_contradiction": false
+     }
+    ],
+    "prompt_audit": {
+     "status": "ok",
+     "system_prompt_dropped_suspected": false,
+     "instruction_tokens_expected": 625,
+     "prompt_tokens_delta": 0,
+     "prompt_tokens_ratio": 1.0,
+     "detail": "reported prompt_tokens 4319 is consistent with the instructions arriving (estimate 4319, delta +0)"
+    },
+    "prompt_tokens": 4319,
+    "llm": {
+     "error_type": null,
+     "is_truncated": false,
+     "truncation_reasons": [],
+     "prior_truncation": null,
+     "truncation_recovered": false,
+     "raw_content": "{\n  \"answer\": \"The corpus records Omer Fast's The Casting with a year of 2007 (record cma-168184, Cleveland Museum of Art, accession 2009.8).\",\n  \"answerable\": true,\n  \"record_ids_used\": [\"cma-168184\"],\n  \"record_ids_excluded\": [\n    {\"id\": \"cma-453146\", \"reason\": \"Catalog entry for a different work (Standing Apostle by the Master of the Saint-Omer Apostles); not relevant to Omer Fast's The Casting.\"},\n    {\"id\": \"aic-41711\", \"reason\": \"Engraving 'Omer Talon' by Claude Mellan; shares the name 'Omer' but is unrelated to the requested work.\"},\n    {\"id\": \"cma-453144\", \"reason\": \"Catalog entry for a different alabaster sculpture pair; not relevant.\"},\n    {\"id\": \"cma-124115\", \"reason\": \"Roelant Savery drawings; not relevant.\"},\n    {\"id\": \"cma-160089\", \"reason\": \"Herter Brothers fire screen; not relevant.\"},\n    {\"id\": \"cma-134703\", \"reason\": \"Pre-Columbian lime dipper; not relevant.\"},\n    {\"id\": \"aic-38141\", \"reason\": \"August Sander photograph; not relevant.\"},\n    {\"id\": \"aic-46992\", \"reason\": \"August Sander photograph; not relevant.\"}\n  ],\n  \"limitations\": \"The record gives the year 2007 for the work, which is the creation date as listed; the record does not separately specify a month or day. The record is for a four-channel video installation edition 4/6, and the year refers to that catalog entry.\"\n}"
+    }
+   },
+   "audit_inputs": {
+    "expected_with_instructions": 4319,
+    "expected_without_instructions": 3694,
+    "instruction_tokens": 625
+   },
+   "best_similarity": 0.776326596736908,
+   "max_tokens": 1024,
+   "dropped_by_script": false,
+   "recorded": {
+    "model": "claude-haiku-5-5",
+    "provider": "anthropic",
+    "recorded_at": "2026-10-27T03:15:58.342994+00:00",
+    "model_calls": 1,
+    "tokens": 4858
+   },
+   "id": "q03",
+   "kind": "recorded",
+   "expect": "grounded answer",
+   "question": "When was Omer Fast's The Casting made?",
+   "seed": null,
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "1 valid source record(s) cited: ['cma-168184']"
+    },
+    "citation_groundedness": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All 1 citation(s) found in the 10-record RRF candidate set."
+    },
+    "confidence_capping": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "No cap required; confidence 0.89 (high)."
+    },
+    "prompt_integrity": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "reported prompt_tokens 4319 is consistent with the instructions arriving (estimate 4319, delta +0)"
+    },
+    "verifier.citation_membership": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "all citations valid"
+    },
+    "verifier.not_recorded_violation": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no violations detected across 1 [not recorded] field(s) in scope: ['cma-168184.dimensions']"
+    },
+    "verifier.factual_match": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "years consistent with cited records"
+    },
+    "verifier.not_truncated": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no truncation signal fired"
+    },
+    "deterministic_verdict": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All deterministic evaluators passed, or could not run (inconclusive) or did not apply."
+    },
+    "llm_judge_surrogate": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "PASS -- Answer is relevant, coherent and appears correct."
+    }
+   }
+  },
+  {
+   "payload": {
+    "question": "When was Jeff Brouws's Railroad Landscape #33 in Pine Plains, New York made?",
+    "result": {
+     "question": "When was Jeff Brouws's Railroad Landscape #33 in Pine Plains, New York made?",
+     "abstained": false,
+     "answer": "The record for Railroad Landscape #33, Newburgh, Dutchess & Connecticut Right-of-Way, Abandoned 1938, MP 16, View South, Winter, Pine Plains, New York (artist Jeff Brouws) gives the date as 2009, printed 2010 (parsed as [2009, 2010]). The work is an inkjet print.",
+     "answerable": true,
+     "record_ids_used": [
+      "cma-169223"
+     ],
+     "limitations": "The record gives a range rather than a single date: created 2009 and printed 2010. The record does not specify which of these dates is the making date of the specific print.",
+     "full_provenance": [
+      {
+       "id": "cma-169223",
+       "category": "used",
+       "reason": null
+      },
+      {
+       "id": "aic-45778",
+       "category": "shown_not_cited",
+       "reason": "Different artist (William Henry Jackson) and subject (Patterson's Creek, B & O Railroad); not the requested work."
+      },
+      {
+       "id": "cma-161701",
+       "category": "shown_not_cited",
+       "reason": "Unrelated work (Viktor Schreckengost and Cowan Pottery jazz bowl)."
+      },
+      {
+       "id": "cma-172954",
+       "category": "shown_not_cited",
+       "reason": "Unrelated work (Edward Hopper, Hills, South Truro)."
+      },
+      {
+       "id": "aic-33212",
+       "category": "shown_not_cited",
+       "reason": "Unrelated work (Guillaumin, Arcueil Aqueduct); railroad subject only superficially similar."
+      },
+      {
+       "id": "aic-15566",
+       "category": "shown_not_cited",
+       "reason": "Unrelated work (H. C. Westermann sculpture)."
+      },
+      {
+       "id": "cma-118490",
+       "category": "shown_not_cited",
+       "reason": "Unrelated work (William Glackens, The Drive, Central Park)."
+      },
+      {
+       "id": "aic-32753",
+       "category": "shown_not_cited",
+       "reason": "Unrelated work (Jacob van Ruisdael etching)."
+      },
+      {
+       "id": "cma-93014",
+       "category": "shown_not_cited",
+       "reason": "Unrelated work (Thomas Cole, Schroon Mountain)."
+      },
+      {
+       "id": "aic-2923",
+       "category": "shown_not_cited",
+       "reason": "Unrelated work (John Marin watercolor)."
+      }
+     ],
+     "confidence": {
+      "score": 0.88,
+      "label": "high",
+      "components": {
+       "retrieval_score": 0.75,
+       "verification_score": 1.0,
+       "contradiction_penalty": 0.0,
+       "label_capped_by_failed_check": false
+      }
+     },
+     "verification_checks": {
+      "citation_membership": {
+       "passed": true,
+       "detail": "all citations valid"
+      },
+      "not_recorded_violation": {
+       "passed": true,
+       "detail": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+      },
+      "factual_match": {
+       "passed": true,
+       "detail": "years consistent with cited records"
+      },
+      "not_truncated": {
+       "passed": true,
+       "detail": "no truncation signal fired"
+      }
+     },
+     "retrieval_signals": {
+      "dense_similarity": 0.7541812062263489,
+      "bm25_max": 60.535692503230806,
+      "dense_threshold": 0.35,
+      "bm25_threshold": 19.5,
+      "dense_below_threshold": false,
+      "bm25_below_threshold": false,
+      "abstain_reasons": []
+     },
+     "is_truncated": false,
+     "truncation_recovered": false,
+     "prior_truncation": null,
+     "call_seq": "req_011CgS1rj6rpJGqrq21oLpiw",
+     "budget_remaining": null
+    },
+    "candidate_ids": [
+     "cma-169223",
+     "aic-45778",
+     "cma-161701",
+     "cma-172954",
+     "aic-33212",
+     "aic-15566",
+     "cma-118490",
+     "aic-32753",
+     "cma-93014",
+     "aic-2923"
+    ],
+    "context_blocks": [
+     {
+      "id": "cma-169223",
+      "fields": {
+       "title": "Railroad Landscape #33, Newburgh, Dutchess & Connecticut Right-of-Way, Abandoned 1938, MP 16, View South, Winter, Pine Plains, New York",
+       "artist": "Jeff Brouws",
+       "year": "2009, printed 2010",
+       "medium": "inkjet print",
+       "dimensions": "Image: 83.7 x 101.6 cm (32 15/16 x 40 in.); Paper: 93.9 x 111.7 cm (36 15/16 x 44 in.); Mounted: 93.9 x 111.7 cm (36 15/16 x 44 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       2009,
+       2010
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-45778",
+      "fields": {
+       "title": "Mouth of Patterson's Creek, Main Line, B & O Railroad",
+       "artist": "William Henry Jackson",
+       "year": "1892",
+       "medium": "Albumen print",
+       "dimensions": "Image/paper: 43.8 × 53.8 cm (17 1/4 × 21 3/16 in.); Mount: 53.9 × 67.3 cm (21 1/4 × 26 1/2 in.)",
+       "classification": "albumen silver print"
+      },
+      "years": [
+       1892
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-161701",
+      "fields": {
+       "title": "New Year's Eve in New York City (Jazz Bowl)",
+       "artist": "Viktor Schreckengost and Cowan Pottery Studio",
+       "year": "1931",
+       "medium": "glazed ceramic with sgraffito design",
+       "dimensions": "Overall: 28.6 x 41.3 cm (11 1/4 x 16 1/4 in.)",
+       "classification": "Ceramic"
+      },
+      "years": [
+       1931
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-172954",
+      "fields": {
+       "title": "Hills, South Truro",
+       "artist": "Edward Hopper",
+       "year": "1930",
+       "medium": "oil on canvas",
+       "dimensions": "Framed: 83 x 123.5 x 6.5 cm (32 11/16 x 48 5/8 x 2 9/16 in.); Unframed: 69.5 x 109.5 cm (27 3/8 x 43 1/8 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1930
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-33212",
+      "fields": {
+       "title": "The Arcueil Aqueduct at Sceaux Railroad Crossing",
+       "artist": "Jean Baptiste Armand Guillaumin",
+       "year": "1874",
+       "medium": "Oil on canvas",
+       "dimensions": "51.5 × 65 cm (20 1/4 × 25 9/16 in.); Framed: 71.2 × 86.4 × 11.5 cm (28 × 34 × 4 1/2 in.)",
+       "classification": "oil on canvas"
+      },
+      "years": [
+       1874
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-15566",
+      "fields": {
+       "title": "The Mysteriously Abandoned New Home",
+       "artist": "H. C. Westermann",
+       "year": "1958",
+       "medium": "Pine, birch, vermillion, redwood, glass, paint, and wheels",
+       "dimensions": "212.3 × 57.4 × 55.2 cm (83 5/8 × 22 5/8 × 21 3/4 in.)",
+       "classification": "sculpture"
+      },
+      "years": [
+       1958
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-118490",
+      "fields": {
+       "title": "The Drive, Central Park",
+       "artist": "William Glackens",
+       "year": "c. 1905",
+       "medium": "oil on canvas",
+       "dimensions": "Framed: 84.1 x 99.4 x 9.5 cm (33 1/8 x 39 1/8 x 3 3/4 in.); Unframed: 64.5 x 81 cm (25 3/8 x 31 7/8 in.); Former: 84 x 99 x 11.5 cm (33 1/16 x 39 x 4 1/2 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1905
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-32753",
+      "fields": {
+       "title": "Cottage at the Top of a Hill",
+       "artist": "Jacob van Ruisdael",
+       "year": "c. 1660",
+       "medium": "Etching in black on ivory laid paper",
+       "dimensions": "Image/plate: 18.6 × 26.8 cm (7 3/8 × 10 9/16 in.); Sheet: 19.6 × 27.7 cm (7 3/4 × 10 15/16 in.)",
+       "classification": "etching"
+      },
+      "years": [
+       1660
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-93014",
+      "fields": {
+       "title": "View of Schroon Mountain, Essex County, New York, After a Storm",
+       "artist": "Thomas Cole",
+       "year": "1838",
+       "medium": "oil on canvas",
+       "dimensions": "Framed: 132.5 x 193.5 x 13 cm (52 3/16 x 76 3/16 x 5 1/8 in.); Unframed: 99.8 x 160.6 cm (39 5/16 x 63 1/4 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1838
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-2923",
+      "fields": {
+       "title": "Buildings",
+       "artist": "John Marin",
+       "year": "c. 1910",
+       "medium": "Watercolor with blotting, over graphite, on lightweight, slightly textured, off-white wove paper, laid down on ivory wove card",
+       "dimensions": "18.7 × 23.1 cm (7 3/8 × 9 1/8 in.)",
+       "classification": "watercolor"
+      },
+      "years": [
+       1910
+      ],
+      "internal_contradiction": false
+     }
+    ],
+    "prompt_audit": {
+     "status": "ok",
+     "system_prompt_dropped_suspected": false,
+     "instruction_tokens_expected": 625,
+     "prompt_tokens_delta": 0,
+     "prompt_tokens_ratio": 1.0,
+     "detail": "reported prompt_tokens 4829 is consistent with the instructions arriving (estimate 4829, delta +0)"
+    },
+    "prompt_tokens": 4829,
+    "llm": {
+     "error_type": null,
+     "is_truncated": false,
+     "truncation_reasons": [],
+     "prior_truncation": null,
+     "truncation_recovered": false,
+     "raw_content": "{\n  \"answer\": \"The record for Railroad Landscape #33, Newburgh, Dutchess & Connecticut Right-of-Way, Abandoned 1938, MP 16, View South, Winter, Pine Plains, New York (artist Jeff Brouws) gives the date as 2009, printed 2010 (parsed as [2009, 2010]). The work is an inkjet print.\",\n  \"answerable\": true,\n  \"record_ids_used\": [\"cma-169223\"],\n  \"record_ids_excluded\": [\n    {\"id\": \"aic-45778\", \"reason\": \"Different artist (William Henry Jackson) and subject (Patterson's Creek, B & O Railroad); not the requested work.\"},\n    {\"id\": \"cma-161701\", \"reason\": \"Unrelated work (Viktor Schreckengost and Cowan Pottery jazz bowl).\"},\n    {\"id\": \"cma-172954\", \"reason\": \"Unrelated work (Edward Hopper, Hills, South Truro).\"},\n    {\"id\": \"aic-33212\", \"reason\": \"Unrelated work (Guillaumin, Arcueil Aqueduct); railroad subject only superficially similar.\"},\n    {\"id\": \"aic-15566\", \"reason\": \"Unrelated work (H. C. Westermann sculpture).\"},\n    {\"id\": \"cma-118490\", \"reason\": \"Unrelated work (William Glackens, The Drive, Central Park).\"},\n    {\"id\": \"aic-32753\", \"reason\": \"Unrelated work (Jacob van Ruisdael etching).\"},\n    {\"id\": \"cma-93014\", \"reason\": \"Unrelated work (Thomas Cole, Schroon Mountain).\"},\n    {\"id\": \"aic-2923\", \"reason\": \"Unrelated work (John Marin watercolor).\"}\n  ],\n  \"limitations\": \"The record gives a range rather than a single date: created 2009 and printed 2010. The record does not specify which of these dates is the making date of the specific print.\"\n}"
+    }
+   },
+   "audit_inputs": {
+    "expected_with_instructions": 4829,
+    "expected_without_instructions": 4204,
+    "instruction_tokens": 625
+   },
+   "best_similarity": 0.7541812062263489,
+   "max_tokens": 1024,
+   "dropped_by_script": false,
+   "recorded": {
+    "model": "claude-haiku-5-5",
+    "provider": "anthropic",
+    "recorded_at": "2026-10-27T03:16:01.716820+00:00",
+    "model_calls": 1,
+    "tokens": 5479
+   },
+   "id": "q04",
+   "kind": "recorded",
+   "expect": "grounded answer",
+   "question": "When was Jeff Brouws's Railroad Landscape #33 in Pine Plains, New York made?",
+   "seed": null,
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "1 valid source record(s) cited: ['cma-169223']"
+    },
+    "citation_groundedness": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All 1 citation(s) found in the 10-record RRF candidate set."
+    },
+    "confidence_capping": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "No cap required; confidence 0.88 (high)."
+    },
+    "prompt_integrity": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "reported prompt_tokens 4829 is consistent with the instructions arriving (estimate 4829, delta +0)"
+    },
+    "verifier.citation_membership": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "all citations valid"
+    },
+    "verifier.not_recorded_violation": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+    },
+    "verifier.factual_match": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "years consistent with cited records"
+    },
+    "verifier.not_truncated": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no truncation signal fired"
+    },
+    "deterministic_verdict": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All deterministic evaluators passed, or could not run (inconclusive) or did not apply."
+    },
+    "llm_judge_surrogate": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "PASS -- Answer is relevant, coherent and appears correct."
+    }
+   }
+  },
+  {
+   "payload": {
+    "question": "What medium is Helen Frankenthaler's Humming Gold?",
+    "result": {
+     "question": "What medium is Helen Frankenthaler's Humming Gold?",
+     "abstained": false,
+     "answer": "According to record cma-167554, the medium of Helen Frankenthaler's Humming Gold (1971) is acrylic on canvas.",
+     "answerable": true,
+     "record_ids_used": [
+      "cma-167554"
+     ],
+     "limitations": "The record is a single source with no contradictions noted.",
+     "full_provenance": [
+      {
+       "id": "cma-167554",
+       "category": "used",
+       "reason": null
+      },
+      {
+       "id": "cma-169335",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Pae White, Smoke); not relevant to Humming Gold's medium."
+      },
+      {
+       "id": "cma-134236",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Manet, Claire Campbell)."
+      },
+      {
+       "id": "cma-615444",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Emma Amos, Helen Evans Ramsaran)."
+      },
+      {
+       "id": "cma-124080",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Gainsborough, Portrait of Mary Wise)."
+      },
+      {
+       "id": "aic-41600",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Brosamer, Judgment of Paris)."
+      },
+      {
+       "id": "aic-16812",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Winslow Homer, The Outlook, Maine Coast)."
+      },
+      {
+       "id": "aic-25671",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Frank Stella, De la nada vida a la nada muerte)."
+      },
+      {
+       "id": "cma-684923",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Meissonnier, Gold Box)."
+      },
+      {
+       "id": "aic-10509",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Tintoretto, Saint Helen Testing the True Cross)."
+      }
+     ],
+     "confidence": {
+      "score": 0.89,
+      "label": "high",
+      "components": {
+       "retrieval_score": 0.78,
+       "verification_score": 1.0,
+       "contradiction_penalty": 0.0,
+       "label_capped_by_failed_check": false
+      }
+     },
+     "verification_checks": {
+      "citation_membership": {
+       "passed": true,
+       "detail": "all citations valid"
+      },
+      "not_recorded_violation": {
+       "passed": true,
+       "detail": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+      },
+      "factual_match": {
+       "passed": true,
+       "detail": "years consistent with cited records"
+      },
+      "not_truncated": {
+       "passed": true,
+       "detail": "no truncation signal fired"
+      }
+     },
+     "retrieval_signals": {
+      "dense_similarity": 0.7837914824485779,
+      "bm25_max": 34.161120120837516,
+      "dense_threshold": 0.35,
+      "bm25_threshold": 19.5,
+      "dense_below_threshold": false,
+      "bm25_below_threshold": false,
+      "abstain_reasons": []
+     },
+     "is_truncated": false,
+     "truncation_recovered": false,
+     "prior_truncation": null,
+     "call_seq": "req_011CgS1rz5mTTp7GyFehDgY4",
+     "budget_remaining": null
+    },
+    "candidate_ids": [
+     "cma-167554",
+     "cma-169335",
+     "cma-134236",
+     "cma-615444",
+     "cma-124080",
+     "aic-41600",
+     "aic-16812",
+     "aic-25671",
+     "cma-684923",
+     "aic-10509"
+    ],
+    "context_blocks": [
+     {
+      "id": "cma-167554",
+      "fields": {
+       "title": "Humming Gold",
+       "artist": "Helen Frankenthaler",
+       "year": "1971",
+       "medium": "acrylic on canvas",
+       "dimensions": "Framed: 208.5 x 277 x 4 cm (82 1/16 x 109 1/16 x 1 9/16 in.); Unframed: 205.7 x 274.2 cm (81 x 107 15/16 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1971
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-169335",
+      "fields": {
+       "title": "Smoke",
+       "artist": "Pae White",
+       "year": "2011",
+       "medium": "computerized loom fabric. cotton, and polyester",
+       "dimensions": "Overall: 430 x 850 cm (169 5/16 x 334 5/8 in.)",
+       "classification": "Textile"
+      },
+      "years": [
+       2011
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-134236",
+      "fields": {
+       "title": "Claire Campbell",
+       "artist": "Édouard Manet",
+       "year": "1876",
+       "medium": "Pastel with oil on fine-weave canvas",
+       "dimensions": "Unframed: 55.2 x 45.7 cm (21 3/4 x 18 in.)",
+       "classification": "Drawing"
+      },
+      "years": [
+       1876
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-615444",
+      "fields": {
+       "title": "Helen Evans Ramsaran",
+       "artist": "Emma Amos",
+       "year": "1990–94",
+       "medium": "Watercolor (acrylic wash) portrait on Saunders Waterford watercolor paper",
+       "dimensions": "Sheet: 66.9 x 50.7 cm (26 5/16 x 19 15/16 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1990,
+       1994
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-124080",
+      "fields": {
+       "title": "Portrait of Mary Wise",
+       "artist": "Thomas Gainsborough",
+       "year": "c. 1774",
+       "medium": "oil on canvas",
+       "dimensions": "Unframed: 76.2 x 63.6 cm (30 x 25 1/16 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1774
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-41600",
+      "fields": {
+       "title": "Judgment of Paris",
+       "artist": "Hans Brosamer",
+       "year": "1544",
+       "medium": "Engraving in black on buff laid paper",
+       "dimensions": "Image/plate: 11.5 × 11.5 cm (4 9/16 × 4 9/16 in.); Sheet: 13.4 × 12.9 cm (5 5/16 × 5 1/8 in.)",
+       "classification": "engraving"
+      },
+      "years": [
+       1544
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-16812",
+      "fields": {
+       "title": "The Outlook, Maine Coast",
+       "artist": "Winslow Homer",
+       "year": "1894",
+       "medium": "Transparent watercolor, with traces of opaque watercolor, rewetting, blotting, spatter and traces of scraping, over graphite, on moderately thick, slightly textured, ivory wove paper",
+       "dimensions": "35.4 × 50.5 cm (13 15/16 × 19 15/16 in.)",
+       "classification": "watercolor"
+      },
+      "years": [
+       1894
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-25671",
+      "fields": {
+       "title": "De la nada vida a la nada muerte",
+       "artist": "Frank Stella",
+       "year": "1965",
+       "medium": "Metallic powder in polymer emulsion on canvas",
+       "dimensions": "205.7 × 744.2 cm (81 × 293 in.)",
+       "classification": "painting"
+      },
+      "years": [
+       1965
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-684923",
+      "fields": {
+       "title": "Gold Box",
+       "artist": "Juste-Aurèle Meissonnier",
+       "year": "1728–29",
+       "medium": "gold and lapis lazuli",
+       "dimensions": "Overall: 3 x 8.3 x 5.2 cm (1 3/16 x 3 1/4 x 2 1/16 in.)",
+       "classification": "Metalwork"
+      },
+      "years": [
+       1728,
+       1729
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-10509",
+      "fields": {
+       "title": "Saint Helen Testing the True Cross",
+       "artist": "Tintoretto",
+       "year": "c. 1545",
+       "medium": "Oil on canvas",
+       "dimensions": "21.5 × 48.9 cm (8 1/2 × 19 3/8 in.); Framed: 31.8 × 59.4 × 6.4 cm (12 1/2 × 23 3/8 × 2 1/2 in.)",
+       "classification": "oil on canvas"
+      },
+      "years": [
+       1545
+      ],
+      "internal_contradiction": false
+     }
+    ],
+    "prompt_audit": {
+     "status": "ok",
+     "system_prompt_dropped_suspected": false,
+     "instruction_tokens_expected": 625,
+     "prompt_tokens_delta": 0,
+     "prompt_tokens_ratio": 1.0,
+     "detail": "reported prompt_tokens 4256 is consistent with the instructions arriving (estimate 4256, delta +0)"
+    },
+    "prompt_tokens": 4256,
+    "llm": {
+     "error_type": null,
+     "is_truncated": false,
+     "truncation_reasons": [],
+     "prior_truncation": null,
+     "truncation_recovered": false,
+     "raw_content": "{\n  \"answer\": \"According to record cma-167554, the medium of Helen Frankenthaler's Humming Gold (1971) is acrylic on canvas.\",\n  \"answerable\": true,\n  \"record_ids_used\": [\"cma-167554\"],\n  \"record_ids_excluded\": [\n    {\"id\": \"cma-169335\", \"reason\": \"Different artist and work (Pae White, Smoke); not relevant to Humming Gold's medium.\"},\n    {\"id\": \"cma-134236\", \"reason\": \"Different artist and work (Manet, Claire Campbell).\"},\n    {\"id\": \"cma-615444\", \"reason\": \"Different artist and work (Emma Amos, Helen Evans Ramsaran).\"},\n    {\"id\": \"cma-124080\", \"reason\": \"Different artist and work (Gainsborough, Portrait of Mary Wise).\"},\n    {\"id\": \"aic-41600\", \"reason\": \"Different artist and work (Brosamer, Judgment of Paris).\"},\n    {\"id\": \"aic-16812\", \"reason\": \"Different artist and work (Winslow Homer, The Outlook, Maine Coast).\"},\n    {\"id\": \"aic-25671\", \"reason\": \"Different artist and work (Frank Stella, De la nada vida a la nada muerte).\"},\n    {\"id\": \"cma-684923\", \"reason\": \"Different artist and work (Meissonnier, Gold Box).\"},\n    {\"id\": \"aic-10509\", \"reason\": \"Different artist and work (Tintoretto, Saint Helen Testing the True Cross).\"}\n  ],\n  \"limitations\": \"The record is a single source with no contradictions noted.\"\n}"
+    }
+   },
+   "audit_inputs": {
+    "expected_with_instructions": 4256,
+    "expected_without_instructions": 3631,
+    "instruction_tokens": 625
+   },
+   "best_similarity": 0.7837914824485779,
+   "max_tokens": 1024,
+   "dropped_by_script": false,
+   "recorded": {
+    "model": "claude-haiku-5-5",
+    "provider": "anthropic",
+    "recorded_at": "2026-10-27T03:16:04.609267+00:00",
+    "model_calls": 1,
+    "tokens": 4791
+   },
+   "id": "q05",
+   "kind": "recorded",
+   "expect": "grounded answer",
+   "question": "What medium is Helen Frankenthaler's Humming Gold?",
+   "seed": null,
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "1 valid source record(s) cited: ['cma-167554']"
+    },
+    "citation_groundedness": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All 1 citation(s) found in the 10-record RRF candidate set."
+    },
+    "confidence_capping": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "No cap required; confidence 0.89 (high)."
+    },
+    "prompt_integrity": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "reported prompt_tokens 4256 is consistent with the instructions arriving (estimate 4256, delta +0)"
+    },
+    "verifier.citation_membership": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "all citations valid"
+    },
+    "verifier.not_recorded_violation": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+    },
+    "verifier.factual_match": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "years consistent with cited records"
+    },
+    "verifier.not_truncated": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no truncation signal fired"
+    },
+    "deterministic_verdict": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All deterministic evaluators passed, or could not run (inconclusive) or did not apply."
+    },
+    "llm_judge_surrogate": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "PASS -- Answer is relevant, coherent and appears correct."
+    }
+   }
+  },
+  {
+   "payload": {
+    "question": "What is Reginald Marsh's Tattoo and Haircut painted with?",
+    "result": {
+     "question": "What is Reginald Marsh's Tattoo and Haircut painted with?",
+     "abstained": false,
+     "answer": "Reginald Marsh's Tattoo and Haircut (Art Institute of Chicago, 1947.39, record aic-59820) is painted with egg tempera on Masonite. The record's description adds that Marsh used tempera, a medium that dries quickly, and built up successive layers of muted colors.",
+     "answerable": true,
+     "record_ids_used": [
+      "aic-59820"
+     ],
+     "limitations": "Only one record for Tattoo and Haircut was retrieved, so there is no cross-check against another source. The record's medium field is 'Egg tempera on Masonite' and its description refers to tempera generally; no contradiction was found.",
+     "full_provenance": [
+      {
+       "id": "aic-59820",
+       "category": "used",
+       "reason": null
+      },
+      {
+       "id": "cma-117571",
+       "category": "shown_not_cited",
+       "reason": "Reginald Marsh etching of Coney Island Beach; a different work with a different medium, not Tattoo and Haircut."
+      },
+      {
+       "id": "cma-164628",
+       "category": "shown_not_cited",
+       "reason": "Reginald Marsh painting A Paramount Picture in tempera on Masonite; a different work, so it does not answer the question about Tattoo and Haircut."
+      },
+      {
+       "id": "cma-119036",
+       "category": "shown_not_cited",
+       "reason": "Zincke portrait miniature; unrelated artist and work."
+      },
+      {
+       "id": "cma-154253",
+       "category": "shown_not_cited",
+       "reason": "Ancient Greek heron-shaped vessel; unrelated."
+      },
+      {
+       "id": "cma-108522",
+       "category": "shown_not_cited",
+       "reason": "Freese watercolor miniature; unrelated."
+      },
+      {
+       "id": "aic-34149",
+       "category": "shown_not_cited",
+       "reason": "Ed Paschke painting Mid American; unrelated."
+      },
+      {
+       "id": "cma-152841",
+       "category": "shown_not_cited",
+       "reason": "Ancient marble sculpture Youth with Jumping Weights; unrelated."
+      },
+      {
+       "id": "cma-140309",
+       "category": "shown_not_cited",
+       "reason": "Japanese porcelain dish; unrelated."
+      },
+      {
+       "id": "cma-109192",
+       "category": "shown_not_cited",
+       "reason": "Odilon Redon lithograph; unrelated."
+      }
+     ],
+     "confidence": {
+      "score": 0.77,
+      "label": "medium",
+      "components": {
+       "retrieval_score": 0.78,
+       "verification_score": 0.75,
+       "contradiction_penalty": 0.0,
+       "label_capped_by_failed_check": true
+      }
+     },
+     "verification_checks": {
+      "citation_membership": {
+       "passed": true,
+       "detail": "all citations valid"
+      },
+      "not_recorded_violation": {
+       "passed": true,
+       "detail": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+      },
+      "factual_match": {
+       "passed": false,
+       "detail": "year mismatches: [{'record_id': 'aic-59820', 'record_years': [1932], 'answer_years': [1947]}]"
+      },
+      "not_truncated": {
+       "passed": true,
+       "detail": "no truncation signal fired"
+      }
+     },
+     "retrieval_signals": {
+      "dense_similarity": 0.784111738204956,
+      "bm25_max": 48.50475930097543,
+      "dense_threshold": 0.35,
+      "bm25_threshold": 19.5,
+      "dense_below_threshold": false,
+      "bm25_below_threshold": false,
+      "abstain_reasons": []
+     },
+     "is_truncated": false,
+     "truncation_recovered": false,
+     "prior_truncation": null,
+     "call_seq": "req_011CgS1sBU7wbuZP6LyoFN5n",
+     "budget_remaining": null
+    },
+    "candidate_ids": [
+     "aic-59820",
+     "cma-117571",
+     "cma-164628",
+     "cma-119036",
+     "cma-154253",
+     "cma-108522",
+     "aic-34149",
+     "cma-152841",
+     "cma-140309",
+     "cma-109192"
+    ],
+    "context_blocks": [
+     {
+      "id": "aic-59820",
+      "fields": {
+       "title": "Tattoo and Haircut",
+       "artist": "Reginald Marsh",
+       "year": "1932",
+       "medium": "Egg tempera on Masonite",
+       "dimensions": "118.1 × 121.6 cm (46 1/2 × 47 7/8 in.)",
+       "classification": "tempera"
+      },
+      "years": [
+       1932
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-117571",
+      "fields": {
+       "title": "Coney Island Beach",
+       "artist": "Reginald Marsh",
+       "year": "1935",
+       "medium": "etching",
+       "dimensions": "[not recorded]",
+       "classification": "Print"
+      },
+      "years": [
+       1935
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-164628",
+      "fields": {
+       "title": "A Paramount Picture",
+       "artist": "Reginald Marsh",
+       "year": "1934",
+       "medium": "tempera on Masonite",
+       "dimensions": "Framed: 107.3 x 86.4 x 4.5 cm (42 1/4 x 34 x 1 3/4 in.); Unframed: 90.8 x 70.5 cm (35 3/4 x 27 3/4 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1934
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-119036",
+      "fields": {
+       "title": "Portrait of a Man",
+       "artist": "Christian Friedrich Zincke",
+       "year": "c. 1735",
+       "medium": "enamel on copper in a gold frame with a blue glass and hair reverse",
+       "dimensions": "Framed: 5.1 x 4.3 cm (2 x 1 11/16 in.); Unframed: 4.5 x 3.6 cm (1 3/4 x 1 7/16 in.)",
+       "classification": "Portrait Miniature"
+      },
+      "years": [
+       1735
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-154253",
+      "fields": {
+       "title": "Heron-Shaped Figure Vase (Oil Vessel)",
+       "artist": "Robertson's Group",
+       "year": "c. 580 BCE",
+       "medium": "ceramic",
+       "dimensions": "Overall: 13 x 5.8 cm (5 1/8 x 2 5/16 in.)",
+       "classification": "Ceramic"
+      },
+      "years": [],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-108522",
+      "fields": {
+       "title": "Portrait of a Man",
+       "artist": "Nicholas Freese",
+       "year": "c. 1795–1800",
+       "medium": "watercolor on ivory in a gold frame with glazed hair reverse and opalescent glass over pressed foil and cut gold (or cut paper)",
+       "dimensions": "Framed: 7.6 x 6.5 cm (3 x 2 9/16 in.); Unframed: 7 x 5.8 cm (2 3/4 x 2 5/16 in.)",
+       "classification": "Portrait Miniature"
+      },
+      "years": [
+       1795,
+       1800
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-34149",
+      "fields": {
+       "title": "Mid American",
+       "artist": "Ed Paschke",
+       "year": "1969",
+       "medium": "Oil on canvas",
+       "dimensions": "114.3 × 152.4 cm (45 × 60 in.)",
+       "classification": "painting"
+      },
+      "years": [
+       1969
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-152841",
+      "fields": {
+       "title": "Youth with Jumping Weights",
+       "artist": "[not recorded]",
+       "year": "c. 40–70 CE",
+       "medium": "marble",
+       "dimensions": "Overall: 84.5 x 39.1 cm (33 1/4 x 15 3/8 in.)",
+       "classification": "Sculpture"
+      },
+      "years": [],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-140309",
+      "fields": {
+       "title": "Dish with Reeds and Mist",
+       "artist": "[not recorded]",
+       "year": "c. 1700",
+       "medium": "Porcelain with underglaze blue and overglaze color enamel (Hizen ware, Nabeshima type)",
+       "dimensions": "Diameter: 20.1 cm (7 15/16 in.); Overall: 5.6 cm (2 3/16 in.)",
+       "classification": "Ceramic"
+      },
+      "years": [
+       1700
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-109192",
+      "fields": {
+       "title": "The Marsh Flower, a Sad Human Head",
+       "artist": "Odilon Redon",
+       "year": "1885",
+       "medium": "lithograph on China paper laid on wove paper",
+       "dimensions": "Image: 27.5 x 20.5 cm (10 13/16 x 8 1/16 in.)",
+       "classification": "Print"
+      },
+      "years": [
+       1885
+      ],
+      "internal_contradiction": false
+     }
+    ],
+    "prompt_audit": {
+     "status": "ok",
+     "system_prompt_dropped_suspected": false,
+     "instruction_tokens_expected": 625,
+     "prompt_tokens_delta": 0,
+     "prompt_tokens_ratio": 1.0,
+     "detail": "reported prompt_tokens 4900 is consistent with the instructions arriving (estimate 4900, delta +0)"
+    },
+    "prompt_tokens": 4900,
+    "llm": {
+     "error_type": null,
+     "is_truncated": false,
+     "truncation_reasons": [],
+     "prior_truncation": null,
+     "truncation_recovered": false,
+     "raw_content": "{\n  \"answer\": \"Reginald Marsh's Tattoo and Haircut (Art Institute of Chicago, 1947.39, record aic-59820) is painted with egg tempera on Masonite. The record's description adds that Marsh used tempera, a medium that dries quickly, and built up successive layers of muted colors.\",\n  \"answerable\": true,\n  \"record_ids_used\": [\"aic-59820\"],\n  \"record_ids_excluded\": [\n    {\"id\": \"cma-117571\", \"reason\": \"Reginald Marsh etching of Coney Island Beach; a different work with a different medium, not Tattoo and Haircut.\"},\n    {\"id\": \"cma-164628\", \"reason\": \"Reginald Marsh painting A Paramount Picture in tempera on Masonite; a different work, so it does not answer the question about Tattoo and Haircut.\"},\n    {\"id\": \"cma-119036\", \"reason\": \"Zincke portrait miniature; unrelated artist and work.\"},\n    {\"id\": \"cma-154253\", \"reason\": \"Ancient Greek heron-shaped vessel; unrelated.\"},\n    {\"id\": \"cma-108522\", \"reason\": \"Freese watercolor miniature; unrelated.\"},\n    {\"id\": \"aic-34149\", \"reason\": \"Ed Paschke painting Mid American; unrelated.\"},\n    {\"id\": \"cma-152841\", \"reason\": \"Ancient marble sculpture Youth with Jumping Weights; unrelated.\"},\n    {\"id\": \"cma-140309\", \"reason\": \"Japanese porcelain dish; unrelated.\"},\n    {\"id\": \"cma-109192\", \"reason\": \"Odilon Redon lithograph; unrelated.\"}\n  ],\n  \"limitations\": \"Only one record for Tattoo and Haircut was retrieved, so there is no cross-check against another source. The record's medium field is 'Egg tempera on Masonite' and its description refers to tempera generally; no contradiction was found.\"\n}"
+    }
+   },
+   "audit_inputs": {
+    "expected_with_instructions": 4900,
+    "expected_without_instructions": 4275,
+    "instruction_tokens": 625
+   },
+   "best_similarity": 0.784111738204956,
+   "max_tokens": 1024,
+   "dropped_by_script": false,
+   "recorded": {
+    "model": "claude-haiku-5-5",
+    "provider": "anthropic",
+    "recorded_at": "2026-10-27T03:16:08.038130+00:00",
+    "model_calls": 1,
+    "tokens": 5539
+   },
+   "id": "q06",
+   "kind": "recorded",
+   "expect": "grounded answer; factual_match reads the accession number 1947.39 as a year (verifier false positive)",
+   "question": "What is Reginald Marsh's Tattoo and Haircut painted with?",
+   "seed": null,
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "1 valid source record(s) cited: ['aic-59820']"
+    },
+    "citation_groundedness": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All 1 citation(s) found in the 10-record RRF candidate set."
+    },
+    "confidence_capping": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "Capped correctly: failed checks ['factual_match'] -> label capped to 'medium' (score 0.77); effective confidence 0.77."
+    },
+    "prompt_integrity": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "reported prompt_tokens 4900 is consistent with the instructions arriving (estimate 4900, delta +0)"
+    },
+    "verifier.citation_membership": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "all citations valid"
+    },
+    "verifier.not_recorded_violation": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+    },
+    "verifier.factual_match": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "year mismatches: [{'record_id': 'aic-59820', 'record_years': [1932], 'answer_years': [1947]}]"
+    },
+    "verifier.not_truncated": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no truncation signal fired"
+    },
+    "deterministic_verdict": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "verifier.factual_match: year mismatches: [{'record_id': 'aic-59820', 'record_years': [1932], 'answer_years': [1947]}]"
+    },
+    "llm_judge_surrogate": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "PASS -- Answer is relevant, coherent and appears correct."
+    }
+   }
+  },
+  {
+   "payload": {
+    "question": "When did Ray Johnson make Untitled (Taoist Collages)?",
+    "result": {
+     "question": "When did Ray Johnson make Untitled (Taoist Collages)?",
+     "abstained": false,
+     "answer": "The record for Untitled (Taoist Collages) by Ray Johnson lists the date as 1955. Its description adds that in December 1955 Johnson mailed this group of 30 collages to Sybil Shearer.",
+     "answerable": true,
+     "record_ids_used": [
+      "aic-265559"
+     ],
+     "limitations": "The record gives a single year, 1955, as the date of the work. The description refers to the December 1955 mailing to Shearer, which is the event the record documents, not a separate creation date. The record does not state an exact date of creation beyond the year.",
+     "full_provenance": [
+      {
+       "id": "aic-265559",
+       "category": "used",
+       "reason": null
+      },
+      {
+       "id": "aic-23370",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Mark Tobey, Untitled, 1964); not relevant to the question."
+      },
+      {
+       "id": "cma-518779",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Beauford Delaney, Untitled, c. 1958)."
+      },
+      {
+       "id": "aic-23373",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Lee Bontecou, Untitled, 1960)."
+      },
+      {
+       "id": "aic-33225",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Larry Bell, Untitled (Terminal Series), 1968)."
+      },
+      {
+       "id": "aic-25809",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Pablo Picasso maquette, 1964)."
+      },
+      {
+       "id": "cma-156600",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Man Ray, Shakespearean Equation: Hamlet, 1949)."
+      },
+      {
+       "id": "aic-31595",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Robert Irwin, Untitled, 1969)."
+      },
+      {
+       "id": "cma-140396",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Kay Sage, A Bird in the Room, 1955)."
+      },
+      {
+       "id": "cma-171283",
+       "category": "shown_not_cited",
+       "reason": "Different artist and work (Robert Morris, Untitled, 1976)."
+      }
+     ],
+     "confidence": {
+      "score": 0.91,
+      "label": "high",
+      "components": {
+       "retrieval_score": 0.82,
+       "verification_score": 1.0,
+       "contradiction_penalty": 0.0,
+       "label_capped_by_failed_check": false
+      }
+     },
+     "verification_checks": {
+      "citation_membership": {
+       "passed": true,
+       "detail": "all citations valid"
+      },
+      "not_recorded_violation": {
+       "passed": true,
+       "detail": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+      },
+      "factual_match": {
+       "passed": true,
+       "detail": "years consistent with cited records"
+      },
+      "not_truncated": {
+       "passed": true,
+       "detail": "no truncation signal fired"
+      }
+     },
+     "retrieval_signals": {
+      "dense_similarity": 0.8221665024757385,
+      "bm25_max": 42.7403205404738,
+      "dense_threshold": 0.35,
+      "bm25_threshold": 19.5,
+      "dense_below_threshold": false,
+      "bm25_below_threshold": false,
+      "abstain_reasons": []
+     },
+     "is_truncated": false,
+     "truncation_recovered": false,
+     "prior_truncation": null,
+     "call_seq": "req_011CgS1sRyFyE7bDJh73YcjD",
+     "budget_remaining": null
+    },
+    "candidate_ids": [
+     "aic-265559",
+     "aic-23370",
+     "cma-518779",
+     "aic-23373",
+     "aic-33225",
+     "aic-25809",
+     "cma-156600",
+     "aic-31595",
+     "cma-140396",
+     "cma-171283"
+    ],
+    "context_blocks": [
+     {
+      "id": "aic-265559",
+      "fields": {
+       "title": "Untitled (Taoist Collages)",
+       "artist": "Ray Johnson",
+       "year": "1955",
+       "medium": "Mixed media",
+       "dimensions": "Dimensions variable",
+       "classification": "collage"
+      },
+      "years": [
+       1955
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-23370",
+      "fields": {
+       "title": "Untitled",
+       "artist": "Mark Tobey",
+       "year": "1964",
+       "medium": "Oil and collage on canvas",
+       "dimensions": "212.1 × 157 cm (83 1/2 × 61 13/16 in.)",
+       "classification": "painting"
+      },
+      "years": [
+       1964
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-518779",
+      "fields": {
+       "title": "Untitled",
+       "artist": "Beauford Delaney",
+       "year": "c. 1958",
+       "medium": "Oil on canvas",
+       "dimensions": "146.1 x 114.3 cm (57 1/2 x 45 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1958
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-23373",
+      "fields": {
+       "title": "Untitled",
+       "artist": "Lee Bontecou",
+       "year": "1960",
+       "medium": "Steel, canvas, and copper wire",
+       "dimensions": "182.9 × 182.9 × 45.7 cm (72 × 72 × 18 in.)",
+       "classification": "sculpture"
+      },
+      "years": [
+       1960
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-33225",
+      "fields": {
+       "title": "Untitled (Terminal Series)",
+       "artist": "Larry Bell",
+       "year": "1968",
+       "medium": "Vacuum plated glass coated with silicon monoxide, with metal binding",
+       "dimensions": "50.8 × 50.8 × 50.8 cm (20 × 20 × 20 in.)",
+       "classification": "sculpture"
+      },
+      "years": [
+       1968
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-25809",
+      "fields": {
+       "title": "Maquette for Richard J. Daley Center Sculpture",
+       "artist": "Pablo Picasso",
+       "year": "1964",
+       "medium": "Simulated and oxidized welded steel",
+       "dimensions": "104.8 × 69.9 × 48.3 cm (41 1/4 × 27 1/2 × 19 in.)",
+       "classification": "sculpture"
+      },
+      "years": [
+       1964
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-156600",
+      "fields": {
+       "title": "Shakespearean Equation: Hamlet",
+       "artist": "Man Ray",
+       "year": "1949",
+       "medium": "oil on canvas",
+       "dimensions": "Framed: 55.9 x 66 x 3.9 cm (22 x 26 x 1 9/16 in.); Unframed: 40.5 x 51 cm (15 15/16 x 20 1/16 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1949
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-31595",
+      "fields": {
+       "title": "Untitled",
+       "artist": "Robert Irwin",
+       "year": "1969",
+       "medium": "Acrylic paint on cast acrylic",
+       "dimensions": "In: Diam.: 137 cm (53 15/16 in.); H.: 137.2 cm (54 in.)",
+       "classification": "sculpture"
+      },
+      "years": [
+       1969
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-140396",
+      "fields": {
+       "title": "A Bird in the Room",
+       "artist": "Kay Sage",
+       "year": "1955",
+       "medium": "oil on canvas",
+       "dimensions": "Unframed: 99.1 x 81.3 cm (39 x 32 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1955
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-171283",
+      "fields": {
+       "title": "Untitled",
+       "artist": "Robert Morris",
+       "year": "1976",
+       "medium": "white felt, metal grommets, one piece of string",
+       "dimensions": "Overall: 144.8 x 289.6 cm (57 x 114 in.)",
+       "classification": "Mixed Media"
+      },
+      "years": [
+       1976
+      ],
+      "internal_contradiction": false
+     }
+    ],
+    "prompt_audit": {
+     "status": "ok",
+     "system_prompt_dropped_suspected": false,
+     "instruction_tokens_expected": 625,
+     "prompt_tokens_delta": 0,
+     "prompt_tokens_ratio": 1.0,
+     "detail": "reported prompt_tokens 4425 is consistent with the instructions arriving (estimate 4425, delta +0)"
+    },
+    "prompt_tokens": 4425,
+    "llm": {
+     "error_type": null,
+     "is_truncated": false,
+     "truncation_reasons": [],
+     "prior_truncation": null,
+     "truncation_recovered": false,
+     "raw_content": "{\n  \"answer\": \"The record for Untitled (Taoist Collages) by Ray Johnson lists the date as 1955. Its description adds that in December 1955 Johnson mailed this group of 30 collages to Sybil Shearer.\",\n  \"answerable\": true,\n  \"record_ids_used\": [\"aic-265559\"],\n  \"record_ids_excluded\": [\n    {\"id\": \"aic-23370\", \"reason\": \"Different artist and work (Mark Tobey, Untitled, 1964); not relevant to the question.\"},\n    {\"id\": \"cma-518779\", \"reason\": \"Different artist and work (Beauford Delaney, Untitled, c. 1958).\"},\n    {\"id\": \"aic-23373\", \"reason\": \"Different artist and work (Lee Bontecou, Untitled, 1960).\"},\n    {\"id\": \"aic-33225\", \"reason\": \"Different artist and work (Larry Bell, Untitled (Terminal Series), 1968).\"},\n    {\"id\": \"aic-25809\", \"reason\": \"Different artist and work (Pablo Picasso maquette, 1964).\"},\n    {\"id\": \"cma-156600\", \"reason\": \"Different artist and work (Man Ray, Shakespearean Equation: Hamlet, 1949).\"},\n    {\"id\": \"aic-31595\", \"reason\": \"Different artist and work (Robert Irwin, Untitled, 1969).\"},\n    {\"id\": \"cma-140396\", \"reason\": \"Different artist and work (Kay Sage, A Bird in the Room, 1955).\"},\n    {\"id\": \"cma-171283\", \"reason\": \"Different artist and work (Robert Morris, Untitled, 1976).\"}\n  ],\n  \"limitations\": \"The record gives a single year, 1955, as the date of the work. The description refers to the December 1955 mailing to Shearer, which is the event the record documents, not a separate creation date. The record does not state an exact date of creation beyond the year.\"\n}"
+    }
+   },
+   "audit_inputs": {
+    "expected_with_instructions": 4425,
+    "expected_without_instructions": 3800,
+    "instruction_tokens": 625
+   },
+   "best_similarity": 0.8221665024757385,
+   "max_tokens": 1024,
+   "dropped_by_script": false,
+   "recorded": {
+    "model": "claude-haiku-5-5",
+    "provider": "anthropic",
+    "recorded_at": "2026-10-27T03:16:11.304436+00:00",
+    "model_calls": 1,
+    "tokens": 5058
+   },
+   "id": "q07",
+   "kind": "recorded",
+   "expect": "grounded answer",
+   "question": "When did Ray Johnson make Untitled (Taoist Collages)?",
+   "seed": null,
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "1 valid source record(s) cited: ['aic-265559']"
+    },
+    "citation_groundedness": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All 1 citation(s) found in the 10-record RRF candidate set."
+    },
+    "confidence_capping": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "No cap required; confidence 0.91 (high)."
+    },
+    "prompt_integrity": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "reported prompt_tokens 4425 is consistent with the instructions arriving (estimate 4425, delta +0)"
+    },
+    "verifier.citation_membership": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "all citations valid"
+    },
+    "verifier.not_recorded_violation": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+    },
+    "verifier.factual_match": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "years consistent with cited records"
+    },
+    "verifier.not_truncated": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no truncation signal fired"
+    },
+    "deterministic_verdict": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All deterministic evaluators passed, or could not run (inconclusive) or did not apply."
+    },
+    "llm_judge_surrogate": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "PASS -- Answer is relevant, coherent and appears correct."
+    }
+   }
+  },
+  {
+   "payload": {
+    "question": "Are there any violations in the Louise Bourgeois Ode to My Mother records?",
+    "result": {
+     "question": "Are there any violations in the Louise Bourgeois Ode to My Mother records?",
+     "abstained": false,
+     "answer": "The corpus does not record any violations for the Louise Bourgeois Ode to My Mother records. The only Ode to My Mother record (cma-160794) describes an untitled 1995 etching and drypoint, with dimensions, a description of the nine illustrations, and their theme, but it says nothing about violations.",
+     "answerable": false,
+     "record_ids_used": [
+      "cma-160794"
+     ],
+     "limitations": "The term 'violations' is not defined in the records, and none of the retrieved records mention violations, infractions, or compliance issues of any kind. The Ode to My Mother record may be incomplete, since it does not identify the number of prints beyond 'nine illustrations' or the title's full scope. If 'violations' refers to a specific type (e.g., copyright, provenance, or conservation), the corpus would need a record that addresses that topic.",
+     "full_provenance": [
+      {
+       "id": "cma-162293",
+       "category": "shown_not_cited",
+       "reason": "Another Louise Bourgeois work (Blind Man's Buff); it is not part of the Ode to My Mother set and contains no violation information."
+      },
+      {
+       "id": "cma-160794",
+       "category": "used",
+       "reason": null
+      },
+      {
+       "id": "cma-160059",
+       "category": "shown_not_cited",
+       "reason": "Another Louise Bourgeois print (Ste Sebastienne); it is not an Ode to My Mother record and contains no violation information."
+      },
+      {
+       "id": "aic-9320",
+       "category": "shown_not_cited",
+       "reason": "George Bellows painting unrelated to Ode to My Mother or Bourgeois; no violation information."
+      },
+      {
+       "id": "aic-23684",
+       "category": "shown_not_cited",
+       "reason": "Arshile Gorky charcoal unrelated to the query; no violation information."
+      },
+      {
+       "id": "cma-136290",
+       "category": "shown_not_cited",
+       "reason": "Tapestry from the Chateau de Chaumont set, unrelated to the query; no violation information."
+      },
+      {
+       "id": "aic-30042",
+       "category": "shown_not_cited",
+       "reason": "Augustin de Saint-Aubin print unrelated to the query; no violation information."
+      },
+      {
+       "id": "aic-16324",
+       "category": "shown_not_cited",
+       "reason": "Corneille de Lyon portrait unrelated to the query; no violation information."
+      },
+      {
+       "id": "cma-162292",
+       "category": "folded_into_group",
+       "reason": "Same title+artist match as representative cma-162293 -- treated as a duplicate record, not shown to the model independently (see entity_resolution.py)"
+      },
+      {
+       "id": "cma-162294",
+       "category": "folded_into_group",
+       "reason": "Same title+artist match as representative cma-162293 -- treated as a duplicate record, not shown to the model independently (see entity_resolution.py)"
+      }
+     ],
+     "confidence": {
+      "score": null,
+      "label": "not_applicable",
+      "reason": "the model set answerable=false, so no factual claim was asserted and there is nothing to be confident about. Records WERE cited (see record_ids_used), so the checks below did run against them -- but a pass rate on a response that asserts nothing is not evidence about anything, and is deliberately not converted into a score.",
+      "components": null
+     },
+     "verification_checks": {
+      "citation_membership": {
+       "passed": true,
+       "detail": "all citations valid"
+      },
+      "not_recorded_violation": {
+       "passed": true,
+       "detail": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+      },
+      "factual_match": {
+       "passed": true,
+       "detail": "years consistent with cited records"
+      },
+      "not_truncated": {
+       "passed": true,
+       "detail": "no truncation signal fired"
+      }
+     },
+     "retrieval_signals": {
+      "dense_similarity": 0.7142332196235657,
+      "bm25_max": 43.61849373960132,
+      "dense_threshold": 0.35,
+      "bm25_threshold": 19.5,
+      "dense_below_threshold": false,
+      "bm25_below_threshold": false,
+      "abstain_reasons": []
+     },
+     "is_truncated": false,
+     "truncation_recovered": false,
+     "prior_truncation": null,
+     "call_seq": "req_011CgS1sgxQKgKowhy7XqZDZ",
+     "budget_remaining": null
+    },
+    "candidate_ids": [
+     "cma-160794",
+     "cma-160059",
+     "cma-162292",
+     "cma-162293",
+     "cma-162294",
+     "aic-9320",
+     "aic-23684",
+     "cma-136290",
+     "aic-30042",
+     "aic-16324"
+    ],
+    "context_blocks": [
+     {
+      "id": "cma-162293",
+      "fields": {
+       "title": "Blind Man's Buff",
+       "artist": "Louise Bourgeois",
+       "year": "1984",
+       "medium": "white marble on wooden base",
+       "dimensions": "Overall: 92.7 x 88.9 x 63.5 cm (36 1/2 x 35 x 25 in.)",
+       "classification": "Sculpture"
+      },
+      "years": [
+       1984
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-160794",
+      "fields": {
+       "title": "Untitled",
+       "artist": "Louise Bourgeois",
+       "year": "1995",
+       "medium": "etching and drypoint",
+       "dimensions": "Platemark: 25.1 x 10.2 cm (9 7/8 x 4 in.); Sheet: 29.8 x 29.9 cm (11 3/4 x 11 3/4 in.)",
+       "classification": "Print"
+      },
+      "years": [
+       1995
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-160059",
+      "fields": {
+       "title": "Ste Sebastienne",
+       "artist": "Louise Bourgeois",
+       "year": "1992",
+       "medium": "drypoint",
+       "dimensions": "Sheet: 120.4 x 94.5 cm (47 3/8 x 37 3/16 in.); Platemark: 98.7 x 78.3 cm (38 7/8 x 30 13/16 in.)",
+       "classification": "Print"
+      },
+      "years": [
+       1992
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-9320",
+      "fields": {
+       "title": "My Mother",
+       "artist": "George Wesley Bellows",
+       "year": "March 1921",
+       "medium": "Oil on canvas",
+       "dimensions": "210.8 × 124.5 cm (83 × 49 in.)",
+       "classification": "painting"
+      },
+      "years": [
+       1921
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-23684",
+      "fields": {
+       "title": "The Artist's Mother",
+       "artist": "Arshile Gorky",
+       "year": "1926 or 1936",
+       "medium": "Charcoal on ivory laid paper",
+       "dimensions": "63 × 48.5 cm (24 13/16 × 19 1/8 in.)",
+       "classification": "charcoal"
+      },
+      "years": [
+       1926,
+       1936
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-136290",
+      "fields": {
+       "title": "Youth (from Chateau de Chaumont set)",
+       "artist": "[not recorded]",
+       "year": "1512–15",
+       "medium": "silk and wool; tapestry weave",
+       "dimensions": "Overall: 321.8 x 452 cm (126 11/16 x 177 15/16 in.)",
+       "classification": "Tapestry"
+      },
+      "years": [
+       1512,
+       1515
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-30042",
+      "fields": {
+       "title": "Comptez sur mes Serments (Depend on my Promises)",
+       "artist": "Augustin de Saint-Aubin",
+       "year": "1789",
+       "medium": "Etching and engraving on ivory laid paper",
+       "dimensions": "Image: 33.7 × 24.7 cm (13 5/16 × 9 3/4 in.); Plate: 36.7 × 26.4 cm (14 1/2 × 10 7/16 in.); Sheet: 40.6 × 31.9 cm (16 × 12 9/16 in.)",
+       "classification": "etching"
+      },
+      "years": [
+       1789
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-16324",
+      "fields": {
+       "title": "Portrait of Louise de Halluin, dame de Cipierre",
+       "artist": "Corneille de Lyon",
+       "year": "c. 1555",
+       "medium": "Oil on panel",
+       "dimensions": "21.4 × 17.8 cm (8 7/16 × 7 in.)",
+       "classification": "oil on panel"
+      },
+      "years": [
+       1555
+      ],
+      "internal_contradiction": false
+     }
+    ],
+    "prompt_audit": {
+     "status": "ok",
+     "system_prompt_dropped_suspected": false,
+     "instruction_tokens_expected": 625,
+     "prompt_tokens_delta": 0,
+     "prompt_tokens_ratio": 1.0,
+     "detail": "reported prompt_tokens 4317 is consistent with the instructions arriving (estimate 4317, delta +0)"
+    },
+    "prompt_tokens": 4317,
+    "llm": {
+     "error_type": null,
+     "is_truncated": false,
+     "truncation_reasons": [],
+     "prior_truncation": null,
+     "truncation_recovered": false,
+     "raw_content": "{\n  \"answer\": \"The corpus does not record any violations for the Louise Bourgeois Ode to My Mother records. The only Ode to My Mother record (cma-160794) describes an untitled 1995 etching and drypoint, with dimensions, a description of the nine illustrations, and their theme, but it says nothing about violations.\",\n  \"answerable\": false,\n  \"record_ids_used\": [\"cma-160794\"],\n  \"record_ids_excluded\": [\n    {\"id\": \"cma-162293\", \"reason\": \"Another Louise Bourgeois work (Blind Man's Buff); it is not part of the Ode to My Mother set and contains no violation information.\"},\n    {\"id\": \"cma-160059\", \"reason\": \"Another Louise Bourgeois print (Ste Sebastienne); it is not an Ode to My Mother record and contains no violation information.\"},\n    {\"id\": \"aic-9320\", \"reason\": \"George Bellows painting unrelated to Ode to My Mother or Bourgeois; no violation information.\"},\n    {\"id\": \"aic-23684\", \"reason\": \"Arshile Gorky charcoal unrelated to the query; no violation information.\"},\n    {\"id\": \"cma-136290\", \"reason\": \"Tapestry from the Chateau de Chaumont set, unrelated to the query; no violation information.\"},\n    {\"id\": \"aic-30042\", \"reason\": \"Augustin de Saint-Aubin print unrelated to the query; no violation information.\"},\n    {\"id\": \"aic-16324\", \"reason\": \"Corneille de Lyon portrait unrelated to the query; no violation information.\"}\n  ],\n  \"limitations\": \"The term 'violations' is not defined in the records, and none of the retrieved records mention violations, infractions, or compliance issues of any kind. The Ode to My Mother record may be incomplete, since it does not identify the number of prints beyond 'nine illustrations' or the title's full scope. If 'violations' refers to a specific type (e.g., copyright, provenance, or conservation), the corpus would need a record that addresses that topic.\"\n}"
+    }
+   },
+   "audit_inputs": {
+    "expected_with_instructions": 4317,
+    "expected_without_instructions": 3692,
+    "instruction_tokens": 625
+   },
+   "best_similarity": 0.7142332196235657,
+   "max_tokens": 1024,
+   "dropped_by_script": false,
+   "recorded": {
+    "model": "claude-haiku-5-5",
+    "provider": "anthropic",
+    "recorded_at": "2026-10-27T03:16:16.357292+00:00",
+    "model_calls": 1,
+    "tokens": 5177
+   },
+   "id": "q08",
+   "kind": "recorded",
+   "expect": "decline: the records do not cover violations",
+   "question": "Are there any violations in the Louise Bourgeois Ode to My Mother records?",
+   "seed": null,
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "1 valid source record(s) cited: ['cma-160794']"
+    },
+    "citation_groundedness": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All 1 citation(s) found in the 10-record RRF candidate set."
+    },
+    "confidence_capping": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "No cap required; confidence None (not_applicable)."
+    },
+    "prompt_integrity": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "reported prompt_tokens 4317 is consistent with the instructions arriving (estimate 4317, delta +0)"
+    },
+    "verifier.citation_membership": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "all citations valid"
+    },
+    "verifier.not_recorded_violation": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+    },
+    "verifier.factual_match": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "years consistent with cited records"
+    },
+    "verifier.not_truncated": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no truncation signal fired"
+    },
+    "deterministic_verdict": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All deterministic evaluators passed, or could not run (inconclusive) or did not apply."
+    },
+    "llm_judge_surrogate": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "PASS -- Answer is relevant, coherent and appears correct."
+    }
+   }
+  },
+  {
+   "payload": {
+    "question": "What did Helen Frankenthaler think about Abstract Expressionism?",
+    "result": {
+     "question": "What did Helen Frankenthaler think about Abstract Expressionism?",
+     "abstained": false,
+     "answer": "The corpus does not record Helen Frankenthaler's personal opinion of Abstract Expressionism. The only Frankenthaler record (cma-167554) describes her as \"deeply influenced by Abstract Expressionism\" and says she developed a visual language with its own identity through her soak-stain technique. That describes her relationship to the movement as an outside cataloguer characterizes it, not what she herself thought of it.",
+     "answerable": false,
+     "record_ids_used": [
+      "cma-167554"
+     ],
+     "limitations": "No record contains a statement, quote, or document of Frankenthaler's own views on Abstract Expressionism. The single relevant record is a museum catalog description written by someone other than the artist. Answering with her opinion would require sources outside this corpus.",
+     "full_provenance": [
+      {
+       "id": "cma-167554",
+       "category": "used",
+       "reason": null
+      },
+      {
+       "id": "aic-43813",
+       "category": "shown_not_cited",
+       "reason": "Gertrude Käsebier photograph; unrelated to Frankenthaler or Abstract Expressionism."
+      },
+      {
+       "id": "aic-24836",
+       "category": "shown_not_cited",
+       "reason": "Lichtenstein catalog entry commenting on Abstract Expressionism, but not a statement by Frankenthaler."
+      },
+      {
+       "id": "aic-30348",
+       "category": "shown_not_cited",
+       "reason": "Schlemmer sculpture record; unrelated to the question."
+      },
+      {
+       "id": "aic-2976",
+       "category": "shown_not_cited",
+       "reason": "Siskind photograph record; mentions Abstract Expressionist painters but not Frankenthaler's views."
+      },
+      {
+       "id": "aic-15569",
+       "category": "shown_not_cited",
+       "reason": "Clyfford Still record describing Abstract Expressionism; not about Frankenthaler's views."
+      },
+      {
+       "id": "aic-17943",
+       "category": "shown_not_cited",
+       "reason": "Leon Golub drawing record; mentions Abstract Expressionism but not Frankenthaler."
+      },
+      {
+       "id": "aic-2954",
+       "category": "shown_not_cited",
+       "reason": "Siskind photograph record; not about Frankenthaler's views."
+      },
+      {
+       "id": "aic-2951",
+       "category": "shown_not_cited",
+       "reason": "Siskind photograph record; not about Frankenthaler's views."
+      },
+      {
+       "id": "cma-151516",
+       "category": "shown_not_cited",
+       "reason": "Alex Katz painting record; mentions Abstract Expressionism but not Frankenthaler."
+      }
+     ],
+     "confidence": {
+      "score": null,
+      "label": "not_applicable",
+      "reason": "the model set answerable=false, so no factual claim was asserted and there is nothing to be confident about. Records WERE cited (see record_ids_used), so the checks below did run against them -- but a pass rate on a response that asserts nothing is not evidence about anything, and is deliberately not converted into a score.",
+      "components": null
+     },
+     "verification_checks": {
+      "citation_membership": {
+       "passed": true,
+       "detail": "all citations valid"
+      },
+      "not_recorded_violation": {
+       "passed": true,
+       "detail": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+      },
+      "factual_match": {
+       "passed": true,
+       "detail": "no year mentioned in answer -- nothing to check"
+      },
+      "not_truncated": {
+       "passed": true,
+       "detail": "no truncation signal fired"
+      }
+     },
+     "retrieval_signals": {
+      "dense_similarity": 0.7695902585983276,
+      "bm25_max": 33.39410140321786,
+      "dense_threshold": 0.35,
+      "bm25_threshold": 19.5,
+      "dense_below_threshold": false,
+      "bm25_below_threshold": false,
+      "abstain_reasons": []
+     },
+     "is_truncated": false,
+     "truncation_recovered": false,
+     "prior_truncation": null,
+     "call_seq": "req_011CgS1t4o4eDM1UDkViK3u5",
+     "budget_remaining": null
+    },
+    "candidate_ids": [
+     "cma-167554",
+     "aic-43813",
+     "aic-24836",
+     "aic-30348",
+     "aic-2976",
+     "aic-15569",
+     "aic-17943",
+     "aic-2954",
+     "aic-2951",
+     "cma-151516"
+    ],
+    "context_blocks": [
+     {
+      "id": "cma-167554",
+      "fields": {
+       "title": "Humming Gold",
+       "artist": "Helen Frankenthaler",
+       "year": "1971",
+       "medium": "acrylic on canvas",
+       "dimensions": "Framed: 208.5 x 277 x 4 cm (82 1/16 x 109 1/16 x 1 9/16 in.); Unframed: 205.7 x 274.2 cm (81 x 107 15/16 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1971
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-43813",
+      "fields": {
+       "title": "Heritage of Motherhood",
+       "artist": "Gertrude Käsebier",
+       "year": "1904",
+       "medium": "Platinum print",
+       "dimensions": "Image/paper: 23 × 29.2 cm (9 1/16 × 11 1/2 in.)",
+       "classification": "gum bichromate print"
+      },
+      "years": [
+       1904
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-24836",
+      "fields": {
+       "title": "Brushstroke with Spatter",
+       "artist": "Roy Lichtenstein",
+       "year": "1966",
+       "medium": "Oil and Magna on canvas",
+       "dimensions": "172.7 × 203.2 cm (68 × 80 in.)",
+       "classification": "painting"
+      },
+      "years": [
+       1966
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-30348",
+      "fields": {
+       "title": "Abstract Figure",
+       "artist": "Oskar Schlemmer",
+       "year": "1921/23",
+       "medium": "Bronze and nickel",
+       "dimensions": "105.4 × 62.2 × 20.3 cm (41 1/2 × 24 1/2 × 8 in.)",
+       "classification": "sculpture"
+      },
+      "years": [
+       1921,
+       1923
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-2976",
+      "fields": {
+       "title": "New York",
+       "artist": "Aaron Siskind",
+       "year": "1950",
+       "medium": "Gelatin silver print",
+       "dimensions": "Image/paper: 41.5 × 32.6 cm (16 3/8 × 12 7/8 in.); Mount: 55.9 × 45.8 cm (22 1/16 × 18 1/16 in.)",
+       "classification": "photography"
+      },
+      "years": [
+       1950
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-15569",
+      "fields": {
+       "title": "PH-246",
+       "artist": "Clyfford Still",
+       "year": "1951/52",
+       "medium": "Oil on canvas",
+       "dimensions": "301.8 × 396.2 cm (118 3/4 × 156 in.)",
+       "classification": "painting"
+      },
+      "years": [
+       1951,
+       1952
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-17943",
+      "fields": {
+       "title": "Warrior",
+       "artist": "Leon Golub",
+       "year": "1962",
+       "medium": "Black crayon, with scraping and smudging, on ivory wove paper",
+       "dimensions": "74.8 × 109.7 cm (29 1/2 × 43 1/4 in.)",
+       "classification": "chalk"
+      },
+      "years": [
+       1962
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-2954",
+      "fields": {
+       "title": "New York 2",
+       "artist": "Aaron Siskind",
+       "year": "1951",
+       "medium": "Gelatin silver print",
+       "dimensions": "Image/paper: 41.5 × 33.7 cm (16 3/8 × 13 5/16 in.); Mount: 55.9 × 45.8 cm (22 1/16 × 18 1/16 in.)",
+       "classification": "photography"
+      },
+      "years": [
+       1951
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-2951",
+      "fields": {
+       "title": "Chicago 21",
+       "artist": "Aaron Siskind",
+       "year": "1952",
+       "medium": "Gelatin silver print",
+       "dimensions": "Image/paper: 41.6 × 33.4 cm (16 7/16 × 13 3/16 in.); Mount: 55.9 × 45.7 cm (22 1/16 × 18 in.)",
+       "classification": "photography"
+      },
+      "years": [
+       1952
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-151516",
+      "fields": {
+       "title": "Impala",
+       "artist": "Alex Katz",
+       "year": "1968",
+       "medium": "oil on canvas",
+       "dimensions": "Framed: 187 x 278 x 4 cm (73 5/8 x 109 7/16 x 1 9/16 in.); Unframed: 182.9 x 276.9 cm (72 x 109 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1968
+      ],
+      "internal_contradiction": false
+     }
+    ],
+    "prompt_audit": {
+     "status": "ok",
+     "system_prompt_dropped_suspected": false,
+     "instruction_tokens_expected": 625,
+     "prompt_tokens_delta": 0,
+     "prompt_tokens_ratio": 1.0,
+     "detail": "reported prompt_tokens 4730 is consistent with the instructions arriving (estimate 4730, delta +0)"
+    },
+    "prompt_tokens": 4730,
+    "llm": {
+     "error_type": null,
+     "is_truncated": false,
+     "truncation_reasons": [],
+     "prior_truncation": null,
+     "truncation_recovered": false,
+     "raw_content": "{\n  \"answer\": \"The corpus does not record Helen Frankenthaler's personal opinion of Abstract Expressionism. The only Frankenthaler record (cma-167554) describes her as \\\"deeply influenced by Abstract Expressionism\\\" and says she developed a visual language with its own identity through her soak-stain technique. That describes her relationship to the movement as an outside cataloguer characterizes it, not what she herself thought of it.\",\n  \"answerable\": false,\n  \"record_ids_used\": [\"cma-167554\"],\n  \"record_ids_excluded\": [\n    {\"id\": \"aic-43813\", \"reason\": \"Gertrude Käsebier photograph; unrelated to Frankenthaler or Abstract Expressionism.\"},\n    {\"id\": \"aic-24836\", \"reason\": \"Lichtenstein catalog entry commenting on Abstract Expressionism, but not a statement by Frankenthaler.\"},\n    {\"id\": \"aic-30348\", \"reason\": \"Schlemmer sculpture record; unrelated to the question.\"},\n    {\"id\": \"aic-2976\", \"reason\": \"Siskind photograph record; mentions Abstract Expressionist painters but not Frankenthaler's views.\"},\n    {\"id\": \"aic-15569\", \"reason\": \"Clyfford Still record describing Abstract Expressionism; not about Frankenthaler's views.\"},\n    {\"id\": \"aic-17943\", \"reason\": \"Leon Golub drawing record; mentions Abstract Expressionism but not Frankenthaler.\"},\n    {\"id\": \"aic-2954\", \"reason\": \"Siskind photograph record; not about Frankenthaler's views.\"},\n    {\"id\": \"aic-2951\", \"reason\": \"Siskind photograph record; not about Frankenthaler's views.\"},\n    {\"id\": \"cma-151516\", \"reason\": \"Alex Katz painting record; mentions Abstract Expressionism but not Frankenthaler.\"}\n  ],\n  \"limitations\": \"No record contains a statement, quote, or document of Frankenthaler's own views on Abstract Expressionism. The single relevant record is a museum catalog description written by someone other than the artist. Answering with her opinion would require sources outside this corpus.\"\n}"
+    }
+   },
+   "audit_inputs": {
+    "expected_with_instructions": 4730,
+    "expected_without_instructions": 4105,
+    "instruction_tokens": 625
+   },
+   "best_similarity": 0.7695902585983276,
+   "max_tokens": 1024,
+   "dropped_by_script": false,
+   "recorded": {
+    "model": "claude-haiku-5-5",
+    "provider": "anthropic",
+    "recorded_at": "2026-10-27T03:16:20.585145+00:00",
+    "model_calls": 1,
+    "tokens": 5451
+   },
+   "id": "q09",
+   "kind": "recorded",
+   "expect": "decline: the records describe works, not opinions",
+   "question": "What did Helen Frankenthaler think about Abstract Expressionism?",
+   "seed": null,
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "1 valid source record(s) cited: ['cma-167554']"
+    },
+    "citation_groundedness": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All 1 citation(s) found in the 10-record RRF candidate set."
+    },
+    "confidence_capping": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "No cap required; confidence None (not_applicable)."
+    },
+    "prompt_integrity": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "reported prompt_tokens 4730 is consistent with the instructions arriving (estimate 4730, delta +0)"
+    },
+    "verifier.citation_membership": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "all citations valid"
+    },
+    "verifier.not_recorded_violation": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+    },
+    "verifier.factual_match": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no year mentioned in answer -- nothing to check"
+    },
+    "verifier.not_truncated": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no truncation signal fired"
+    },
+    "deterministic_verdict": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All deterministic evaluators passed, or could not run (inconclusive) or did not apply."
+    },
+    "llm_judge_surrogate": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "PASS -- Answer is relevant, coherent and appears correct."
+    }
+   }
+  },
+  {
+   "payload": {
+    "question": "What is the melting point of gallium arsenide?",
+    "result": {
+     "question": "What is the melting point of gallium arsenide?",
+     "abstained": false,
+     "answer": "The corpus does not contain the melting point of gallium arsenide. None of the retrieved records mention gallium arsenide or its melting point.",
+     "answerable": false,
+     "record_ids_used": [],
+     "limitations": "The retrieved records are museum art and object catalog entries; none address semiconductor materials. The melting point of gallium arsenide is not stated anywhere in this corpus, so I have not supplied it from general knowledge.",
+     "full_provenance": [
+      {
+       "id": "aic-36233",
+       "category": "shown_not_cited",
+       "reason": "Describes a Labino glass artwork and furnace; no mention of gallium arsenide or melting points of semiconductors."
+      },
+      {
+       "id": "cma-169614",
+       "category": "shown_not_cited",
+       "reason": "Painting record about Haverstraw Bay; unrelated to the question."
+      },
+      {
+       "id": "aic-27835",
+       "category": "shown_not_cited",
+       "reason": "Tiffany glass vase; mentions glass 'reheated almost to the melting point' but gives no value and does not concern gallium arsenide."
+      },
+      {
+       "id": "aic-42367",
+       "category": "shown_not_cited",
+       "reason": "Porcelain cup record; unrelated to the question."
+      },
+      {
+       "id": "cma-144663",
+       "category": "shown_not_cited",
+       "reason": "Hookah bowl record; unrelated to the question."
+      },
+      {
+       "id": "aic-18454",
+       "category": "shown_not_cited",
+       "reason": "Flambé vase record; unrelated to the question."
+      },
+      {
+       "id": "cma-96788",
+       "category": "shown_not_cited",
+       "reason": "Flintlock pistol record; unrelated to the question."
+      },
+      {
+       "id": "cma-138359",
+       "category": "shown_not_cited",
+       "reason": "Willem Kalf still life; unrelated to the question."
+      },
+      {
+       "id": "cma-380066",
+       "category": "shown_not_cited",
+       "reason": "John Marin watercolor; unrelated to the question."
+      },
+      {
+       "id": "aic-15477",
+       "category": "shown_not_cited",
+       "reason": "Ptolemaic gold octadrachm; unrelated to the question."
+      }
+     ],
+     "confidence": {
+      "score": null,
+      "label": "not_applicable",
+      "reason": "no factual claim was asserted and no record was cited, so there is nothing to be confident about. The verification checks below pass vacuously on an empty citation set and are reported as inconclusive, not as passes.",
+      "components": null
+     },
+     "verification_checks": {
+      "citation_membership": {
+       "passed": true,
+       "inconclusive": true,
+       "detail": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+      },
+      "not_recorded_violation": {
+       "passed": true,
+       "inconclusive": true,
+       "detail": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+      },
+      "factual_match": {
+       "passed": true,
+       "inconclusive": true,
+       "detail": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+      },
+      "not_truncated": {
+       "passed": true,
+       "detail": "no truncation signal fired"
+      }
+     },
+     "retrieval_signals": {
+      "dense_similarity": 0.5595576763153076,
+      "bm25_max": 19.753919565477386,
+      "dense_threshold": 0.35,
+      "bm25_threshold": 19.5,
+      "dense_below_threshold": false,
+      "bm25_below_threshold": false,
+      "abstain_reasons": []
+     },
+     "is_truncated": false,
+     "truncation_recovered": false,
+     "prior_truncation": null,
+     "call_seq": "req_011CgS1tMvCn2KtfBo7CNxxo",
+     "budget_remaining": null
+    },
+    "candidate_ids": [
+     "aic-36233",
+     "cma-169614",
+     "aic-27835",
+     "aic-42367",
+     "cma-144663",
+     "aic-18454",
+     "cma-96788",
+     "cma-138359",
+     "cma-380066",
+     "aic-15477"
+    ],
+    "context_blocks": [
+     {
+      "id": "aic-36233",
+      "fields": {
+       "title": "Volcanic Stages",
+       "artist": "Dominick Labino",
+       "year": "1970",
+       "medium": "Glass",
+       "dimensions": "18.7 × 7.7 × 6.9 cm (7 3/8 × 3 1/16 × 2 3/4 in.)",
+       "classification": "household accessory"
+      },
+      "years": [
+       1970
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-169614",
+      "fields": {
+       "title": "Haverstraw Bay",
+       "artist": "Sanford Robinson Gifford",
+       "year": "1868",
+       "medium": "oil on canvas",
+       "dimensions": "Unframed: 24.2 x 50.8 cm (9 1/2 x 20 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1868
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-27835",
+      "fields": {
+       "title": "Vase",
+       "artist": "Louis Comfort Tiffany",
+       "year": "1901",
+       "medium": "Glass",
+       "dimensions": "15.5 × 8 × 11.1 cm (6 1/8 × 3 1/8 × 4 3/8 in.)",
+       "classification": "vase"
+      },
+      "years": [
+       1901
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-42367",
+      "fields": {
+       "title": "Cup with Buddha’s-Hand Citron",
+       "artist": "[not recorded]",
+       "year": "Qing dynasty (1644–1911), Kangxi reign mark and period (1662–1722)",
+       "medium": "Porcelain painted in overglaze enamels",
+       "dimensions": "5.1 × 9.8 cm (2 × 3 7/8 in.); Diam.: 9.8 cm (3 7/8 in.)",
+       "classification": "drinking vessel"
+      },
+      "years": [
+       1644,
+       1662,
+       1722,
+       1911
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-144663",
+      "fields": {
+       "title": "Hookah Bowl",
+       "artist": "[not recorded]",
+       "year": "1700s",
+       "medium": "glass",
+       "dimensions": "Overall: 17 cm (6 11/16 in.)",
+       "classification": "Glass"
+      },
+      "years": [],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-18454",
+      "fields": {
+       "title": "Bottle-Shaped Vase",
+       "artist": "[not recorded]",
+       "year": "Qing dynasty (1644–1911), c. 18th century",
+       "medium": "Porcelain with purple flambé glaze",
+       "dimensions": "33 × 22.2 cm (13 × 8 3/4 in.); Diam.: 22.2 cm (8 3/4 in.)",
+       "classification": "vase"
+      },
+      "years": [
+       1644,
+       1911
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-96788",
+      "fields": {
+       "title": "Flintlock Pistol (2 of 2)",
+       "artist": "[not recorded]",
+       "year": "early 1700s",
+       "medium": "steel with gold inlay, gilt-brass mounts; walnut burl stock; chiseled high-relief decoration",
+       "dimensions": "Overall: 49.5 cm (19 1/2 in.); Barrel: 32.1 cm (12 5/8 in.); Bore: 1.5 cm (9/16 in.)",
+       "classification": "Arms and Armor"
+      },
+      "years": [],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-138359",
+      "fields": {
+       "title": "Wineglass and a Bowl of Fruit",
+       "artist": "Willem Kalf",
+       "year": "1663",
+       "medium": "oil on canvas",
+       "dimensions": "Framed: 81 x 70.5 x 7.5 cm (31 7/8 x 27 3/4 x 2 15/16 in.); Unframed: 60.3 x 50.2 cm (23 3/4 x 19 3/4 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1663
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-380066",
+      "fields": {
+       "title": "West Point, near Small Point, Maine—Autumn",
+       "artist": "John Marin",
+       "year": "1914",
+       "medium": "Watercolor with traces of graphite on thick, highly textured wove paper",
+       "dimensions": "Image and Sheet: 41.5 x 48.9 cm (16 5/16 x 19 1/4 in.)",
+       "classification": "Drawing"
+      },
+      "years": [
+       1914
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-15477",
+      "fields": {
+       "title": "Octadrachm (Coin) Portraying Arsinoe II",
+       "artist": "Ancient Greek",
+       "year": "261 BCE, Issued by Ptolemy II\nReign of Arsinoe II, Queen of Egypt, 276–270 BCE",
+       "medium": "Gold",
+       "dimensions": "Diam.: 2.9 cm (1 3/16 in.)",
+       "classification": "coin"
+      },
+      "years": [],
+      "internal_contradiction": false
+     }
+    ],
+    "prompt_audit": {
+     "status": "ok",
+     "system_prompt_dropped_suspected": false,
+     "instruction_tokens_expected": 625,
+     "prompt_tokens_delta": 0,
+     "prompt_tokens_ratio": 1.0,
+     "detail": "reported prompt_tokens 4220 is consistent with the instructions arriving (estimate 4220, delta +0)"
+    },
+    "prompt_tokens": 4220,
+    "llm": {
+     "error_type": null,
+     "is_truncated": false,
+     "truncation_reasons": [],
+     "prior_truncation": null,
+     "truncation_recovered": false,
+     "raw_content": "{\n  \"answer\": \"The corpus does not contain the melting point of gallium arsenide. None of the retrieved records mention gallium arsenide or its melting point.\",\n  \"answerable\": false,\n  \"record_ids_used\": [],\n  \"record_ids_excluded\": [\n    {\"id\": \"aic-36233\", \"reason\": \"Describes a Labino glass artwork and furnace; no mention of gallium arsenide or melting points of semiconductors.\"},\n    {\"id\": \"cma-169614\", \"reason\": \"Painting record about Haverstraw Bay; unrelated to the question.\"},\n    {\"id\": \"aic-27835\", \"reason\": \"Tiffany glass vase; mentions glass 'reheated almost to the melting point' but gives no value and does not concern gallium arsenide.\"},\n    {\"id\": \"aic-42367\", \"reason\": \"Porcelain cup record; unrelated to the question.\"},\n    {\"id\": \"cma-144663\", \"reason\": \"Hookah bowl record; unrelated to the question.\"},\n    {\"id\": \"aic-18454\", \"reason\": \"Flambé vase record; unrelated to the question.\"},\n    {\"id\": \"cma-96788\", \"reason\": \"Flintlock pistol record; unrelated to the question.\"},\n    {\"id\": \"cma-138359\", \"reason\": \"Willem Kalf still life; unrelated to the question.\"},\n    {\"id\": \"cma-380066\", \"reason\": \"John Marin watercolor; unrelated to the question.\"},\n    {\"id\": \"aic-15477\", \"reason\": \"Ptolemaic gold octadrachm; unrelated to the question.\"}\n  ],\n  \"limitations\": \"The retrieved records are museum art and object catalog entries; none address semiconductor materials. The melting point of gallium arsenide is not stated anywhere in this corpus, so I have not supplied it from general knowledge.\"\n}"
+    }
+   },
+   "audit_inputs": {
+    "expected_with_instructions": 4220,
+    "expected_without_instructions": 3595,
+    "instruction_tokens": 625
+   },
+   "best_similarity": 0.5595576763153076,
+   "max_tokens": 1024,
+   "dropped_by_script": false,
+   "recorded": {
+    "model": "claude-haiku-5-5",
+    "provider": "anthropic",
+    "recorded_at": "2026-10-27T03:16:23.848716+00:00",
+    "model_calls": 1,
+    "tokens": 4816
+   },
+   "id": "q10",
+   "kind": "recorded",
+   "expect": "decline: passes the BM25 gate on the public corpus (19.75 > 19.5)",
+   "question": "What is the melting point of gallium arsenide?",
+   "seed": null,
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "Declined (answerable=false) without asserting a claim -- zero citations is the correct shape for a decline."
+    },
+    "citation_groundedness": {
+     "label": "INCONCLUSIVE",
+     "score": null,
+     "explanation": "No citations and no claim asserted -- groundedness cannot be measured, and is NOT reported as a pass."
+    },
+    "confidence_capping": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "Capped correctly: 0 valid citations -> score withheld (label=not_applicable); effective confidence 0.00."
+    },
+    "prompt_integrity": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "reported prompt_tokens 4220 is consistent with the instructions arriving (estimate 4220, delta +0)"
+    },
+    "verifier.citation_membership": {
+     "label": "INCONCLUSIVE",
+     "score": null,
+     "explanation": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+    },
+    "verifier.not_recorded_violation": {
+     "label": "INCONCLUSIVE",
+     "score": null,
+     "explanation": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+    },
+    "verifier.factual_match": {
+     "label": "INCONCLUSIVE",
+     "score": null,
+     "explanation": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+    },
+    "verifier.not_truncated": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no truncation signal fired"
+    },
+    "deterministic_verdict": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "All deterministic evaluators passed, or could not run (inconclusive) or did not apply."
+    },
+    "llm_judge_surrogate": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "PASS -- Answer is relevant, coherent and appears correct."
+    }
+   }
+  },
+  {
+   "payload": {
+    "question": "What is the capital of Mongolia?",
+    "result": {
+     "question": "What is the capital of Mongolia?",
+     "abstained": true,
+     "reason": "Abstained before any paid call: best BM25 score 17.22 is below BM25_ABSTENTION_THRESHOLD 19.5 -- no record shares enough distinctive vocabulary with this question to anchor an answer",
+     "retrieval_signals": {
+      "dense_similarity": 0.5612903833389282,
+      "bm25_max": 17.21788673391476,
+      "dense_threshold": 0.35,
+      "bm25_threshold": 19.5,
+      "dense_below_threshold": false,
+      "bm25_below_threshold": true,
+      "abstain_reasons": [
+       "best BM25 score 17.22 is below BM25_ABSTENTION_THRESHOLD 19.5 -- no record shares enough distinctive vocabulary with this question to anchor an answer"
+      ]
+     },
+     "answer": null
+    },
+    "candidate_ids": [
+     "aic-24095",
+     "aic-24098",
+     "aic-49039",
+     "aic-43097",
+     "cma-149413",
+     "cma-135658",
+     "cma-148794",
+     "aic-24515",
+     "cma-135656",
+     "aic-36138"
+    ],
+    "context_blocks": [],
+    "prompt_audit": {},
+    "prompt_tokens": null,
+    "llm": {}
+   },
+   "audit_inputs": null,
+   "best_similarity": 0.5612903833389282,
+   "max_tokens": 1024,
+   "dropped_by_script": false,
+   "recorded": {
+    "model": "claude-haiku-5-5",
+    "provider": "anthropic",
+    "recorded_at": "2026-10-27T03:16:23.999169+00:00",
+    "model_calls": 0,
+    "tokens": 0
+   },
+   "id": "q11",
+   "kind": "recorded",
+   "expect": "abstain before any model call (BM25 17.22 < 19.5)",
+   "question": "What is the capital of Mongolia?",
+   "seed": null,
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Abstained before generation -- no claim was made."
+    },
+    "citation_groundedness": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Abstained -- nothing was cited."
+    },
+    "confidence_capping": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Abstained before generation -- no confidence emitted."
+    },
+    "prompt_integrity": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Abstained -- no prompt was sent."
+    },
+    "verifier.citation_membership": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Abstained -- nothing to verify."
+    },
+    "verifier.not_recorded_violation": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Abstained -- nothing to verify."
+    },
+    "verifier.factual_match": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Abstained -- nothing to verify."
+    },
+    "verifier.not_truncated": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Abstained -- nothing to verify."
+    },
+    "deterministic_verdict": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "Nothing was generated, so nothing to verify."
+    },
+    "llm_judge_surrogate": {
+     "label": "NOT_APPLICABLE",
+     "score": null,
+     "explanation": "No answer was generated to judge."
+    }
+   }
+  },
+  {
+   "audit_inputs": {
+    "expected_with_instructions": 4515,
+    "expected_without_instructions": 3890,
+    "instruction_tokens": 625
+   },
+   "best_similarity": 0.7670131325721741,
+   "max_tokens": 1024,
+   "payload": {
+    "question": "What year was Coney Island Beach by Reginald Marsh made?",
+    "result": {
+     "question": "What year was Coney Island Beach by Reginald Marsh made?",
+     "abstained": false,
+     "answer": "According to record cma-117571, Coney Island Beach by Reginald Marsh was made in 1935. The record lists its medium as etching and classifies it as a Print.",
+     "answerable": true,
+     "record_ids_used": [],
+     "limitations": "Only one record matches the title and artist; the dimensions field is not recorded for this work, though that does not affect the answer.",
+     "confidence": {
+      "score": null,
+      "label": "not_applicable",
+      "reason": "no factual claim was asserted and no record was cited, so there is nothing to be confident about. The verification checks below pass vacuously on an empty citation set and are reported as inconclusive, not as passes.",
+      "components": null
+     },
+     "verification_checks": {
+      "citation_membership": {
+       "passed": true,
+       "inconclusive": true,
+       "detail": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+      },
+      "not_recorded_violation": {
+       "passed": true,
+       "inconclusive": true,
+       "detail": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+      },
+      "factual_match": {
+       "passed": true,
+       "inconclusive": true,
+       "detail": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+      },
+      "not_truncated": {
+       "passed": true,
+       "detail": "no truncation signal fired"
+      }
+     },
+     "is_truncated": false
+    },
+    "candidate_ids": [
+     "cma-117571",
+     "cma-157127",
+     "cma-171726",
+     "aic-59820",
+     "cma-92936",
+     "cma-125234",
+     "cma-86544",
+     "aic-39691",
+     "aic-14598",
+     "aic-39247"
+    ],
+    "context_blocks": [
+     {
+      "id": "cma-117571",
+      "fields": {
+       "title": "Coney Island Beach",
+       "artist": "Reginald Marsh",
+       "year": "1935",
+       "medium": "etching",
+       "dimensions": "[not recorded]",
+       "classification": "Print"
+      },
+      "years": [
+       1935
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-157127",
+      "fields": {
+       "title": "Coney Island",
+       "artist": "Andreas Feininger",
+       "year": "1949",
+       "medium": "gelatin silver print",
+       "dimensions": "Image: 34.2 x 27.2 cm (13 7/16 x 10 11/16 in.); Matted: 50.8 x 40.6 cm (20 x 16 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       1949
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-171726",
+      "fields": {
+       "title": "Coney Island",
+       "artist": "Leon Levinstein",
+       "year": "c. 1954",
+       "medium": "Gelatin silver print",
+       "dimensions": "Image: 32.3 x 46.5 cm (12 11/16 x 18 5/16 in.); Paper: 38.2 x 50.5 cm (15 1/16 x 19 7/8 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       1954
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-59820",
+      "fields": {
+       "title": "Tattoo and Haircut",
+       "artist": "Reginald Marsh",
+       "year": "1932",
+       "medium": "Egg tempera on Masonite",
+       "dimensions": "118.1 × 121.6 cm (46 1/2 × 47 7/8 in.)",
+       "classification": "tempera"
+      },
+      "years": [
+       1932
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-92936",
+      "fields": {
+       "title": "Maine Coast",
+       "artist": "Rockwell Kent",
+       "year": "1907",
+       "medium": "oil on canvas",
+       "dimensions": "Framed: 104.5 x 130.2 x 6.5 cm (41 1/8 x 51 1/4 x 2 9/16 in.); Unframed: 86.4 x 111.7 cm (34 x 44 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1907
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-125234",
+      "fields": {
+       "title": "Low Tide at Pourville, near Dieppe, 1882",
+       "artist": "Claude Monet",
+       "year": "1882",
+       "medium": "oil on fabric",
+       "dimensions": "Framed: 65.4 x 106.7 x 10.5 cm (25 3/4 x 42 x 4 1/8 in.); Unframed: 59.9 x 81.3 cm (23 9/16 x 32 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1882
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-86544",
+      "fields": {
+       "title": "Flying Ponies (Euclid Beach Park)",
+       "artist": "Carl Gaertner",
+       "year": "1932",
+       "medium": "oil on canvas",
+       "dimensions": "Unframed: 113 x 169.5 cm (44 1/2 x 66 3/4 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1932
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-39691",
+      "fields": {
+       "title": "Nantasket Beach",
+       "artist": "Emil Carlsen",
+       "year": "1876",
+       "medium": "Oil on canvas",
+       "dimensions": "38.7 × 66.8 cm (15 1/4 × 26 5/16 in.)",
+       "classification": "painting"
+      },
+      "years": [
+       1876
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-14598",
+      "fields": {
+       "title": "The Beach at Sainte-Adresse",
+       "artist": "Claude Monet",
+       "year": "1867",
+       "medium": "Oil on canvas",
+       "dimensions": "75.8 × 102.5 cm (29 13/16 × 40 5/16 in.); Framed: 104.1 × 130.2 × 11.4 cm (41 × 51 1/2 × 4 1/2 in.)",
+       "classification": "painting"
+      },
+      "years": [
+       1867
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-39247",
+      "fields": {
+       "title": "Ocean Park #45",
+       "artist": "Richard Diebenkorn",
+       "year": "1971",
+       "medium": "Oil on canvas",
+       "dimensions": "254 × 205.7 cm (100 × 81 in.)",
+       "classification": "painting"
+      },
+      "years": [
+       1971
+      ],
+      "internal_contradiction": false
+     }
+    ],
+    "prompt_audit": {
+     "status": "ok",
+     "system_prompt_dropped_suspected": false,
+     "instruction_tokens_expected": 625,
+     "prompt_tokens_delta": 0,
+     "prompt_tokens_ratio": 1.0,
+     "detail": "reported prompt_tokens 4515 is consistent with the instructions arriving (estimate 4515, delta +0)"
+    },
+    "prompt_tokens": 4515,
+    "llm": {
+     "error_type": null,
+     "is_truncated": false,
+     "truncation_reasons": [],
+     "prior_truncation": null,
+     "truncation_recovered": false,
+     "raw_content": "{\"answer\": \"According to record cma-117571, Coney Island Beach by Reginald Marsh was made in 1935. The record lists its medium as etching and classifies it as a Print.\", \"answerable\": true, \"record_ids_used\": [], \"record_ids_excluded\": [{\"id\": \"cma-157127\", \"reason\": \"Coney Island photograph by Andreas Feininger; different title, artist, and year (1949).\"}, {\"id\": \"cma-171726\", \"reason\": \"Coney Island photograph by Leon Levinstein; different artist and date (c. 1954).\"}, {\"id\": \"aic-59820\", \"reason\": \"Reginald Marsh work, but titled Tattoo and Haircut (1932), not Coney Island Beach.\"}, {\"id\": \"cma-92936\", \"reason\": \"Rockwell Kent painting unrelated to the question.\"}, {\"id\": \"cma-125234\", \"reason\": \"Monet painting of Pourville, unrelated to the question.\"}, {\"id\": \"cma-86544\", \"reason\": \"Carl Gaertner painting of Euclid Beach Park, unrelated to the question.\"}, {\"id\": \"aic-39691\", \"reason\": \"Emil Carlsen painting Nantasket Beach, unrelated to the question.\"}, {\"id\": \"aic-14598\", \"reason\": \"Monet painting The Beach at Sainte-Adresse, unrelated to the question.\"}, {\"id\": \"aic-39247\", \"reason\": \"Diebenkorn painting Ocean Park #45, unrelated to the question.\"}], \"limitations\": \"Only one record matches the title and artist; the dimensions field is not recorded for this work, though that does not affect the answer.\"}"
+    }
+   },
+   "dropped_by_script": false,
+   "recorded": {
+    "model": "claude-haiku-5-5",
+    "provider": "anthropic",
+    "recorded_at": "2026-10-27T03:15:51.846032+00:00",
+    "model_calls": 0,
+    "tokens": 0,
+    "derived_from": "q01"
+   },
+   "id": "s01",
+   "kind": "seeded",
+   "expect": "zero-source all-clear",
+   "question": "What year was Coney Island Beach by Reginald Marsh made?",
+   "seed": {
+    "type": "transform",
+    "from": "q01",
+    "transform": "strip_citations",
+    "note": "q01's recorded answer with record_ids_used emptied; the answer text is the model's, unchanged. (Built on q01, not q08: the recorded q08 answer is a decline, and a decline with no citations is legitimately not a false pass.)"
+   },
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "FALSE PASS: output asserts an answer but cites 0 valid source records (cited=[], 10 candidates available). Confidence must be 0.0."
+    },
+    "citation_groundedness": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "Answer asserts a claim with 0 citations -- nothing grounds it."
+    },
+    "confidence_capping": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "Capped correctly: 0 valid citations -> score withheld (label=not_applicable); effective confidence 0.00."
+    },
+    "prompt_integrity": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "reported prompt_tokens 4515 is consistent with the instructions arriving (estimate 4515, delta +0)"
+    },
+    "verifier.citation_membership": {
+     "label": "INCONCLUSIVE",
+     "score": null,
+     "explanation": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+    },
+    "verifier.not_recorded_violation": {
+     "label": "INCONCLUSIVE",
+     "score": null,
+     "explanation": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+    },
+    "verifier.factual_match": {
+     "label": "INCONCLUSIVE",
+     "score": null,
+     "explanation": "INCONCLUSIVE -- the response cited no records, so this check had nothing to examine. It did not pass; it could not run."
+    },
+    "verifier.not_truncated": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no truncation signal fired"
+    },
+    "deterministic_verdict": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "zero_source_false_pass: FALSE PASS: output asserts an answer but cites 0 valid source records (cited=[], 10 candidates available). Confidence must be 0.0.; citation_groundedness: Answer asserts a claim with 0 citations -- nothing grounds it."
+    },
+    "llm_judge_surrogate": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "PASS -- Answer is relevant, coherent and appears correct."
+    }
+   }
+  },
+  {
+   "payload": {
+    "question": "When was Omer Fast's The Casting made?",
+    "result": {
+     "question": "When was Omer Fast's The Casting made?",
+     "abstained": false,
+     "error": "failed_to_parse_response: no_json_found",
+     "answer": null,
+     "raw_content": "Omer Fast's *The Casting* was made in **2007**, according to the Cleveland Museum of Art's record. It is a four-channel video installation, 14 minutes long, and the Cleveland edition is 4/6."
+    },
+    "candidate_ids": [
+     "cma-168184",
+     "cma-453145",
+     "aic-41711",
+     "cma-453144",
+     "cma-453146",
+     "cma-124115",
+     "cma-160089",
+     "cma-134703",
+     "aic-38141",
+     "aic-46992"
+    ],
+    "context_blocks": [
+     {
+      "id": "cma-453146",
+      "fields": {
+       "title": "Standing Apostle (Probably Saint John the Evangelist)",
+       "artist": "Master of the Saint-Omer Apostles",
+       "year": "c. 1430",
+       "medium": "Alabaster",
+       "dimensions": "Overall: 23.7 x 10.2 x 5.9 cm (9 5/16 x 4 x 2 5/16 in.)",
+       "classification": "Sculpture"
+      },
+      "years": [
+       1430
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-168184",
+      "fields": {
+       "title": "The Casting",
+       "artist": "Omer Fast",
+       "year": "2007",
+       "medium": "Four-channel video installation, color, sound; 14 minutes; edition 4/6 (Commissioned by the Museum Moderner Kunst Stiftung Ludwig Wien)",
+       "dimensions": "[not recorded]",
+       "classification": "Time-based Media"
+      },
+      "years": [
+       2007
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-41711",
+      "fields": {
+       "title": "Omer Talon",
+       "artist": "Claude Mellan",
+       "year": "1645/52",
+       "medium": "Engraving on paper",
+       "dimensions": "Plate: 27.4 × 19.7 cm (10 13/16 × 7 13/16 in.); Sheet: 31.5 × 23.4 cm (12 7/16 × 9 1/4 in.)",
+       "classification": "etching"
+      },
+      "years": [
+       1645,
+       1652
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-453144",
+      "fields": {
+       "title": "Two Standing Apostles (probably Saint John the Evangelist and St. Paul)",
+       "artist": "Master of the Saint-Omer Apostles",
+       "year": "c. 1430",
+       "medium": "Alabaster",
+       "dimensions": "Overall: 23.7 x 9.3 x 5.8 cm (9 5/16 x 3 11/16 x 2 5/16 in.); Overall: 23.7 x 10.2 x 5.9 cm (9 5/16 x 4 x 2 5/16 in.)",
+       "classification": "Sculpture"
+      },
+      "years": [
+       1430
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-124115",
+      "fields": {
+       "title": "Two Bohemian Peasants in Half-Length",
+       "artist": "Roelant Savery",
+       "year": "c. 1600",
+       "medium": "Pen and light- and dark-brown inks over preliminary drawing in black chalk; framing lines in pen and brown ink",
+       "dimensions": "Sheet: 15.1 x 18.8 cm (5 15/16 x 7 3/8 in.)",
+       "classification": "Drawing"
+      },
+      "years": [
+       1600
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-160089",
+      "fields": {
+       "title": "Fire Screen",
+       "artist": "Herter Brothers",
+       "year": "c. 1878–80",
+       "medium": "gilded wood, painted and gilded wood panels, brocaded silk, embossed paper",
+       "dimensions": "Overall: 131.8 x 76.2 x 58.3 cm (51 7/8 x 30 x 22 15/16 in.)",
+       "classification": "Furniture and woodwork"
+      },
+      "years": [
+       1878,
+       1880
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-134703",
+      "fields": {
+       "title": "Lime Dipper",
+       "artist": "[not recorded]",
+       "year": "c. 1–800 CE",
+       "medium": "gold",
+       "dimensions": "Overall: 25.6 cm (10 1/16 in.)",
+       "classification": "Metalwork"
+      },
+      "years": [],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-38141",
+      "fields": {
+       "title": "The Woman of Advanced Intellect (The Intellectual) (Die Frau im fortgeschrittenen Intellekt [Die Intellektuelle])",
+       "artist": "August Sander",
+       "year": "1914, printed later",
+       "medium": "Gelatin silver print",
+       "dimensions": "Image: 29.4 × 23.2 cm (11 5/8 × 9 3/16 in.); Paper: 30 × 23.9 cm (11 13/16 × 9 7/16 in.)",
+       "classification": "gelatin silver (developing-out-paper) pr"
+      },
+      "years": [
+       1914
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-46992",
+      "fields": {
+       "title": "Peasant Children, Westerwald",
+       "artist": "August Sander",
+       "year": "1927/31, printed later",
+       "medium": "Gelatin silver print, printed by the artist's son, Gunther Sander",
+       "dimensions": "Image/paper: 26.7 × 35.7 cm (10 9/16 × 14 1/16 in.); Mount: 32.5 × 43.1 cm (12 13/16 × 17 in.)",
+       "classification": "gelatin silver (developing-out-paper) pr"
+      },
+      "years": [
+       1927,
+       1931
+      ],
+      "internal_contradiction": false
+     }
+    ],
+    "prompt_audit": {
+     "status": "dropped_suspected",
+     "system_prompt_dropped_suspected": true,
+     "instruction_tokens_expected": 625,
+     "prompt_tokens_delta": -625,
+     "prompt_tokens_ratio": 0.855,
+     "detail": "reported prompt_tokens 3694 is below the 4006-token midpoint between the with-instructions estimate (4319) and the without-instructions estimate (3694) -- the ~625-token instruction block was most likely NOT delivered"
+    },
+    "prompt_tokens": 3694,
+    "llm": {
+     "error_type": null,
+     "is_truncated": false,
+     "truncation_reasons": [],
+     "prior_truncation": null,
+     "truncation_recovered": false,
+     "raw_content": "Omer Fast's *The Casting* was made in **2007**, according to the Cleveland Museum of Art's record. It is a four-channel video installation, 14 minutes long, and the Cleveland edition is 4/6."
+    }
+   },
+   "audit_inputs": {
+    "expected_with_instructions": 4319,
+    "expected_without_instructions": 3694,
+    "instruction_tokens": 625
+   },
+   "best_similarity": 0.776326596736908,
+   "max_tokens": 1024,
+   "dropped_by_script": true,
+   "recorded": {
+    "model": "claude-haiku-5-5",
+    "provider": "anthropic",
+    "recorded_at": "2026-10-27T03:16:26.306548+00:00",
+    "model_calls": 1,
+    "tokens": 3841
+   },
+   "id": "s02",
+   "kind": "seeded",
+   "expect": "dropped system prompt",
+   "question": "When was Omer Fast's The Casting made?",
+   "seed": {
+    "type": "real_call_without_system_prompt",
+    "from": "q03",
+    "note": "A real model call for q03's question with the instruction block deliberately not sent, reproducing the measured proxy behaviour. The output and billed prompt_tokens are real."
+   },
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "FALSE PASS: output asserts an answer in unparseable output (failed_to_parse_response) but cites 0 valid source records (cited=[], 10 candidates available). Confidence must be 0.0."
+    },
+    "citation_groundedness": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "Answer asserts a claim with 0 citations -- nothing grounds it."
+    },
+    "confidence_capping": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "Capped correctly: 0 valid citations; system prompt suspected dropped -> no confidence emitted (failed_to_parse_response: no_json_found); effective confidence 0.00."
+    },
+    "prompt_integrity": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "SYSTEM PROMPT DROPPED: reported prompt_tokens 3694 is below the 4006-token midpoint between the with-instructions estimate (4319) and the without-instructions estimate (3694) -- the ~625-token instruction block was most likely NOT delivered"
+    },
+    "verifier.citation_membership": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "no response to check"
+    },
+    "verifier.not_recorded_violation": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "no response to check"
+    },
+    "verifier.factual_match": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "no response to check"
+    },
+    "verifier.not_truncated": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no truncation signal fired"
+    },
+    "deterministic_verdict": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "zero_source_false_pass: FALSE PASS: output asserts an answer in unparseable output (failed_to_parse_response) but cites 0 valid source records (cited=[], 10 candidates available). Confidence must be 0.0.; citation_groundedness: Answer asserts a claim with 0 citations -- nothing grounds it.; prompt_integrity: SYSTEM PROMPT DROPPED: reported prompt_tokens 3694 is below the 4006-token midpoint between the with-instructions estimate (4319) and the without-instructions estimate (3694) -- the ~625-token instruction block was most likely NOT delivered; verifier.citation_membership: no response to check; verifier.not_recorded_violation: no response to check; verifier.factual_match: no response to check"
+    },
+    "llm_judge_surrogate": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "PASS -- Answer is relevant, coherent and appears correct."
+    }
+   }
+  },
+  {
+   "audit_inputs": {
+    "expected_with_instructions": 4829,
+    "expected_without_instructions": 4204,
+    "instruction_tokens": 625
+   },
+   "best_similarity": 0.7541812062263489,
+   "max_tokens": 1024,
+   "payload": {
+    "question": "When was Jeff Brouws's Railroad Landscape #33 in Pine Plains, New York made?",
+    "result": {
+     "question": "When was Jeff Brouws's Railroad Landscape #33 in Pine Plains, New York made?",
+     "abstained": false,
+     "answer": "The record for Railroad Landscape #33, Newburgh, Dutchess & Connecticut Right-of-Way, Abandoned 1938, MP 16, View South, Winter, Pine Plains, New York (artist Jeff Brouws) gives the date as 2009, printed 2010 (parsed as [2009, 2010]). The work is an inkjet print.",
+     "answerable": true,
+     "record_ids_used": [
+      "cma-169223",
+      "aic-13026"
+     ],
+     "limitations": "The record gives a range rather than a single date: created 2009 and printed 2010. The record does not specify which of these dates is the making date of the specific print.",
+     "confidence": {
+      "score": 0.75,
+      "label": "medium",
+      "components": {
+       "retrieval_score": 0.75,
+       "verification_score": 0.75,
+       "contradiction_penalty": 0.0,
+       "label_capped_by_failed_check": true
+      }
+     },
+     "verification_checks": {
+      "citation_membership": {
+       "passed": false,
+       "detail": "fabricated citations: {'aic-13026'}"
+      },
+      "not_recorded_violation": {
+       "passed": true,
+       "detail": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+      },
+      "factual_match": {
+       "passed": true,
+       "detail": "years consistent with cited records"
+      },
+      "not_truncated": {
+       "passed": true,
+       "detail": "no truncation signal fired"
+      }
+     },
+     "is_truncated": false
+    },
+    "candidate_ids": [
+     "cma-169223",
+     "aic-45778",
+     "cma-161701",
+     "cma-172954",
+     "aic-33212",
+     "aic-15566",
+     "cma-118490",
+     "aic-32753",
+     "cma-93014",
+     "aic-2923"
+    ],
+    "context_blocks": [
+     {
+      "id": "cma-169223",
+      "fields": {
+       "title": "Railroad Landscape #33, Newburgh, Dutchess & Connecticut Right-of-Way, Abandoned 1938, MP 16, View South, Winter, Pine Plains, New York",
+       "artist": "Jeff Brouws",
+       "year": "2009, printed 2010",
+       "medium": "inkjet print",
+       "dimensions": "Image: 83.7 x 101.6 cm (32 15/16 x 40 in.); Paper: 93.9 x 111.7 cm (36 15/16 x 44 in.); Mounted: 93.9 x 111.7 cm (36 15/16 x 44 in.)",
+       "classification": "Photograph"
+      },
+      "years": [
+       2009,
+       2010
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-45778",
+      "fields": {
+       "title": "Mouth of Patterson's Creek, Main Line, B & O Railroad",
+       "artist": "William Henry Jackson",
+       "year": "1892",
+       "medium": "Albumen print",
+       "dimensions": "Image/paper: 43.8 × 53.8 cm (17 1/4 × 21 3/16 in.); Mount: 53.9 × 67.3 cm (21 1/4 × 26 1/2 in.)",
+       "classification": "albumen silver print"
+      },
+      "years": [
+       1892
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-161701",
+      "fields": {
+       "title": "New Year's Eve in New York City (Jazz Bowl)",
+       "artist": "Viktor Schreckengost and Cowan Pottery Studio",
+       "year": "1931",
+       "medium": "glazed ceramic with sgraffito design",
+       "dimensions": "Overall: 28.6 x 41.3 cm (11 1/4 x 16 1/4 in.)",
+       "classification": "Ceramic"
+      },
+      "years": [
+       1931
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-172954",
+      "fields": {
+       "title": "Hills, South Truro",
+       "artist": "Edward Hopper",
+       "year": "1930",
+       "medium": "oil on canvas",
+       "dimensions": "Framed: 83 x 123.5 x 6.5 cm (32 11/16 x 48 5/8 x 2 9/16 in.); Unframed: 69.5 x 109.5 cm (27 3/8 x 43 1/8 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1930
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-33212",
+      "fields": {
+       "title": "The Arcueil Aqueduct at Sceaux Railroad Crossing",
+       "artist": "Jean Baptiste Armand Guillaumin",
+       "year": "1874",
+       "medium": "Oil on canvas",
+       "dimensions": "51.5 × 65 cm (20 1/4 × 25 9/16 in.); Framed: 71.2 × 86.4 × 11.5 cm (28 × 34 × 4 1/2 in.)",
+       "classification": "oil on canvas"
+      },
+      "years": [
+       1874
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-15566",
+      "fields": {
+       "title": "The Mysteriously Abandoned New Home",
+       "artist": "H. C. Westermann",
+       "year": "1958",
+       "medium": "Pine, birch, vermillion, redwood, glass, paint, and wheels",
+       "dimensions": "212.3 × 57.4 × 55.2 cm (83 5/8 × 22 5/8 × 21 3/4 in.)",
+       "classification": "sculpture"
+      },
+      "years": [
+       1958
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-118490",
+      "fields": {
+       "title": "The Drive, Central Park",
+       "artist": "William Glackens",
+       "year": "c. 1905",
+       "medium": "oil on canvas",
+       "dimensions": "Framed: 84.1 x 99.4 x 9.5 cm (33 1/8 x 39 1/8 x 3 3/4 in.); Unframed: 64.5 x 81 cm (25 3/8 x 31 7/8 in.); Former: 84 x 99 x 11.5 cm (33 1/16 x 39 x 4 1/2 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1905
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-32753",
+      "fields": {
+       "title": "Cottage at the Top of a Hill",
+       "artist": "Jacob van Ruisdael",
+       "year": "c. 1660",
+       "medium": "Etching in black on ivory laid paper",
+       "dimensions": "Image/plate: 18.6 × 26.8 cm (7 3/8 × 10 9/16 in.); Sheet: 19.6 × 27.7 cm (7 3/4 × 10 15/16 in.)",
+       "classification": "etching"
+      },
+      "years": [
+       1660
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "cma-93014",
+      "fields": {
+       "title": "View of Schroon Mountain, Essex County, New York, After a Storm",
+       "artist": "Thomas Cole",
+       "year": "1838",
+       "medium": "oil on canvas",
+       "dimensions": "Framed: 132.5 x 193.5 x 13 cm (52 3/16 x 76 3/16 x 5 1/8 in.); Unframed: 99.8 x 160.6 cm (39 5/16 x 63 1/4 in.)",
+       "classification": "Painting"
+      },
+      "years": [
+       1838
+      ],
+      "internal_contradiction": false
+     },
+     {
+      "id": "aic-2923",
+      "fields": {
+       "title": "Buildings",
+       "artist": "John Marin",
+       "year": "c. 1910",
+       "medium": "Watercolor with blotting, over graphite, on lightweight, slightly textured, off-white wove paper, laid down on ivory wove card",
+       "dimensions": "18.7 × 23.1 cm (7 3/8 × 9 1/8 in.)",
+       "classification": "watercolor"
+      },
+      "years": [
+       1910
+      ],
+      "internal_contradiction": false
+     }
+    ],
+    "prompt_audit": {
+     "status": "ok",
+     "system_prompt_dropped_suspected": false,
+     "instruction_tokens_expected": 625,
+     "prompt_tokens_delta": 0,
+     "prompt_tokens_ratio": 1.0,
+     "detail": "reported prompt_tokens 4829 is consistent with the instructions arriving (estimate 4829, delta +0)"
+    },
+    "prompt_tokens": 4829,
+    "llm": {
+     "error_type": null,
+     "is_truncated": false,
+     "truncation_reasons": [],
+     "prior_truncation": null,
+     "truncation_recovered": false,
+     "raw_content": "{\"answer\": \"The record for Railroad Landscape #33, Newburgh, Dutchess & Connecticut Right-of-Way, Abandoned 1938, MP 16, View South, Winter, Pine Plains, New York (artist Jeff Brouws) gives the date as 2009, printed 2010 (parsed as [2009, 2010]). The work is an inkjet print.\", \"answerable\": true, \"record_ids_used\": [\"cma-169223\", \"aic-13026\"], \"record_ids_excluded\": [{\"id\": \"aic-45778\", \"reason\": \"Different artist (William Henry Jackson) and subject (Patterson's Creek, B & O Railroad); not the requested work.\"}, {\"id\": \"cma-161701\", \"reason\": \"Unrelated work (Viktor Schreckengost and Cowan Pottery jazz bowl).\"}, {\"id\": \"cma-172954\", \"reason\": \"Unrelated work (Edward Hopper, Hills, South Truro).\"}, {\"id\": \"aic-33212\", \"reason\": \"Unrelated work (Guillaumin, Arcueil Aqueduct); railroad subject only superficially similar.\"}, {\"id\": \"aic-15566\", \"reason\": \"Unrelated work (H. C. Westermann sculpture).\"}, {\"id\": \"cma-118490\", \"reason\": \"Unrelated work (William Glackens, The Drive, Central Park).\"}, {\"id\": \"aic-32753\", \"reason\": \"Unrelated work (Jacob van Ruisdael etching).\"}, {\"id\": \"cma-93014\", \"reason\": \"Unrelated work (Thomas Cole, Schroon Mountain).\"}, {\"id\": \"aic-2923\", \"reason\": \"Unrelated work (John Marin watercolor).\"}], \"limitations\": \"The record gives a range rather than a single date: created 2009 and printed 2010. The record does not specify which of these dates is the making date of the specific print.\"}"
+    }
+   },
+   "dropped_by_script": false,
+   "recorded": {
+    "model": "claude-haiku-5-5",
+    "provider": "anthropic",
+    "recorded_at": "2026-10-27T03:16:01.716820+00:00",
+    "model_calls": 0,
+    "tokens": 0,
+    "derived_from": "q04"
+   },
+   "id": "s03",
+   "kind": "seeded",
+   "expect": "ungrounded citation",
+   "question": "When was Jeff Brouws's Railroad Landscape #33 in Pine Plains, New York made?",
+   "seed": {
+    "type": "transform",
+    "from": "q04",
+    "transform": "add_citation",
+    "record_id": "aic-13026",
+    "note": "q04's recorded answer with aic-13026 added to its citations: a real AIC record ID that the public API no longer serves, so it is never in the retrieved candidate set."
+   },
+   "python_verdicts": {
+    "zero_source_false_pass": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "1 valid source record(s) cited: ['cma-169223']"
+    },
+    "citation_groundedness": {
+     "label": "FAIL",
+     "score": 0.5,
+     "explanation": "1/2 citation(s) are NOT in the fused candidate set: ['aic-13026']. Grounded: ['cma-169223']."
+    },
+    "confidence_capping": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "Capped correctly: failed checks ['citation_membership'] -> label capped to 'medium' (score 0.75); effective confidence 0.75."
+    },
+    "prompt_integrity": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "reported prompt_tokens 4829 is consistent with the instructions arriving (estimate 4829, delta +0)"
+    },
+    "verifier.citation_membership": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "fabricated citations: {'aic-13026'}"
+    },
+    "verifier.not_recorded_violation": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no violations possible -- no cited record has a [not recorded] field for the answer to fill in"
+    },
+    "verifier.factual_match": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "years consistent with cited records"
+    },
+    "verifier.not_truncated": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "no truncation signal fired"
+    },
+    "deterministic_verdict": {
+     "label": "FAIL",
+     "score": 0.0,
+     "explanation": "citation_groundedness: 1/2 citation(s) are NOT in the fused candidate set: ['aic-13026']. Grounded: ['cma-169223'].; verifier.citation_membership: fabricated citations: {'aic-13026'}"
+    },
+    "llm_judge_surrogate": {
+     "label": "PASS",
+     "score": 1.0,
+     "explanation": "PASS -- Answer is relevant, coherent and appears correct."
+    }
+   }
+  }
+ ]
+}
