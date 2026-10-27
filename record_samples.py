@@ -4,6 +4,8 @@ live demo's fixed sample set (samples/samples.json).
 
     python record_samples.py            # prints the plan and the call count
     python record_samples.py --yes      # makes the paid calls and writes the files
+    python record_samples.py --reseed   # no calls: rebuilds the 'transform' seeds
+                                        # from the recorded file
 
 Needs, on YOUR machine:
   - ANTHROPIC_API_KEY in .env (never committed, never deployed)
@@ -92,12 +94,66 @@ def transform_answer(raw, spec):
     return json.dumps(parsed, ensure_ascii=False)
 
 
+def transform_entry(parent, seed):
+    """A 'transform' seed: the parent's recorded answer with one labelled edit, re-scored."""
+    from rescore import rescore
+    raw = transform_answer(parent["payload"]["llm"]["raw_content"], seed)
+    entry = {k: parent[k] for k in ("audit_inputs", "best_similarity", "max_tokens")}
+    entry["payload"] = rescore(parent, raw, system_prompt_delivered=True)
+    entry["dropped_by_script"] = False
+    entry["recorded"] = {"model": parent["recorded"]["model"], "provider": "anthropic",
+                         "recorded_at": parent["recorded"]["recorded_at"],
+                         "model_calls": 0, "tokens": 0,
+                         "derived_from": seed["from"]}
+    return entry
+
+
+def reseed(spec):
+    """Rebuilds only the 'transform' seeds from the recorded file, after a
+    samples.json change. No model call: every recorded answer and the real
+    no-system-prompt call are kept exactly as recorded."""
+    from rescore import evaluate
+    if os.getenv("K_SERVICE"):
+        refuse("this is the serving environment. Recording is local-only.")
+    doc = json.load(open(OUT_PATHS[0], encoding="utf-8"))
+    kept = {e["id"]: e for e in doc["scenarios"]}
+    out, by_id = [], {}
+    for s in spec:
+        if s["kind"] == "seeded" and s["seed"]["type"] == "transform":
+            print(f"[record] {s['id']}: {s['seed']['transform']} on {s['seed']['from']}'s recorded answer")
+            entry = transform_entry(by_id[s["seed"]["from"]], s["seed"])
+        elif s["id"] in kept:
+            entry = kept[s["id"]]
+        else:
+            refuse(f"{s['id']} has no recording. Run with --yes to record it.")
+        entry.update({"id": s["id"], "kind": s["kind"], "expect": s["expect"],
+                      "question": entry["payload"]["question"], "seed": s.get("seed")})
+        entry["python_verdicts"] = evaluate(entry["payload"])
+        by_id[s["id"]] = entry
+        out.append(entry)
+        v = entry["python_verdicts"]
+        print(f"[record] {s['id']}: verdict={v['deterministic_verdict']['label']:<15} "
+              f"judge={v['llm_judge_surrogate']['label']}")
+    doc["scenarios"] = out
+    for path in OUT_PATHS:
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(doc, f, ensure_ascii=False, indent=1)
+        print(f"[record] wrote {os.path.relpath(path, REPO_ROOT)}")
+    print(f"[record] no model calls. File totals unchanged: {doc['total_model_calls']} call(s), "
+          f"{doc['total_tokens']} tokens.")
+    return 0
+
+
 def main():
     p = argparse.ArgumentParser(description="Record real model outputs for the demo samples.")
     p.add_argument("--yes", action="store_true", help="make the paid calls")
+    p.add_argument("--reseed", action="store_true",
+                   help="no calls: rebuild the transform seeds from the recorded file")
     args = p.parse_args()
 
     spec = json.load(open(SAMPLES_PATH, encoding="utf-8"))["samples"]
+    if args.reseed:
+        return reseed(spec)
     recorded = [s for s in spec if s["kind"] == "recorded"]
     real_seeds = [s for s in spec if s["kind"] == "seeded"
                   and s["seed"]["type"] == "real_call_without_system_prompt"]
@@ -167,14 +223,7 @@ def main():
                 entry = record(s, parent["question"], drop_system=True)
             else:
                 print(f"[record] {s['id']}: {seed['transform']} on {seed['from']}'s recorded answer")
-                raw = transform_answer(parent["payload"]["llm"]["raw_content"], seed)
-                entry = {k: parent[k] for k in ("audit_inputs", "best_similarity", "max_tokens")}
-                entry["payload"] = rescore(parent, raw, system_prompt_delivered=True)
-                entry["dropped_by_script"] = False
-                entry["recorded"] = {"model": parent["recorded"]["model"], "provider": "anthropic",
-                                     "recorded_at": parent["recorded"]["recorded_at"],
-                                     "model_calls": 0, "tokens": 0,
-                                     "derived_from": seed["from"]}
+                entry = transform_entry(parent, seed)
         entry.update({"id": s["id"], "kind": s["kind"], "expect": s["expect"],
                       "question": entry["payload"]["question"], "seed": s.get("seed")})
         entry["python_verdicts"] = evaluate(entry["payload"])

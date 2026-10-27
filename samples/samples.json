@@ -1,7 +1,7 @@
 {
   "description": "The fixed question set the live demo serves. record_samples.py answers each 'recorded' sample with one real model call and writes samples/recorded_outputs.json. 'seeded' samples are failures built on top of a recorded sample, either by a labelled transform of its real answer or by a real call with the system prompt deliberately left out. Nothing here is a model output.",
   "samples": [
-    {"id": "q01", "kind": "recorded", "expect": "grounded answer",
+    {"id": "q01", "kind": "recorded", "expect": "grounded answer (parent of s01)",
      "question": "What year was Coney Island Beach by Reginald Marsh made?"},
     {"id": "q02", "kind": "recorded", "expect": "grounded answer",
      "question": "What is Louise Bourgeois's Ode to My Mother made of?"},
@@ -11,11 +11,11 @@
      "question": "When was Jeff Brouws's Railroad Landscape #33 in Pine Plains, New York made?"},
     {"id": "q05", "kind": "recorded", "expect": "grounded answer",
      "question": "What medium is Helen Frankenthaler's Humming Gold?"},
-    {"id": "q06", "kind": "recorded", "expect": "grounded answer",
+    {"id": "q06", "kind": "recorded", "expect": "grounded answer; factual_match reads the accession number 1947.39 as a year (verifier false positive)",
      "question": "What is Reginald Marsh's Tattoo and Haircut painted with?"},
     {"id": "q07", "kind": "recorded", "expect": "grounded answer",
      "question": "When did Ray Johnson make Untitled (Taoist Collages)?"},
-    {"id": "q08", "kind": "recorded", "expect": "grounded answer (parent of s01)",
+    {"id": "q08", "kind": "recorded", "expect": "decline: the records do not cover violations",
      "question": "Are there any violations in the Louise Bourgeois Ode to My Mother records?"},
     {"id": "q09", "kind": "recorded", "expect": "decline: the records describe works, not opinions",
      "question": "What did Helen Frankenthaler think about Abstract Expressionism?"},
@@ -25,8 +25,8 @@
      "question": "What is the capital of Mongolia?"},
 
     {"id": "s01", "kind": "seeded", "expect": "zero-source all-clear",
-     "seed": {"type": "transform", "from": "q08", "transform": "strip_citations",
-              "note": "q08's recorded answer with record_ids_used emptied; the answer text is the model's, unchanged."}},
+     "seed": {"type": "transform", "from": "q01", "transform": "strip_citations",
+              "note": "q01's recorded answer with record_ids_used emptied; the answer text is the model's, unchanged. (Built on q01, not q08: the recorded q08 answer is a decline, and a decline with no citations is legitimately not a false pass.)"}},
     {"id": "s02", "kind": "seeded", "expect": "dropped system prompt",
      "seed": {"type": "real_call_without_system_prompt", "from": "q03",
               "note": "A real model call for q03's question with the instruction block deliberately not sent, reproducing the measured proxy behaviour. The output and billed prompt_tokens are real."}},
