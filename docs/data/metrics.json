@@ -1,0 +1,638 @@
+{
+ "label": "measured metrics (replay mode)",
+ "generated_by": "scripts/run_metrics.py",
+ "generated_at": "2026-10-27T17:24:41.280984+00:00",
+ "environment": {
+  "python": "3.12.10",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "machine": "AMD64",
+  "processor": "AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD"
+ },
+ "source": {
+  "samples": "samples/recorded_outputs.json",
+  "model": "claude-haiku-5-5",
+  "label": "recorded model outputs"
+ },
+ "notes": {
+  "latency": "Measured: wall-clock time of one harness run in REPLAY mode on the machine above. Covers retrieval replay (recorded candidates), the 8 evaluators and the harness loop. Does NOT include a model call or any network.",
+  "tokens": "Recorded, not measured here: copied from the record_samples.py run that made each answer. Seeded transforms (s01, s03) made no call.",
+  "retries": "Replay has one recorded attempt per sample, so 'retried' is 0 by construction. The retry path is covered by tests/test_harness.py."
+ },
+ "summary": {
+  "samples": 14,
+  "harness_outcomes": {
+   "accepted": 9,
+   "abstained": 5,
+   "retried": 0
+  },
+  "abstain_reasons": {
+   "no_further_recorded_attempt": 4,
+   "retrieval_gate": 1
+  },
+  "evaluators": {
+   "zero_source_false_pass": {
+    "PASS": 11,
+    "FAIL": 2,
+    "INCONCLUSIVE": 0,
+    "NOT_APPLICABLE": 0
+   },
+   "citation_groundedness": {
+    "PASS": 9,
+    "FAIL": 3,
+    "INCONCLUSIVE": 1,
+    "NOT_APPLICABLE": 0
+   },
+   "confidence_capping": {
+    "PASS": 13,
+    "FAIL": 0,
+    "INCONCLUSIVE": 0,
+    "NOT_APPLICABLE": 0
+   },
+   "prompt_integrity": {
+    "PASS": 12,
+    "FAIL": 1,
+    "INCONCLUSIVE": 0,
+    "NOT_APPLICABLE": 0
+   },
+   "verifier.citation_membership": {
+    "PASS": 9,
+    "FAIL": 2,
+    "INCONCLUSIVE": 2,
+    "NOT_APPLICABLE": 0
+   },
+   "verifier.not_recorded_violation": {
+    "PASS": 10,
+    "FAIL": 1,
+    "INCONCLUSIVE": 2,
+    "NOT_APPLICABLE": 0
+   },
+   "verifier.factual_match": {
+    "PASS": 9,
+    "FAIL": 2,
+    "INCONCLUSIVE": 2,
+    "NOT_APPLICABLE": 0
+   },
+   "verifier.not_truncated": {
+    "PASS": 13,
+    "FAIL": 0,
+    "INCONCLUSIVE": 0,
+    "NOT_APPLICABLE": 0
+   },
+   "deterministic_verdict": {
+    "PASS": 9,
+    "FAIL": 4,
+    "INCONCLUSIVE": 0,
+    "NOT_APPLICABLE": 0
+   }
+  },
+  "latency_ms": {
+   "first_run_including_imports_ms": 243.933,
+   "all_runs": {
+    "n": 700,
+    "p50_ms": 1.263,
+    "p95_ms": 1.962,
+    "max_ms": 18.454
+   },
+   "per_step": {
+    "answer": {
+     "n": 650,
+     "p50_ms": 0.01,
+     "p95_ms": 0.014,
+     "max_ms": 0.27
+    },
+    "decide": {
+     "n": 700,
+     "p50_ms": 0.002,
+     "p95_ms": 0.003,
+     "max_ms": 0.017
+    },
+    "retrieve": {
+     "n": 700,
+     "p50_ms": 0.016,
+     "p95_ms": 0.023,
+     "max_ms": 0.297
+    },
+    "verify": {
+     "n": 650,
+     "p50_ms": 1.225,
+     "p95_ms": 1.979,
+     "max_ms": 18.358
+    }
+   },
+   "sequential_rescore_evaluate_baseline": {
+    "n": 650,
+    "p50_ms": 0.247,
+    "p95_ms": 0.428,
+    "max_ms": 1.163
+   },
+   "repeats_per_sample": 50,
+   "note": "The harness verify step runs the 8 evaluators concurrently in worker threads. Compare it with the sequential baseline: for sub-millisecond work, thread hand-off costs more than it saves. Concurrency here is for isolation, not speed."
+  },
+  "recorded_tokens_per_answer": {
+   "answers_with_a_model_call": 11,
+   "total_tokens": {
+    "mean": 4995.8,
+    "min": 3841,
+    "max": 5539
+   },
+   "prompt_tokens": {
+    "mean": 4394.6,
+    "min": 3694,
+    "max": 4900
+   },
+   "sum_total_tokens": 54954
+  },
+  "recorded_llm_judge": {
+   "label": "recorded LLM-judge outputs",
+   "model": "claude-haiku-5-5",
+   "judge_passed": [
+    "s01",
+    "s03"
+   ],
+   "judged": 3,
+   "total_tokens": 1493
+  }
+ },
+ "questions": [
+  {
+   "id": "q01",
+   "kind": "recorded",
+   "expect": "grounded answer (parent of s01)",
+   "question": "What year was Coney Island Beach by Reginald Marsh made?",
+   "evaluators": {
+    "zero_source_false_pass": "PASS",
+    "citation_groundedness": "PASS",
+    "confidence_capping": "PASS",
+    "prompt_integrity": "PASS",
+    "verifier.citation_membership": "PASS",
+    "verifier.not_recorded_violation": "PASS",
+    "verifier.factual_match": "PASS",
+    "verifier.not_truncated": "PASS",
+    "deterministic_verdict": "PASS"
+   },
+   "harness": {
+    "outcome": "accepted",
+    "abstain_reason": null,
+    "attempts": 1,
+    "retried": false
+   },
+   "latency_ms": {
+    "n": 50,
+    "p50_ms": 1.278,
+    "p95_ms": 2.142,
+    "max_ms": 17.77
+   },
+   "recorded_tokens": {
+    "model_calls": 1,
+    "total_tokens": 5088,
+    "prompt_tokens": 4515,
+    "derived_from": null
+   }
+  },
+  {
+   "id": "q02",
+   "kind": "recorded",
+   "expect": "grounded answer",
+   "question": "What is Louise Bourgeois's Ode to My Mother made of?",
+   "evaluators": {
+    "zero_source_false_pass": "PASS",
+    "citation_groundedness": "PASS",
+    "confidence_capping": "PASS",
+    "prompt_integrity": "PASS",
+    "verifier.citation_membership": "PASS",
+    "verifier.not_recorded_violation": "PASS",
+    "verifier.factual_match": "PASS",
+    "verifier.not_truncated": "PASS",
+    "deterministic_verdict": "PASS"
+   },
+   "harness": {
+    "outcome": "accepted",
+    "abstain_reason": null,
+    "attempts": 1,
+    "retried": false
+   },
+   "latency_ms": {
+    "n": 50,
+    "p50_ms": 1.363,
+    "p95_ms": 1.734,
+    "max_ms": 4.984
+   },
+   "recorded_tokens": {
+    "model_calls": 1,
+    "total_tokens": 4856,
+    "prompt_tokens": 4136,
+    "derived_from": null
+   }
+  },
+  {
+   "id": "q03",
+   "kind": "recorded",
+   "expect": "grounded answer",
+   "question": "When was Omer Fast's The Casting made?",
+   "evaluators": {
+    "zero_source_false_pass": "PASS",
+    "citation_groundedness": "PASS",
+    "confidence_capping": "PASS",
+    "prompt_integrity": "PASS",
+    "verifier.citation_membership": "PASS",
+    "verifier.not_recorded_violation": "PASS",
+    "verifier.factual_match": "PASS",
+    "verifier.not_truncated": "PASS",
+    "deterministic_verdict": "PASS"
+   },
+   "harness": {
+    "outcome": "accepted",
+    "abstain_reason": null,
+    "attempts": 1,
+    "retried": false
+   },
+   "latency_ms": {
+    "n": 50,
+    "p50_ms": 1.208,
+    "p95_ms": 2.046,
+    "max_ms": 16.392
+   },
+   "recorded_tokens": {
+    "model_calls": 1,
+    "total_tokens": 4858,
+    "prompt_tokens": 4319,
+    "derived_from": null
+   }
+  },
+  {
+   "id": "q04",
+   "kind": "recorded",
+   "expect": "grounded answer",
+   "question": "When was Jeff Brouws's Railroad Landscape #33 in Pine Plains, New York made?",
+   "evaluators": {
+    "zero_source_false_pass": "PASS",
+    "citation_groundedness": "PASS",
+    "confidence_capping": "PASS",
+    "prompt_integrity": "PASS",
+    "verifier.citation_membership": "PASS",
+    "verifier.not_recorded_violation": "PASS",
+    "verifier.factual_match": "PASS",
+    "verifier.not_truncated": "PASS",
+    "deterministic_verdict": "PASS"
+   },
+   "harness": {
+    "outcome": "accepted",
+    "abstain_reason": null,
+    "attempts": 1,
+    "retried": false
+   },
+   "latency_ms": {
+    "n": 50,
+    "p50_ms": 1.302,
+    "p95_ms": 2.095,
+    "max_ms": 3.312
+   },
+   "recorded_tokens": {
+    "model_calls": 1,
+    "total_tokens": 5479,
+    "prompt_tokens": 4829,
+    "derived_from": null
+   }
+  },
+  {
+   "id": "q05",
+   "kind": "recorded",
+   "expect": "grounded answer",
+   "question": "What medium is Helen Frankenthaler's Humming Gold?",
+   "evaluators": {
+    "zero_source_false_pass": "PASS",
+    "citation_groundedness": "PASS",
+    "confidence_capping": "PASS",
+    "prompt_integrity": "PASS",
+    "verifier.citation_membership": "PASS",
+    "verifier.not_recorded_violation": "PASS",
+    "verifier.factual_match": "PASS",
+    "verifier.not_truncated": "PASS",
+    "deterministic_verdict": "PASS"
+   },
+   "harness": {
+    "outcome": "accepted",
+    "abstain_reason": null,
+    "attempts": 1,
+    "retried": false
+   },
+   "latency_ms": {
+    "n": 50,
+    "p50_ms": 1.219,
+    "p95_ms": 2.006,
+    "max_ms": 2.581
+   },
+   "recorded_tokens": {
+    "model_calls": 1,
+    "total_tokens": 4791,
+    "prompt_tokens": 4256,
+    "derived_from": null
+   }
+  },
+  {
+   "id": "q06",
+   "kind": "recorded",
+   "expect": "grounded answer; factual_match reads the accession number 1947.39 as a year (verifier false positive)",
+   "question": "What is Reginald Marsh's Tattoo and Haircut painted with?",
+   "evaluators": {
+    "zero_source_false_pass": "PASS",
+    "citation_groundedness": "PASS",
+    "confidence_capping": "PASS",
+    "prompt_integrity": "PASS",
+    "verifier.citation_membership": "PASS",
+    "verifier.not_recorded_violation": "PASS",
+    "verifier.factual_match": "FAIL",
+    "verifier.not_truncated": "PASS",
+    "deterministic_verdict": "FAIL"
+   },
+   "harness": {
+    "outcome": "abstained",
+    "abstain_reason": "no_further_recorded_attempt",
+    "attempts": 1,
+    "retried": false
+   },
+   "latency_ms": {
+    "n": 50,
+    "p50_ms": 1.265,
+    "p95_ms": 1.89,
+    "max_ms": 2.16
+   },
+   "recorded_tokens": {
+    "model_calls": 1,
+    "total_tokens": 5539,
+    "prompt_tokens": 4900,
+    "derived_from": null
+   }
+  },
+  {
+   "id": "q07",
+   "kind": "recorded",
+   "expect": "grounded answer",
+   "question": "When did Ray Johnson make Untitled (Taoist Collages)?",
+   "evaluators": {
+    "zero_source_false_pass": "PASS",
+    "citation_groundedness": "PASS",
+    "confidence_capping": "PASS",
+    "prompt_integrity": "PASS",
+    "verifier.citation_membership": "PASS",
+    "verifier.not_recorded_violation": "PASS",
+    "verifier.factual_match": "PASS",
+    "verifier.not_truncated": "PASS",
+    "deterministic_verdict": "PASS"
+   },
+   "harness": {
+    "outcome": "accepted",
+    "abstain_reason": null,
+    "attempts": 1,
+    "retried": false
+   },
+   "latency_ms": {
+    "n": 50,
+    "p50_ms": 1.241,
+    "p95_ms": 1.842,
+    "max_ms": 2.136
+   },
+   "recorded_tokens": {
+    "model_calls": 1,
+    "total_tokens": 5058,
+    "prompt_tokens": 4425,
+    "derived_from": null
+   }
+  },
+  {
+   "id": "q08",
+   "kind": "recorded",
+   "expect": "decline: the records do not cover violations",
+   "question": "Are there any violations in the Louise Bourgeois Ode to My Mother records?",
+   "evaluators": {
+    "zero_source_false_pass": "PASS",
+    "citation_groundedness": "PASS",
+    "confidence_capping": "PASS",
+    "prompt_integrity": "PASS",
+    "verifier.citation_membership": "PASS",
+    "verifier.not_recorded_violation": "PASS",
+    "verifier.factual_match": "PASS",
+    "verifier.not_truncated": "PASS",
+    "deterministic_verdict": "PASS"
+   },
+   "harness": {
+    "outcome": "accepted",
+    "abstain_reason": null,
+    "attempts": 1,
+    "retried": false
+   },
+   "latency_ms": {
+    "n": 50,
+    "p50_ms": 1.272,
+    "p95_ms": 1.914,
+    "max_ms": 2.385
+   },
+   "recorded_tokens": {
+    "model_calls": 1,
+    "total_tokens": 5177,
+    "prompt_tokens": 4317,
+    "derived_from": null
+   }
+  },
+  {
+   "id": "q09",
+   "kind": "recorded",
+   "expect": "decline: the records describe works, not opinions",
+   "question": "What did Helen Frankenthaler think about Abstract Expressionism?",
+   "evaluators": {
+    "zero_source_false_pass": "PASS",
+    "citation_groundedness": "PASS",
+    "confidence_capping": "PASS",
+    "prompt_integrity": "PASS",
+    "verifier.citation_membership": "PASS",
+    "verifier.not_recorded_violation": "PASS",
+    "verifier.factual_match": "PASS",
+    "verifier.not_truncated": "PASS",
+    "deterministic_verdict": "PASS"
+   },
+   "harness": {
+    "outcome": "accepted",
+    "abstain_reason": null,
+    "attempts": 1,
+    "retried": false
+   },
+   "latency_ms": {
+    "n": 50,
+    "p50_ms": 1.284,
+    "p95_ms": 1.77,
+    "max_ms": 2.707
+   },
+   "recorded_tokens": {
+    "model_calls": 1,
+    "total_tokens": 5451,
+    "prompt_tokens": 4730,
+    "derived_from": null
+   }
+  },
+  {
+   "id": "q10",
+   "kind": "recorded",
+   "expect": "decline: passes the BM25 gate on the public corpus (19.75 > 19.5)",
+   "question": "What is the melting point of gallium arsenide?",
+   "evaluators": {
+    "zero_source_false_pass": "PASS",
+    "citation_groundedness": "INCONCLUSIVE",
+    "confidence_capping": "PASS",
+    "prompt_integrity": "PASS",
+    "verifier.citation_membership": "INCONCLUSIVE",
+    "verifier.not_recorded_violation": "INCONCLUSIVE",
+    "verifier.factual_match": "INCONCLUSIVE",
+    "verifier.not_truncated": "PASS",
+    "deterministic_verdict": "PASS"
+   },
+   "harness": {
+    "outcome": "accepted",
+    "abstain_reason": null,
+    "attempts": 1,
+    "retried": false
+   },
+   "latency_ms": {
+    "n": 50,
+    "p50_ms": 1.223,
+    "p95_ms": 1.992,
+    "max_ms": 3.105
+   },
+   "recorded_tokens": {
+    "model_calls": 1,
+    "total_tokens": 4816,
+    "prompt_tokens": 4220,
+    "derived_from": null
+   }
+  },
+  {
+   "id": "q11",
+   "kind": "recorded",
+   "expect": "abstain before any model call (BM25 17.22 < 19.5)",
+   "question": "What is the capital of Mongolia?",
+   "evaluators": null,
+   "harness": {
+    "outcome": "abstained",
+    "abstain_reason": "retrieval_gate",
+    "attempts": 0,
+    "retried": false
+   },
+   "latency_ms": {
+    "n": 50,
+    "p50_ms": 0.012,
+    "p95_ms": 0.018,
+    "max_ms": 0.035
+   },
+   "recorded_tokens": {
+    "model_calls": 0,
+    "total_tokens": 0,
+    "prompt_tokens": null,
+    "derived_from": null
+   }
+  },
+  {
+   "id": "s01",
+   "kind": "seeded",
+   "expect": "zero-source all-clear",
+   "question": "What year was Coney Island Beach by Reginald Marsh made?",
+   "evaluators": {
+    "zero_source_false_pass": "FAIL",
+    "citation_groundedness": "FAIL",
+    "confidence_capping": "PASS",
+    "prompt_integrity": "PASS",
+    "verifier.citation_membership": "INCONCLUSIVE",
+    "verifier.not_recorded_violation": "INCONCLUSIVE",
+    "verifier.factual_match": "INCONCLUSIVE",
+    "verifier.not_truncated": "PASS",
+    "deterministic_verdict": "FAIL"
+   },
+   "harness": {
+    "outcome": "abstained",
+    "abstain_reason": "no_further_recorded_attempt",
+    "attempts": 1,
+    "retried": false
+   },
+   "latency_ms": {
+    "n": 50,
+    "p50_ms": 1.369,
+    "p95_ms": 4.933,
+    "max_ms": 18.454
+   },
+   "recorded_tokens": {
+    "model_calls": 0,
+    "total_tokens": 0,
+    "prompt_tokens": null,
+    "derived_from": "q01"
+   }
+  },
+  {
+   "id": "s02",
+   "kind": "seeded",
+   "expect": "dropped system prompt",
+   "question": "When was Omer Fast's The Casting made?",
+   "evaluators": {
+    "zero_source_false_pass": "FAIL",
+    "citation_groundedness": "FAIL",
+    "confidence_capping": "PASS",
+    "prompt_integrity": "FAIL",
+    "verifier.citation_membership": "FAIL",
+    "verifier.not_recorded_violation": "FAIL",
+    "verifier.factual_match": "FAIL",
+    "verifier.not_truncated": "PASS",
+    "deterministic_verdict": "FAIL"
+   },
+   "harness": {
+    "outcome": "abstained",
+    "abstain_reason": "no_further_recorded_attempt",
+    "attempts": 1,
+    "retried": false
+   },
+   "latency_ms": {
+    "n": 50,
+    "p50_ms": 1.253,
+    "p95_ms": 1.773,
+    "max_ms": 2.624
+   },
+   "recorded_tokens": {
+    "model_calls": 1,
+    "total_tokens": 3841,
+    "prompt_tokens": 3694,
+    "derived_from": null
+   }
+  },
+  {
+   "id": "s03",
+   "kind": "seeded",
+   "expect": "ungrounded citation",
+   "question": "When was Jeff Brouws's Railroad Landscape #33 in Pine Plains, New York made?",
+   "evaluators": {
+    "zero_source_false_pass": "PASS",
+    "citation_groundedness": "FAIL",
+    "confidence_capping": "PASS",
+    "prompt_integrity": "PASS",
+    "verifier.citation_membership": "FAIL",
+    "verifier.not_recorded_violation": "PASS",
+    "verifier.factual_match": "PASS",
+    "verifier.not_truncated": "PASS",
+    "deterministic_verdict": "FAIL"
+   },
+   "harness": {
+    "outcome": "abstained",
+    "abstain_reason": "no_further_recorded_attempt",
+    "attempts": 1,
+    "retried": false
+   },
+   "latency_ms": {
+    "n": 50,
+    "p50_ms": 1.307,
+    "p95_ms": 1.776,
+    "max_ms": 17.397
+   },
+   "recorded_tokens": {
+    "model_calls": 0,
+    "total_tokens": 0,
+    "prompt_tokens": null,
+    "derived_from": "q04"
+   }
+  }
+ ]
+}
