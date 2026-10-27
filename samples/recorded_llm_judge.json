@@ -1,0 +1,78 @@
+{
+ "label": "recorded LLM-judge outputs",
+ "notice": "The real reference-free LLM judge (phoenix_evals.make_live_llm_judge, prompt phoenix_evals.JUDGE_PROMPT) run once, locally, on the three seeded false-pass samples. Verdicts are as returned; none is edited.",
+ "generated_by": "scripts/record_llm_judge.py",
+ "model": "claude-haiku-5-5",
+ "recorded_at": "2026-10-27T16:39:10.308876+00:00",
+ "judged_from": "samples/recorded_outputs.json",
+ "summary": {
+  "judged": 3,
+  "judge_passed": [
+   "s01",
+   "s03"
+  ],
+  "judge_passed_count": 2
+ },
+ "results": [
+  {
+   "id": "s01",
+   "expect": "zero-source all-clear",
+   "question": "What year was Coney Island Beach by Reginald Marsh made?",
+   "judge": {
+    "label": "PASS",
+    "score": 1.0,
+    "explanation": "The answer directly addresses the question with a specific year (1935) and cites a record ID, and the year is plausible for a Marsh 1930s etching, though I cannot verify the record itself."
+   },
+   "judge_prompt": "You are an expert evaluator for a question-answering system over museum records.\n\nGiven a QUESTION and the system's ANSWER, decide whether the answer is relevant, coherent, and appears factually correct and complete.\n\nQUESTION: What year was Coney Island Beach by Reginald Marsh made?\nANSWER: According to record cma-117571, Coney Island Beach by Reginald Marsh was made in 1935. The record lists its medium as etching and classifies it as a Print.\n\nRespond ONLY with JSON: {\"label\": \"PASS\" or \"FAIL\", \"explanation\": \"one sentence\"}",
+   "judge_raw_output": "{\"label\": \"PASS\", \"explanation\": \"The answer directly addresses the question with a specific year (1935) and cites a record ID, and the year is plausible for a Marsh 1930s etching, though I cannot verify the record itself.\"}",
+   "usage": {
+    "prompt_tokens": 205,
+    "completion_tokens": 220,
+    "total_tokens": 425
+   },
+   "error_type": null,
+   "deterministic_verdict": "FAIL",
+   "rule_based_surrogate": "PASS"
+  },
+  {
+   "id": "s02",
+   "expect": "dropped system prompt",
+   "question": "When was Omer Fast's The Casting made?",
+   "judge": {
+    "label": "FAIL",
+    "score": 0.0,
+    "explanation": "The date 2007 appears correct, but the claim that The Casting is a four-channel installation is likely wrong, since it is generally documented as a single-channel video, so the answer contains unsupported or incorrect details."
+   },
+   "judge_prompt": "You are an expert evaluator for a question-answering system over museum records.\n\nGiven a QUESTION and the system's ANSWER, decide whether the answer is relevant, coherent, and appears factually correct and complete.\n\nQUESTION: When was Omer Fast's The Casting made?\nANSWER: Omer Fast's *The Casting* was made in **2007**, according to the Cleveland Museum of Art's record. It is a four-channel video installation, 14 minutes long, and the Cleveland edition is 4/6.\n\nRespond ONLY with JSON: {\"label\": \"PASS\" or \"FAIL\", \"explanation\": \"one sentence\"}",
+   "judge_raw_output": "{\"label\": \"FAIL\", \"explanation\": \"The date 2007 appears correct, but the claim that The Casting is a four-channel installation is likely wrong, since it is generally documented as a single-channel video, so the answer contains unsupported or incorrect details.\"}",
+   "usage": {
+    "prompt_tokens": 217,
+    "completion_tokens": 469,
+    "total_tokens": 686
+   },
+   "error_type": null,
+   "deterministic_verdict": "FAIL",
+   "rule_based_surrogate": "PASS"
+  },
+  {
+   "id": "s03",
+   "expect": "ungrounded citation",
+   "question": "When was Jeff Brouws's Railroad Landscape #33 in Pine Plains, New York made?",
+   "judge": {
+    "label": "PASS",
+    "score": 1.0,
+    "explanation": "The answer directly addresses the question about when the work was made, giving the date 2009 (printed 2010) from the matching museum record, and the added medium detail is consistent with the record; the parsed-date notation is slightly awkward but does not undermine correctness."
+   },
+   "judge_prompt": "You are an expert evaluator for a question-answering system over museum records.\n\nGiven a QUESTION and the system's ANSWER, decide whether the answer is relevant, coherent, and appears factually correct and complete.\n\nQUESTION: When was Jeff Brouws's Railroad Landscape #33 in Pine Plains, New York made?\nANSWER: The record for Railroad Landscape #33, Newburgh, Dutchess & Connecticut Right-of-Way, Abandoned 1938, MP 16, View South, Winter, Pine Plains, New York (artist Jeff Brouws) gives the date as 2009, printed 2010 (parsed as [2009, 2010]). The work is an inkjet print.\n\nRespond ONLY with JSON: {\"label\": \"PASS\" or \"FAIL\", \"explanation\": \"one sentence\"}",
+   "judge_raw_output": "{\"label\": \"PASS\", \"explanation\": \"The answer directly addresses the question about when the work was made, giving the date 2009 (printed 2010) from the matching museum record, and the added medium detail is consistent with the record; the parsed-date notation is slightly awkward but does not undermine correctness.\"}",
+   "usage": {
+    "prompt_tokens": 284,
+    "completion_tokens": 98,
+    "total_tokens": 382
+   },
+   "error_type": null,
+   "deterministic_verdict": "FAIL",
+   "rule_based_surrogate": "PASS"
+  }
+ ]
+}

@@ -57,3 +57,16 @@ def test_records_each_verdict_as_returned(tmp_path, monkeypatch):
     for prompt, sid in zip(seen, ("s01", "s02", "s03")):
         assert recorded[sid]["payload"]["question"] in prompt
         assert "prompt_tokens" not in prompt and "record_ids_used" not in prompt
+
+
+def test_committed_judge_record_is_consistent():
+    path = os.path.join(REPO_ROOT, "samples", "recorded_llm_judge.json")
+    if not os.path.exists(path):
+        pytest.skip("no recorded LLM-judge run")
+    doc = json.load(open(path, encoding="utf-8"))
+    assert doc["label"] == "recorded LLM-judge outputs"
+    passed = [r["id"] for r in doc["results"] if r["judge"]["label"] == "PASS"]
+    assert doc["summary"]["judge_passed"] == passed
+    assert doc["summary"]["judge_passed_count"] == len(passed)
+    assert all(r["deterministic_verdict"] == "FAIL" for r in doc["results"])
+    assert "sk-ant" not in open(path, encoding="utf-8").read()
