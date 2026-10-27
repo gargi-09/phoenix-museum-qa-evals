@@ -1,0 +1,12 @@
+{
+  "name": "phoenix-museum-qa-evals-sandbox",
+  "private": true,
+  "description": "Builds docs/sandbox.js from docs/src/sandbox.ts. Only the TypeScript compiler; nothing ships to the browser but the compiled file.",
+  "scripts": {
+    "build:sandbox": "tsc -p tsconfig.json",
+    "parity": "node docs/sandbox.js docs/data/sandbox.json && node docs/sandbox.js docs/data/recorded_samples.json"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

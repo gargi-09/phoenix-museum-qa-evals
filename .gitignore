@@ -7,3 +7,4 @@ venv/
 for_me.txt
 .claude/
 outputs/
+node_modules/

@@ -2,3 +2,5 @@
 # on a Windows checkout with core.autocrlf=true.
 Dockerfile text eol=lf
 *.sh text eol=lf
+docs/sandbox.js text eol=lf
+*.ts text eol=lf
