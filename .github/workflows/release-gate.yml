@@ -38,6 +38,13 @@ jobs:
       - name: Install CI dependencies
         run: pip install -r requirements-ci.txt
 
+      - name: Sandbox is strict TypeScript, and the committed JS is its build
+        run: |
+          npm ci --no-audit --no-fund
+          npx tsc -p tsconfig.json
+          git diff --exit-code -- docs/sandbox.js \
+            || { echo "docs/sandbox.js does not match docs/src/sandbox.ts: run npm run build:sandbox and commit"; exit 1; }
+
       - name: No model SDK, HTTP client or torch installed
         run: |
           python - <<'EOF'

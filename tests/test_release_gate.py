@@ -112,3 +112,13 @@ def test_ci_workflow_runs_the_gate_without_secrets():
     for pkg in ("anthropic", "requests", "python-dotenv", "torch", "sentence-transformers",
                 "arize-phoenix"):
         assert f"\n{pkg}=" not in ci
+
+
+def test_ci_checks_the_compiled_sandbox_matches_its_typescript_source():
+    wf = open(os.path.join(REPO_ROOT, ".github", "workflows", "release-gate.yml"),
+              encoding="utf-8").read()
+    assert "npx tsc -p tsconfig.json" in wf and "git diff --exit-code -- docs/sandbox.js" in wf
+    cfg = json.load(open(os.path.join(REPO_ROOT, "tsconfig.json"), encoding="utf-8"))["compilerOptions"]
+    assert cfg["strict"] is True and cfg["noImplicitAny"] is True
+    pkg = json.load(open(os.path.join(REPO_ROOT, "package.json"), encoding="utf-8"))
+    assert pkg["devDependencies"] == {"typescript": "5.9.3"}           # pinned, the only dependency
