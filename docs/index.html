@@ -279,10 +279,10 @@
   // Data
   // ---------------------------------------------------------------------
   var METRICS = [
-    { icon: 'timer', value: '60s → 2s', label: 'End-to-end latency', note: 'local BM25 + dense RRF narrows 5,000 records to 10 before one model call' },
-    { icon: 'scissors', value: '60%', label: 'Token cut', note: '≈ $450/mo saved at projected volume' },
-    { icon: 'shield-alert', value: '100%', label: 'False-pass catch rate', note: 'zero-citation and dropped-prompt cases in the demo set' },
-    { icon: 'cpu', value: '0', label: 'Extra tokens to verify', note: 'all 4 verifiers are deterministic code' },
+    { icon: 'shield-alert', value: '3/3', label: 'Seeded false passes blocked', note: 'the real LLM judge approved 2 of 3; the rule-based stand-in approved 3 of 3' },
+    { icon: 'git-compare', value: '1,040/1,040', label: 'Browser–Python verdict parity', note: '104 edited answers, docs/sandbox.js vs the Python pipeline' },
+    { icon: 'timer', value: '110 ms', label: 'Live API, warm p50', note: 'Cloud Run, recorded samples, from one laptop; cold start 4.3 s' },
+    { icon: 'cpu', value: '0', label: 'Extra tokens to verify', note: '8 deterministic evaluators, no model call' },
   ];
 
   var ARCH = [
