@@ -11,8 +11,10 @@ Reports what it measured and under what condition -- never an estimate:
                     --cold-wait (or run it long after the last request).
   - warm          : N further requests, after the first, as p50 / p90 / max.
 
-Each request is a POST /evaluate on one recorded sample, the same call the
-dashboard makes. Sends nothing sensitive; makes no model call (the API cannot).
+Each request is a POST /evaluate on one recorded sample (the call the app's
+step 2 makes), or with --retrieve QUESTION a POST /retrieve (step 1: live
+BM25 over 5,010 records). Sends nothing sensitive; makes no model call (the
+API cannot).
 """
 import argparse
 import json
@@ -36,21 +38,23 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("base_url")
     p.add_argument("--sample", default="q01")
+    p.add_argument("--retrieve", metavar="QUESTION", help="time POST /retrieve instead")
     p.add_argument("-n", type=int, default=20, help="warm requests after the first")
     p.add_argument("--cold-wait", type=int, default=0,
                    help="seconds to stay idle before the first request")
     args = p.parse_args()
     base = args.base_url.rstrip("/")
-    url = base + "/evaluate"
-    body = {"sample_id": args.sample}
+    url = base + ("/retrieve" if args.retrieve else "/evaluate")
+    body = {"question": args.retrieve} if args.retrieve else {"sample_id": args.sample}
+    print(f"endpoint: POST {url}")
 
     if args.cold_wait:
         print(f"Idle for {args.cold_wait}s so the service can scale to zero...")
         time.sleep(args.cold_wait)
 
     first_ms, status, payload = timed(url, body)
-    print(f"first request : {first_ms:7.0f} ms  (HTTP {status}, server compute "
-          f"{payload.get('evaluated_in_ms')} ms)")
+    server_ms = payload.get("searched_in_ms", payload.get("evaluated_in_ms"))
+    print(f"first request : {first_ms:7.0f} ms  (HTTP {status}, server compute {server_ms} ms)")
 
     warm = []
     for _ in range(args.n):
