@@ -19,6 +19,8 @@ GUARD_SCRIPT = textwrap.dedent(r"""
     tripped = []
     FORBIDDEN_ENV = {"ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "API_KEY", "MODEL_ENDPOINT"}
     FORBIDDEN_MODULES = ("anthropic", "requests", "dotenv", "urllib3")
+    # Local-only recorders: the serving process must never import them.
+    LOCAL_ONLY_SCRIPTS = ("record_samples", "record_llm_judge")
 
     # Decoy: if anything reads it, the tripwire (not the value) is what we see.
     os.environ["ANTHROPIC_API_KEY"] = "sk-ant-decoy-must-never-be-read"
@@ -36,7 +38,7 @@ GUARD_SCRIPT = textwrap.dedent(r"""
     def guarded_import(name, globals=None, locals=None, fromlist=(), level=0):
         # level > 0 is a relative import inside a package (fastapi's own
         # `.requests` module), not the third-party library.
-        if level == 0 and name.split(".")[0] in FORBIDDEN_MODULES:
+        if level == 0 and name.split(".")[0] in FORBIDDEN_MODULES + LOCAL_ONLY_SCRIPTS:
             tripped.append(f"import: {name}")
             raise ImportError(f"blocked by test: {name}")
         return real_import(name, globals, locals, fromlist, level)
@@ -91,7 +93,8 @@ GUARD_SCRIPT = textwrap.dedent(r"""
 
     print(json.dumps({"tripped": tripped, "samples": len(samples), "out": out,
                       "provider": api_client.PROVIDER, "direct_error": direct["error_type"],
-                      "loaded": [m for m in FORBIDDEN_MODULES if m in sys.modules]}))
+                      "loaded": [m for m in FORBIDDEN_MODULES + LOCAL_ONLY_SCRIPTS
+                                 if m in sys.modules]}))
 """)
 
 
@@ -117,26 +120,29 @@ def test_model_client_is_disabled_in_the_serving_process():
     assert r["direct_error"] == "model_calls_disabled"
 
 
-def test_recording_script_refuses_in_serving_mode():
-    env = dict(os.environ, LLM_PROVIDER="disabled")
-    proc = subprocess.run([sys.executable, "record_samples.py", "--yes"], cwd=REPO_ROOT,
-                          env=env, capture_output=True, text=True, timeout=60)
-    assert proc.returncode == 2 and "REFUSING" in proc.stdout
-    env = dict(os.environ, K_SERVICE="museum-qa-api")
-    env.pop("LLM_PROVIDER", None)
-    proc = subprocess.run([sys.executable, "record_samples.py", "--yes"], cwd=REPO_ROOT,
-                          env=env, capture_output=True, text=True, timeout=60)
-    assert proc.returncode == 2 and "REFUSING" in proc.stdout
+def test_recording_scripts_refuse_in_serving_mode():
+    for script in ("record_samples.py", os.path.join("scripts", "record_llm_judge.py")):
+        env = dict(os.environ, LLM_PROVIDER="disabled")
+        proc = subprocess.run([sys.executable, script, "--yes"], cwd=REPO_ROOT,
+                              env=env, capture_output=True, text=True, timeout=60)
+        assert proc.returncode == 2 and "REFUSING" in proc.stdout, script
+        env = dict(os.environ, K_SERVICE="museum-qa-api")
+        env.pop("LLM_PROVIDER", None)
+        proc = subprocess.run([sys.executable, script, "--yes"], cwd=REPO_ROOT,
+                              env=env, capture_output=True, text=True, timeout=60)
+        assert proc.returncode == 2 and "REFUSING" in proc.stdout, script
 
 
 def test_image_never_contains_the_recorder_or_secrets():
     dockerfile = open(os.path.join(REPO_ROOT, "Dockerfile"), encoding="utf-8").read()
     assert "record_samples" not in dockerfile.replace("record_samples.py, any", "")
+    assert "record_llm_judge" not in dockerfile and "scripts" not in dockerfile
     assert "ANTHROPIC" not in dockerfile
     for ignore in (".dockerignore", ".gcloudignore"):
         lines = [l.strip() for l in open(os.path.join(REPO_ROOT, ignore), encoding="utf-8")]
         assert "*" in lines, f"{ignore} must start from an allow-list"
-        assert not any(l.startswith("!") and (".env" in l or "record_samples" in l) for l in lines)
+        assert not any(l.startswith("!") and (".env" in l or "record_" in l or "scripts" in l)
+                       for l in lines)
     reqs = open(os.path.join(REPO_ROOT, "requirements-server.txt"), encoding="utf-8").read().lower()
     for pkg in ("anthropic", "requests", "python-dotenv", "torch", "sentence-transformers"):
         assert f"\n{pkg}=" not in reqs and not reqs.startswith(f"{pkg}=")
