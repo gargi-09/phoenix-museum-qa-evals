@@ -1,0 +1,12 @@
+# CI only (.github/workflows/release-gate.yml): the test suite and the
+# release gate. On top of the dev set, only what the fixture-mode tests need:
+# scikit-learn for the fixture retriever, OpenInference conventions for the
+# span payloads. Deliberately absent, as in the image: anthropic, requests,
+# python-dotenv, torch, sentence-transformers, arize-phoenix.
+-r requirements-dev.txt
+scikit-learn==1.9.0
+scipy==1.18.0
+joblib==1.5.3
+threadpoolctl==3.6.0
+narwhals==2.24.0
+openinference-semantic-conventions==0.1.41
