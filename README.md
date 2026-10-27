@@ -17,9 +17,10 @@ see the citations, the retrieved candidate set and the billed `prompt_tokens`,
 so they fail it, and Phoenix shows both verdicts on the same trace.
 
 The baseline judge in this repo is `llm_judge_surrogate`, a rule-based
-stand-in that sees what an LLM judge sees (question and answer only). A real
-LLM judge exists (`make_live_llm_judge`, used by `--judge live`) and has no
-recorded run yet.
+stand-in that sees what an LLM judge sees (question and answer only). It
+passes all 3 seeded false passes. The real LLM judge (`make_live_llm_judge`,
+`claude-haiku-5-5`), run once on the same three, **passed 2 of 3**; see
+[the recorded LLM-judge run](#the-recorded-llm-judge-run).
 
 ![The zero-sources trap in Phoenix: the LLM judge scores 1.00 while zero_source_false_pass and citation_groundedness score 0.00](docs/assets/trace-zero.png)
 
@@ -329,6 +330,37 @@ real call:
   prose with no citations, and the prompt-token audit flagged the missing
   instruction block.
 - **s03:** q04's real answer plus a record ID that was never retrieved.
+
+#### The recorded LLM-judge run
+
+[`scripts/record_llm_judge.py`](scripts/record_llm_judge.py) ran the real
+reference-free judge once, locally, on s01–s03. The verdicts, reasons, exact
+prompts and raw replies are in
+[`samples/recorded_llm_judge.json`](samples/recorded_llm_judge.json)
+(3 calls, 1,493 tokens).
+
+| Sample | Real LLM judge | Rule-based stand-in | Deterministic |
+|---|---|---|---|
+| s01 zero-source | **PASS** | PASS | FAIL |
+| s02 dropped system prompt | FAIL | PASS | FAIL |
+| s03 ungrounded citation | **PASS** | PASS | FAIL |
+
+What its reasons show:
+
+- **s01:** the answer text still names `cma-117571` in its prose; only the
+  structured citation list is empty. The judge read that as a citation. The
+  deterministic check requires structured citations, so it fails.
+- **s02:** the judge failed it, but **for a reason the record contradicts**.
+  It said "four-channel video installation" was likely wrong, while the
+  retrieved record (`cma-168184`) lists exactly that medium. It did not
+  mention the missing citations or the dropped instruction block, which it
+  cannot see.
+- **s03:** the judge cannot see that `aic-13026` was never retrieved, so it
+  passed.
+
+So the real judge approved 2 of the 3 seeded false passes, not all 3. Its one
+rejection came from its own background knowledge, which in this case
+disagreed with the museum record.
 
 One real answer, q06, is a **verifier false positive**. Haiku answered
 correctly and quoted the accession number "1947.39", which
