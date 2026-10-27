@@ -6,7 +6,8 @@
 
 A museum-records QA pipeline (~5,000 records from the Cleveland Museum of Art
 and the Art Institute of Chicago) instrumented end to end with OpenInference,
-with its deterministic verifiers registered as custom Phoenix evaluators.
+with 8 deterministic evaluators whose results are logged to Phoenix as span
+annotations.
 
 **The problem it demonstrates:** a reference-free LLM-as-a-judge sees only the
 question and the answer. *"No violations found. The records are consistent and
@@ -15,9 +16,14 @@ passes it. It also cites **zero** source records. The deterministic verifiers
 see the citations, the retrieved candidate set and the billed `prompt_tokens`,
 so they fail it, and Phoenix shows both verdicts on the same trace.
 
+The baseline judge in this repo is `llm_judge_surrogate`, a rule-based
+stand-in that sees what an LLM judge sees (question and answer only). A real
+LLM judge exists (`make_live_llm_judge`, used by `--judge live`) and has no
+recorded run yet.
+
 ![The zero-sources trap in Phoenix: the LLM judge scores 1.00 while zero_source_false_pass and citation_groundedness score 0.00](docs/assets/trace-zero.png)
 
-*The zero-sources trap in Phoenix. The reference-free judge (`llm_judge_surrogate`) scores the answer 1.00; the deterministic verifiers score it 0.00.*
+*The zero-sources trap in Phoenix. The baseline judge (`llm_judge_surrogate`, a rule-based stand-in that sees what an LLM judge sees) scores the answer 1.00; the deterministic verifiers score it 0.00.*
 
 ## 60-second quickstart
 
@@ -125,7 +131,7 @@ up in the Annotations tab of the trace they judge.
 | `confidence_capping` | a confidence escaped its cap: a score emitted with 0 valid citations or a dropped prompt, or a `high` label despite a failed check |
 | `prompt_integrity` | the billed `prompt_tokens` say the instruction block never arrived |
 | `verifier.citation_membership`<br>`verifier.not_recorded_violation`<br>`verifier.factual_match`<br>`verifier.not_truncated` | the pipeline's own four checks (`reasoning.check_*`), **re-executed** against the context blocks recorded in the trace |
-| `llm_judge_surrogate` / `llm_judge` | baseline: a standard reference-free judge that sees question + answer only |
+| `llm_judge_surrogate` / `llm_judge` | baseline, not one of the 8: `llm_judge_surrogate` is a rule-based stand-in that sees what an LLM judge sees (question + answer only); `llm_judge` is the real LLM judge, used only with `--judge live` |
 
 A check that cannot fail does not report a pass. When a response cites
 nothing, the per-citation verifiers return `INCONCLUSIVE`, not `PASS`, and
@@ -135,7 +141,7 @@ are left out of the pass rate.
 
 The demo runs five questions. Run in fixture mode, it prints:
 
-| # | Scenario | LLM judge | Deterministic |
+| # | Scenario | Judge (rule-based stand-in) | Deterministic |
 |---|---|---|---|
 | 1 | Clean answer, 1 valid citation | PASS | PASS |
 | 2 | "No violations found", 0 citations | **PASS** | **FAIL**: zero sources, confidence capped to 0.0 |
@@ -186,9 +192,9 @@ retriever and the model:
   record a script cites exists in both corpora, except the one fabricated on
   purpose (`aic-99999`), so the same scripts work in `fixture` and `corpus`
   mode.
-- **The baseline judge** is an offline surrogate unless you pass
-  `--judge live`. It is deterministic and gets exactly a reference-free
-  judge's inputs.
+- **The baseline judge** is `llm_judge_surrogate`, a rule-based stand-in
+  that sees what an LLM judge sees, unless you pass `--judge live`. It is
+  deterministic and gets exactly a reference-free judge's inputs.
 - **In live mode** the model answers for itself, so whether a trap fires
   depends on what it actually says. The evaluators report the result either
   way.
@@ -303,8 +309,19 @@ GitHub Pages (docs/index.html) --POST /evaluate--> Cloud Run: FastAPI + src/resc
 curl -s -X POST https://museum-qa-api-o7gdkkg7ja-uc.a.run.app/evaluate -H "Content-Type: application/json" -d '{"sample_id": "s01"}'
 ```
 
+**Retrieval is replayed, not live.** Each sample carries the candidates the
+real hybrid retriever returned when it was recorded. The deployed service
+re-scores against those recorded candidates and does not run retrieval
+itself.
+
+**Prompt size.** About 4.4K prompt tokens per call on the recorded runs
+(mean 4,395, range 3,694 to 4,900; the 3,694 is s02, sent without its
+instruction block). Fixture mode builds smaller prompts.
+
 **What the recorded outputs showed.** The verifiers catch all 3 seeded
-failures, which the rule-based judge passes:
+failures, which the baseline judge (`llm_judge_surrogate`, the rule-based
+stand-in) passes. s01 and s03 are labelled edits of real answers; s02 is a
+real call:
 
 - **s01:** q01's real answer with its citations stripped, a zero-source
   false pass.
