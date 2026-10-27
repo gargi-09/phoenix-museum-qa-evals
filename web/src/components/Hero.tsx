@@ -9,8 +9,8 @@ const TILES: { icon: ComponentType<{ className?: string }>; value: string; label
     note: 'The real LLM judge approved 2 of them; the rule-based stand-in approved all 3.' },
   { icon: GitCompare, value: '1,040/1,040', label: 'Browser–Python parity',
     note: '104 edited answers scored by the TypeScript port and the Python pipeline.' },
-  { icon: Timer, value: '110 ms', label: 'Live API, warm p50',
-    note: 'Cloud Run, from one laptop. Cold start after idle: 4.3 s.' },
+  { icon: Timer, value: '34 ms', label: 'Live search, server time',
+    note: 'BM25 over 5,010 records on Cloud Run. Round trip from one laptop: p50 362 ms.' },
   { icon: Cpu, value: '0', label: 'Extra tokens to verify',
     note: '8 deterministic evaluators. No second model call.' },
 ];

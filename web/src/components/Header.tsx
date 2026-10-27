@@ -5,7 +5,7 @@ import { ExtLink } from './ui';
 
 const STATUS: Record<ApiState, { dot: string; text: string; title: string }> = {
   checking: { dot: 'bg-zinc-500 animate-pulse', text: 'Waking the API…',
-              title: 'The Cloud Run API scales to zero when idle; the first request starts it (measured cold start: 4.3 s).' },
+              title: 'The Cloud Run API scales to zero when idle; the first request starts it (measured cold start: 6.8 s).' },
   up: { dot: 'bg-emerald-400', text: 'Live API', title: 'Cloud Run API is up: evaluators run in Python, search runs live.' },
   down: { dot: 'bg-amber-400', text: 'Offline mode',
           title: 'The API is unreachable. Verdicts are computed in your browser by the parity-checked TypeScript port; live search is unavailable.' },

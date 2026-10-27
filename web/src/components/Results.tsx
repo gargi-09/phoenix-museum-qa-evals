@@ -2,9 +2,10 @@ import { CheckCircle2, XCircle } from 'lucide-react';
 import type { JudgeRecord, Metrics } from '../lib/types';
 import { Card, LabelPill, Section } from './ui';
 
-// Measured against the deployed API with scripts/measure_latency.py on
-// 2026-10-27 (README, "Live API"): one laptop, 20 warm requests.
-const CLOUD_RUN = { coldMs: 4287, warmP50: 110, warmP90: 132, date: '2026-10-27' };
+// Measured against the deployed API (revision 00003) with
+// scripts/measure_latency.py on 2026-10-27 (README, "Live API"): one laptop,
+// 20 warm requests per endpoint, cold start after 20 minutes idle.
+const CLOUD_RUN = { coldMs: 6832, evaluateP50: 256, retrieveP50: 362, searchServerMs: 34, date: '2026-10-27' };
 
 export function Results({ metrics, judge }: { metrics: Metrics | null; judge: JudgeRecord | null }) {
   const q = new Map((metrics?.questions ?? []).map((x) => [x.id, x]));
@@ -66,14 +67,15 @@ export function Results({ metrics, judge }: { metrics: Metrics | null; judge: Ju
         <Card className="p-5">
           <p className="font-mono text-[11px] uppercase tracking-wider text-zinc-500">Latency, measured</p>
           <dl className="mt-3 grid grid-cols-2 gap-4">
-            <Stat k="Cloud Run, warm p50" v={`${CLOUD_RUN.warmP50} ms`} n={`p90 ${CLOUD_RUN.warmP90} ms, ${CLOUD_RUN.date}`} />
-            <Stat k="Cloud Run, cold start" v={`${(CLOUD_RUN.coldMs / 1000).toFixed(1)} s`} n="after 20 min idle" />
-            {lat && <Stat k="Harness run, p50" v={`${lat.all_runs.p50_ms} ms`} n={`p95 ${lat.all_runs.p95_ms} ms over ${lat.all_runs.n} runs`} />}
+            <Stat k="Re-score an answer, p50" v={`${CLOUD_RUN.evaluateP50} ms`} n={`round trip, Cloud Run, ${CLOUD_RUN.date}`} />
+            <Stat k="Live search, p50" v={`${CLOUD_RUN.retrieveP50} ms`} n={`round trip; ${CLOUD_RUN.searchServerMs} ms on the server`} />
+            <Stat k="Cloud Run, cold start" v={`${(CLOUD_RUN.coldMs / 1000).toFixed(1)} s`} n="first request after 20 min idle" />
             {lat && <Stat k="All 8 checks, sequential" v={`${lat.sequential_rescore_evaluate_baseline.p50_ms} ms`} n="p50, no model, no network" />}
           </dl>
           <p className="mt-4 text-xs leading-relaxed text-zinc-500">
-            None of these includes a model call: the public demo never makes one. Harness timings are from one laptop
-            ({metrics?.environment.python ? `Python ${metrics.environment.python}` : 'Python'}) and vary run to run.
+            None of these includes a model call: the public demo never makes one. Round trips are from one laptop on a home
+            connection and vary between runs (an earlier run measured 110 ms p50 for re-scoring). The check timing is from
+            the same laptop ({metrics?.environment.python ? `Python ${metrics.environment.python}` : 'Python'}).
           </p>
         </Card>
 

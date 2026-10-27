@@ -34,7 +34,7 @@ async function call<T>(path: string, init: RequestInit = {}, timeoutMs = 12000):
   }
 }
 
-// A cold start (the service scales to zero) measured 4.3 s, so the first
+// A cold start (the service scales to zero) measured 6.8 s, so the first
 // call gets a longer timeout.
 export const health = (): Promise<Health> => call<Health>('/health', {}, 15000);
 
