@@ -1,0 +1,24 @@
+{
+  "description": "Release gate for scripts/release_gate.py and CI. Every number here was approved by the repo owner; changing one is a reviewed change to this file.",
+  "sets": [
+    {
+      "name": "recorded",
+      "path": "samples/recorded_outputs.json",
+      "label": "recorded model outputs (claude-haiku-5-5)",
+      "seeded_false_passes": ["s01", "s02", "s03"],
+      "known_good": ["q01", "q02", "q03", "q04", "q05", "q06", "q07"],
+      "min_known_good_pass": 6,
+      "known_good_note": "q06 is a known false positive of verifier.factual_match (the accession number 1947.39 read as a year). It stays in the count and stays failing; the threshold is 6/7 because of it.",
+      "identity_regression": {"dropped": "s02", "control": "q03"}
+    },
+    {
+      "name": "fixture",
+      "path": "docs/data/sandbox.json",
+      "label": "fixture-mode traced runs (scripted model)",
+      "seeded_false_passes": ["zero", "dropped", "fabricated"],
+      "known_good": ["clean"],
+      "min_known_good_pass": 1,
+      "identity_regression": {"dropped": "dropped", "control": "clean"}
+    }
+  ]
+}
