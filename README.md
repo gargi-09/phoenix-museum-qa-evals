@@ -315,7 +315,11 @@ There is no model call and no API key, so it's safe on a public page.
   node docs/sandbox.js docs/data/sandbox.json
   ```
   A wider test of 104 edited answers, run through both the Python pipeline
-  and the JS port, matched on all 1,040 verdicts.
+  and the JS port, matched on all 1,040 verdicts. Reproduce it (needs
+  Node.js and the full `requirements.txt` environment) with:
+  ```bash
+  python -m pytest tests/test_sandbox_parity.py -v
+  ```
 
 Building it surfaced two real issues, both now fixed in the Python code:
 
