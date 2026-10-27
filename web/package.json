@@ -1,0 +1,29 @@
+{
+  "name": "museum-qa-web",
+  "private": true,
+  "version": "1.0.0",
+  "description": "The public demo: React + strict TypeScript, built with Vite, deployed to GitHub Pages.",
+  "type": "module",
+  "scripts": {
+    "sync": "node scripts/sync-data.mjs",
+    "dev": "npm run sync && vite",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run sync && tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lucide-react": "0.460.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.31",
+    "@types/react-dom": "18.3.7",
+    "@vitejs/plugin-react": "4.3.4",
+    "autoprefixer": "10.4.27",
+    "postcss": "8.4.49",
+    "tailwindcss": "3.4.19",
+    "typescript": "5.9.3",
+    "vite": "5.4.21"
+  }
+}

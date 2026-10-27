@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+body {
+  background:
+    radial-gradient(1200px 500px at 50% -120px, rgba(16, 185, 129, 0.10), transparent 70%),
+    #09090b;
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+::selection { background: rgba(52, 211, 153, 0.3); }
