@@ -29,13 +29,18 @@ flowchart LR
   API --> RES
   REC --> CI["GitHub Actions:<br/>pytest + release_gate.py"]
   CI --> H
-  PAGES["GitHub Pages: index.html"] -- "POST /evaluate" --> API
+  CORPUS[("samples/corpus.jsonl.gz<br/>5,010 records")] --> BM["server/live_retrieval.py<br/>live BM25 + BM25 gate"]
+  API --> BM
+  PAGES["GitHub Pages: web/<br/>React + strict TS"] -- "POST /evaluate, /retrieve" --> API
   PAGES -. "fallback" .-> TS["sandbox.js<br/>(built from sandbox.ts)"]
 ```
 
-On every public path, **retrieval is replayed**: each sample carries the
-candidates the real hybrid retriever returned when it was recorded. The
-answers are recorded too. Only the evaluators run live.
+For the 14 samples, **retrieval is replayed**: each sample carries the
+candidates the real hybrid retriever returned when it was recorded, and the
+answers are recorded too. The evaluators run live. A visitor's own question
+gets **live BM25 only** (`POST /retrieve`): the lexical half of the
+retriever and its 19.5 floor, over all 5,010 records. It gets no dense
+retrieval, no fusion and no answer.
 
 ## Harness contract (`harness/`)
 
@@ -78,8 +83,9 @@ answers are recorded too. Only the evaluators run live.
   Known-good therefore gates at **6/7**, not 7/7.
 - **Replay over live serving.** The public service cannot spend money or leak
   a key. It has no key, no SDK and no HTTP client, and tests trip on any
-  attempt. The cost is that it shows only 14 fixed samples and never runs
-  retrieval live.
+  attempt. The cost is that answers exist only for 14 fixed samples. Free
+  text gets live BM25 and the gate, but not dense retrieval, which would need
+  torch and the embedding model in the image.
 - **Concurrent evaluators.** Each one is isolated, so one that crashes
   cannot hide the others. It is not faster: on this laptop the concurrent
   verify step takes p50 1.225 ms against 0.247 ms sequential
@@ -96,7 +102,11 @@ answers are recorded too. Only the evaluators run live.
 - **The rate limit is per instance.** 30 requests a minute per IP in each
   instance, up to 2 instances.
 - **Measured latency:**
-  - **Cloud Run**, 2026-10-27, from one laptop: cold 4,287 ms, warm p50 110 ms.
+  - **Cloud Run**, 2026-10-27, from one laptop, current revision: cold
+    6,832 ms. Warm p50 is 256 ms for `/evaluate` and 362 ms for
+    `/retrieve`. The first revision measured cold 4,287 ms and warm p50
+    110 ms. Server compute is 0.3 ms (evaluators) and 34 ms (BM25
+    search).
   - **Harness in replay**, this laptop: p50 1.263 ms, p95 1.962 ms.
   - Neither includes a model call.
 - **Cost of a real call.** Recorded prompts average 4,395 tokens (range
@@ -104,7 +114,8 @@ answers are recorded too. Only the evaluators run live.
 
 ## What I did not build
 
-- No live retrieval on the public service, and no free-text questions.
+- No live *hybrid* retrieval on the public service: BM25 only, with no
+  dense retrieval and no fusion. No answers to free-text questions.
 - No second recorded attempts, so retry is never shown on recorded data.
 - No export of harness traces to Phoenix; they are structured JSON only. The
   pipeline's own spans do go to Phoenix.

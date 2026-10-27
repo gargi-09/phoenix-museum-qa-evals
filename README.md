@@ -1,6 +1,6 @@
 # Catching LLM False Passes with Deterministic Verifiers & Arize Phoenix
 
-[![Live dashboard](https://img.shields.io/badge/live%20dashboard-gargi--09.github.io-10b981?style=flat-square&logo=githubpages&logoColor=white)](https://gargi-09.github.io/phoenix-museum-qa-evals/)
+[![Try it](https://img.shields.io/badge/try%20it-gargi--09.github.io-10b981?style=flat-square&logo=githubpages&logoColor=white)](https://gargi-09.github.io/phoenix-museum-qa-evals/)
 [![Arize Phoenix](https://img.shields.io/badge/observability-Arize%20Phoenix-6d28d9?style=flat-square)](https://docs.arize.com/phoenix)
 [![OpenInference](https://img.shields.io/badge/tracing-OpenInference%20%2B%20OTel-0ea5e9?style=flat-square)](https://github.com/Arize-ai/openinference)
 [![release-gate](https://github.com/gargi-09/phoenix-museum-qa-evals/actions/workflows/release-gate.yml/badge.svg)](https://github.com/gargi-09/phoenix-museum-qa-evals/actions/workflows/release-gate.yml)
@@ -22,6 +22,10 @@ stand-in that sees what an LLM judge sees (question and answer only). It
 passes all 3 seeded false passes. The real LLM judge (`make_live_llm_judge`,
 `claude-haiku-5-5`), run once on the same three, **passed 2 of 3**; see
 [the recorded LLM-judge run](#the-recorded-llm-judge-run).
+
+**[Try it in the browser →](https://gargi-09.github.io/phoenix-museum-qa-evals/)** No key and no
+sign-up. Search the 5,010 records live, then edit real Claude answers and see
+which checks you can fool. See [the web app](#the-web-app).
 
 ![The zero-sources trap in Phoenix: the LLM judge scores 1.00 while zero_source_false_pass and citation_groundedness score 0.00](docs/assets/trace-zero.png)
 
@@ -286,18 +290,19 @@ longer published by AIC.
 ## Live API (Cloud Run)
 
 **https://museum-qa-api-o7gdkkg7ja-uc.a.run.app**, the backend the
-dashboard's sandbox panel calls.
+[web app](#the-web-app) calls.
 
 The model outputs are **recorded**: 11 real `claude-haiku-5-5` calls made
 once, locally, by [`record_samples.py`](record_samples.py) (54,954 tokens).
 The **evaluators run live** on every request. The deployed service never
 calls a model: it runs with `LLM_PROVIDER=disabled`, has no API key and no
-HTTP client in its image, and refuses free-text questions.
+HTTP client in its image, and generates no answer to a free-text question.
 
 ```
-GitHub Pages (docs/index.html) --POST /evaluate--> Cloud Run: FastAPI + src/rescore.py
+GitHub Pages (web/) --POST /evaluate--> Cloud Run: FastAPI + src/rescore.py
   recorded answer (or the visitor's edit) -> parse, truncation check, 4 verifiers,
   confidence cap, prompt-token audit -> 8 evaluators + verdict, computed per request
+GitHub Pages (web/) --POST /retrieve--> live BM25 over 5,010 records + the BM25 gate
 ```
 
 | Endpoint | What it does |
@@ -306,15 +311,27 @@ GitHub Pages (docs/index.html) --POST /evaluate--> Cloud Run: FastAPI + src/resc
 | `GET /samples` | the 14 fixed samples (11 recorded questions, 3 seeded failures) |
 | `GET /samples/{id}` | one sample: question, retrieved records, recorded answer |
 | `POST /evaluate` | `{"sample_id", "answer"?, "system_prompt_delivered"?}` → all evaluator verdicts |
+| `POST /retrieve` | `{"question"}` (1–300 characters) → live BM25 top 10 over all 5,010 records, plus the BM25 gate decision. No answer is generated |
 
 ```bash
 curl -s -X POST https://museum-qa-api-o7gdkkg7ja-uc.a.run.app/evaluate -H "Content-Type: application/json" -d '{"sample_id": "s01"}'
 ```
 
-**Retrieval is replayed, not live.** Each sample carries the candidates the
-real hybrid retriever returned when it was recorded. The deployed service
-re-scores against those recorded candidates and does not run retrieval
-itself.
+**Retrieval: replayed for the samples, BM25-only live for free text.**
+- **The 14 samples:** each carries the candidates the real hybrid retriever
+  returned when it was recorded. `/evaluate` re-scores against those
+  recorded candidates.
+- **Free text:** `POST /retrieve`
+  ([`server/live_retrieval.py`](server/live_retrieval.py)) runs the BM25 half
+  of the retriever and its abstention floor live over the full corpus.
+- **Not run live:** the dense half (bge-small) and RRF fusion. They need the
+  embedding model, which the image doesn't ship, so live rankings can differ
+  from the pipeline's.
+- **BM25 scores are the pipeline's own:** the corpus is exported by
+  [`scripts/export_corpus.py`](scripts/export_corpus.py) with byte-identical
+  passages. A test checks the recorded gate values: q11 is 17.22, q10 is
+  19.75.
+- **The question itself** is never sent to a model, stored or logged.
 
 **Prompt size.** About 4.4K prompt tokens per call on the recorded runs
 (mean 4,395, range 3,694 to 4,900; the 3,694 is s02, sent without its
@@ -368,18 +385,38 @@ correctly and quoted the accession number "1947.39", which
 `verifier.factual_match` read as a year and flagged against the record's
 1932. It is left as recorded rather than tuned away.
 
-**Measured latency** (`POST /evaluate`, from a laptop in the US, via
-[`scripts/measure_latency.py`](scripts/measure_latency.py), measured
-2026-10-27):
+**Measured latency.** All runs below were taken from one laptop in the US
+with [`scripts/measure_latency.py`](scripts/measure_latency.py), on
+2026-10-27.
 
-| | Round trip | Notes |
-|---|---|---|
-| Cold start | 4,287 ms | after 20 min idle; Cloud Run's logs show a new instance starting |
-| Warm, n=20 | p50 110 ms, p90 132 ms, max 133 ms | |
+The current service (revision `00003`, with `/retrieve` and the corpus):
 
-The evaluators themselves take about 0.3 ms per request on the server, so
-nearly all of that time is network and container startup. The image is
-73 MB compressed.
+| Endpoint | First request | Warm, n=20 | Server compute |
+|---|---|---|---|
+| `POST /evaluate` | **6,832 ms**, cold | p50 256 ms, p90 614 ms, max 738 ms | 0.31 ms |
+| `POST /retrieve` | 312 ms, already warm | p50 362 ms, p90 438 ms, max 451 ms | 34 ms |
+
+The cold start is a real one: it came after 20 minutes idle, and Cloud
+Run's log shows a new instance starting.
+
+The first revision (`00001`, before `/retrieve`) measured:
+
+| Endpoint | Cold start | Warm, n=20 | Server compute |
+|---|---|---|---|
+| `POST /evaluate` | 4,287 ms | p50 110 ms, p90 132 ms, max 133 ms | about 0.3 ms |
+
+What the numbers mean:
+
+- **Network dominates.** The server's own compute is 0.3 ms for the
+  evaluators and 34 ms for a BM25 search over 5,010 records, so nearly all
+  of each round trip is network and container startup.
+- **The warm numbers differ between runs** of the same code path (110 ms
+  against 256 ms p50). This is one client on a home connection, so treat
+  them as a range, not a benchmark.
+- **The longer cold start** is consistent with the new revision building the
+  BM25 index at startup, which took 751 ms locally. I haven't isolated it on
+  Cloud Run.
+- **The image** is 74.2 MB compressed, up from 73.0 MB with the corpus.
 
 **Safety limits:**
 - CORS allows only `https://gargi-09.github.io` and localhost.
@@ -495,10 +532,14 @@ pip install -r requirements-ci.txt
 python -m pytest
 ```
 
-There are 62 tests. They include:
+There are 80 tests. They include:
 
 - a guard that runs the server with tripwires on key reads, client imports,
-  outbound sockets and imports of the recorder scripts;
+  outbound sockets and imports of the recorder scripts. It exercises every
+  endpoint, including `/retrieve`, and checks each request reached its
+  handler rather than a 429;
+- live BM25 scores matching the recorded pipeline (q11 17.22, q10 19.75);
+- the web app's pinned dependencies and its strict, `any`-free TypeScript;
 - the 1,040/1,040 parity test;
 - the harness and gate tests.
 
@@ -510,9 +551,9 @@ retriever. It has no torch and no model SDK.
 - **A small fixed set:** 14 samples. Two of the three seeded failures (s01,
   s03) are labelled edits of real answers, and the real LLM judge was run
   once, on those three.
-- **Not a live system:** the deployed service replays recorded candidates
-  and answers. It never runs retrieval or a model, and it refuses free-text
-  questions.
+- **Not a live answering system:** the deployed service replays recorded
+  answers, never calls a model, and answers no free-text question. Live
+  search over free text is BM25 only: no dense retrieval, no fusion.
 - **One known false positive:** q06 is a correct answer that the year check
   fails. It's documented, not tuned away.
 - **Latency comes from one client and one laptop**, and it varies run to
@@ -520,18 +561,52 @@ retriever. It has no torch and no model SDK.
 
 ---
 
-## Interactive dashboard
+## The web app
 
-[`docs/index.html`](docs/index.html) is a standalone page (Tailwind CDN,
-vanilla JS, Lucide icons) built for GitHub Pages. It has a scenario studio for
-the clean, zero-sources and dropped-prompt cases, the raw response next to
-both verdicts, the evaluator annotations, and a span waterfall with token
-telemetry.
+**[gargi-09.github.io/phoenix-museum-qa-evals](https://gargi-09.github.io/phoenix-museum-qa-evals/)**,
+built for people who want to *use* the project, not read it.
+[`web/`](web/) is React 18 and strict TypeScript (`noImplicitAny`,
+`noUncheckedIndexedAccess`, no `any`), built with Vite and deployed by
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml). It's a walk
+through three steps:
 
-### Evaluator sandbox: try to fool the verifiers, no key needed
+1. **Search 5,010 museum records (live).** Any question goes through
+   `POST /retrieve`: the live BM25 ranking, plus the abstention gate drawn
+   against its 19.5 floor. A question that matches a recorded sample links
+   to Claude's recorded answer.
+2. **Try to fool the verifier.** Edit any of the 14 recorded answers, or
+   apply a one-click trick (remove the citations, cite a fake record, wrong
+   year, "no violations", plain prose, drop the system prompt).
+   - Verdicts: the judge and the verifier are shown side by side, with the
+     harness decision and all 8 checks.
+   - Scoring: by the Python evaluators on the API. If the API is
+     unreachable, by the parity-checked TypeScript engine in the browser,
+     and the page says which.
+3. **See the measured results.** Read from the committed files: the real
+   LLM judge's verdicts, the CI gate, latency and recorded tokens.
 
-The dashboard's sandbox panel runs the evaluators **in the visitor's
-browser**:
+Every number on the page comes from a generated file or the API, and each
+step is labelled live, partly live or recorded.
+
+```bash
+npm ci --prefix web
+```
+```bash
+npm run --prefix web dev
+```
+
+`web/scripts/sync-data.mjs` copies the engine and data files into place.
+Set `VITE_API_BASE=http://127.0.0.1:8080` in `web/.env.development.local` to
+use a local API.
+
+The previous single-file dashboard, [`docs/index.html`](docs/index.html),
+stays available as the *technical console* at `/classic.html`. It has the
+scenario studio, the span waterfall with token telemetry, and the sandbox
+panel.
+
+### Evaluator sandbox: the engine behind step 2
+
+The editor runs the evaluators against the recorded records:
 
 1. Pick one of the 14 recorded samples. They're scored by the
    [live API](#live-api-cloud-run) when it's reachable, and in the browser
@@ -706,20 +781,24 @@ Original architecture diagram:
 
 ```
 demo_phoenix_evals.py  Phoenix demo: trace 5 questions, evaluate the traces
-docs/index.html        GitHub Pages diagnostic dashboard
+web/                   the public app: React + strict TypeScript + Vite (Pages)
+docs/index.html        the previous dashboard, served as /classic.html
 docs/src/sandbox.ts    in-browser evaluator engine, strict TypeScript (parity-checked)
 docs/sandbox.js        its compiled build, committed (Pages serves it; CI checks it matches)
 docs/data/             sandbox.json, recorded_samples.json, metrics.json
 docs/DESIGN.md         components, harness contract, failure modes, limits
 harness/               retrieve -> answer -> verify -> accept | retry | abstain (python -m harness)
 server/app.py          the Cloud Run API (recorded samples only, LLM_PROVIDER=disabled)
-samples/               samples.json, recorded_outputs.json, recorded_llm_judge.json, release_gate.json
+server/live_retrieval.py  live BM25 + gate for POST /retrieve (no model, no dense)
+samples/               samples.json, recorded_outputs.json, recorded_llm_judge.json,
+                       release_gate.json, corpus.jsonl.gz (the 5,010 records, slim)
 record_samples.py      LOCAL ONLY: records the model answers (needs your key)
 scripts/
   record_llm_judge.py  LOCAL ONLY: records the real LLM judge on s01-s03 (needs your key)
   release_gate.py      the CI release gate
   run_metrics.py       measured metrics -> docs/data/metrics.json
-  measure_latency.py   HTTP latency of the deployed API
+  measure_latency.py   HTTP latency of the deployed API (/evaluate or /retrieve)
+  export_corpus.py     data/normalized.jsonl -> samples/corpus.jsonl.gz
 tests/                 pytest suite (no key, no network)
 deploy.sh              Cloud Run deploy: dry run unless --yes
 docs/assets/           screenshots, shown on the dashboard and here (see its README.md)
