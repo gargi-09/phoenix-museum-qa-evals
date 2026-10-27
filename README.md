@@ -275,6 +275,90 @@ python src/retrieval.py data/normalized.jsonl "your question" "an off-topic ques
 snapshot. Some of its record IDs, such as `aic-215406` and `aic-13026`, are no
 longer published by AIC.
 
+## Live API (Cloud Run)
+
+**https://museum-qa-api-o7gdkkg7ja-uc.a.run.app**, the backend the
+dashboard's sandbox panel calls.
+
+The model outputs are **recorded**: 11 real `claude-haiku-5-5` calls made
+once, locally, by [`record_samples.py`](record_samples.py) (54,954 tokens).
+The **evaluators run live** on every request. The deployed service never
+calls a model: it runs with `LLM_PROVIDER=disabled`, has no API key and no
+HTTP client in its image, and refuses free-text questions.
+
+```
+GitHub Pages (docs/index.html) --POST /evaluate--> Cloud Run: FastAPI + src/rescore.py
+  recorded answer (or the visitor's edit) -> parse, truncation check, 4 verifiers,
+  confidence cap, prompt-token audit -> 8 evaluators + verdict, computed per request
+```
+
+| Endpoint | What it does |
+|---|---|
+| `GET /health` | status, sample count, `"model_calls": "disabled"` |
+| `GET /samples` | the 14 fixed samples (11 recorded questions, 3 seeded failures) |
+| `GET /samples/{id}` | one sample: question, retrieved records, recorded answer |
+| `POST /evaluate` | `{"sample_id", "answer"?, "system_prompt_delivered"?}` → all evaluator verdicts |
+
+```bash
+curl -s -X POST https://museum-qa-api-o7gdkkg7ja-uc.a.run.app/evaluate -H "Content-Type: application/json" -d '{"sample_id": "s01"}'
+```
+
+**What the recorded outputs showed.** The verifiers catch all 3 seeded
+failures, which the rule-based judge passes:
+
+- **s01:** q01's real answer with its citations stripped, a zero-source
+  false pass.
+- **s02:** a real call with the system prompt left out. It came back as
+  prose with no citations, and the prompt-token audit flagged the missing
+  instruction block.
+- **s03:** q04's real answer plus a record ID that was never retrieved.
+
+One real answer, q06, is a **verifier false positive**. Haiku answered
+correctly and quoted the accession number "1947.39", which
+`verifier.factual_match` read as a year and flagged against the record's
+1932. It is left as recorded rather than tuned away.
+
+**Measured latency** (`POST /evaluate`, from a laptop in the US, via
+[`scripts/measure_latency.py`](scripts/measure_latency.py), measured
+2026-10-27):
+
+| | Round trip | Notes |
+|---|---|---|
+| Cold start | 4,287 ms | after 20 min idle; Cloud Run's logs show a new instance starting |
+| Warm, n=20 | p50 110 ms, p90 132 ms, max 133 ms | |
+
+The evaluators themselves take about 0.3 ms per request on the server, so
+nearly all of that time is network and container startup. The image is
+73 MB compressed.
+
+**Safety limits:**
+- CORS allows only `https://gargi-09.github.io` and localhost.
+- Each IP is limited to 30 requests a minute; past that it gets a 429.
+- Request bodies are capped at 16 KB and answers at 8,000 characters.
+- Request bodies are never logged.
+- Cloud Run settings: at most 2 instances, scales to zero, 60 s timeout,
+  512 MiB.
+- If the API is down or slow, the dashboard falls back to the in-browser
+  sandbox.
+
+**Deploy your own:**
+1. Set a **GCP budget alert** first: Billing → Budgets & alerts, e.g. $5.
+2. Record the samples with `python record_samples.py --yes`.
+3. Preview the billable commands with `bash deploy.sh`, then run them with
+   `bash deploy.sh --yes`.
+
+Tests:
+```bash
+pip install -r requirements-dev.txt
+```
+```bash
+python -m pytest
+```
+They include a guard that runs the server with tripwires on key reads,
+client imports and outbound sockets.
+
+---
+
 ## Interactive dashboard
 
 [`docs/index.html`](docs/index.html) is a standalone page (Tailwind CDN,
@@ -288,7 +372,9 @@ telemetry.
 The dashboard's sandbox panel runs the evaluators **in the visitor's
 browser**:
 
-1. Pick one of the five traced runs.
+1. Pick one of the 14 recorded samples. They're scored by the
+   [live API](#live-api-cloud-run) when it's reachable, and in the browser
+   otherwise.
 2. Edit what the model said: strip citations, cite a record that was never
    retrieved, claim "no violations", state a wrong year, answer in prose, or
    untick "system prompt delivered".
