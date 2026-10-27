@@ -157,3 +157,5 @@ def test_deploy_script_pins_safe_cloud_run_settings():
     for flag in ("--max-instances 2", "--timeout 60", "--memory 512Mi", "--concurrency 20"):
         assert flag in sh
     assert '[ "${1:-}" != "--yes" ]' in sh                    # dry run unless --yes
+    assert "--service-account $RUNTIME_SA" in sh                # not the Editor default account
+    assert "add-iam-policy-binding" not in sh and "--role" not in sh   # the account gets no roles
