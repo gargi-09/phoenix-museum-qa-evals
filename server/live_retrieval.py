@@ -41,11 +41,17 @@ class LiveBM25:
         self.bm25 = BM25Okapi([tokenize(build_passage_text(r)) for r in self.records])
         self.build_ms = round((time.perf_counter() - t0) * 1000, 1)
 
+    threshold = BM25_ABSTENTION_THRESHOLD
+
+    def top(self, question, top_k=10):
+        """(indices, scores, bm25_max) in retrieval.py's ranking order."""
+        scores = self.bm25.get_scores(tokenize(question))
+        order = [int(i) for i in np.argsort(scores)[::-1][:top_k]]
+        return order, scores, (float(scores[order[0]]) if order else 0.0)
+
     def search(self, question, top_k=10):
         t0 = time.perf_counter()
-        scores = self.bm25.get_scores(tokenize(question))
-        order = [int(i) for i in np.argsort(scores)[::-1][:top_k]]   # retrieval.py's order
-        bm25_max = float(scores[order[0]]) if order else 0.0
+        order, scores, bm25_max = self.top(question, top_k)
         abstained = bm25_max < BM25_ABSTENTION_THRESHOLD
         hits = []
         for i in order:

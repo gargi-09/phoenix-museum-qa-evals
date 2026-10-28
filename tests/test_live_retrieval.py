@@ -30,8 +30,9 @@ def test_corpus_is_the_full_slim_corpus():
         rows = [json.loads(line) for line in f]
     assert len(rows) == 5010
     assert {r["id"][:4] for r in rows} == {"cma-", "aic-"}
-    assert set(rows[0]) == {"id", "institution", "accession_number", "title", "artist",
-                            "year_raw", "medium", "classification", "description"}
+    # The full normalized record: the live-answer path builds context blocks from it.
+    assert {"id", "title", "artist", "years", "medium", "dimensions", "classification",
+            "description"} <= set(rows[0])
 
 
 def test_scores_match_the_recorded_pipeline_gate(client):
