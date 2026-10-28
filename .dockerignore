@@ -12,6 +12,12 @@
 samples/*
 !samples/recorded_outputs.json
 !samples/corpus.jsonl.gz
+!samples/release_gate.json
+!harness/
+!harness/*.py
+!scripts/
+scripts/*
+!scripts/release_gate.py
 **/__pycache__
 **/*.pyc
 src/demo/

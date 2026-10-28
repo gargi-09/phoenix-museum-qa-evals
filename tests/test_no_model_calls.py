@@ -6,6 +6,7 @@ installed before server.app is imported, a decoy ANTHROPIC_API_KEY present in
 the environment, then exercises every endpoint. Any tripwire fails the test.
 """
 import os
+import re
 import subprocess
 import sys
 import textwrap
@@ -93,6 +94,9 @@ GUARD_SCRIPT = textwrap.dedent(r"""
     out["ask"] = c.get("/ask?q=anything").status_code
     out["retrieve"] = [c.post("/retrieve", json={"question": q}).status_code
                        for q in ("What is the capital of Mongolia?", "Coney Island Beach Reginald Marsh")]
+    out["gate"] = [c.post("/gate/run", json={"break": b}).status_code
+                   for b in ("none", "approve_seeded", "drop_known_good", "hide_dropped_prompt")]
+    out["live_status"] = c.get("/live/status").json().get("enabled")
 
     # Belt and braces: even called directly, the client refuses.
     import api_client
@@ -105,8 +109,10 @@ GUARD_SCRIPT = textwrap.dedent(r"""
 """)
 
 
-def run_guard():
-    env = {k: v for k, v in os.environ.items() if k not in ("LLM_PROVIDER",)}
+def run_guard(**extra_env):
+    env = {k: v for k, v in os.environ.items()
+           if k not in ("LLM_PROVIDER", "LIVE_ANSWERS", "COUNTER_BUCKET", "LIVE_ALLOW_MEMORY_COUNTER")}
+    env.update(extra_env)
     proc = subprocess.run([sys.executable, "-c", f"REPO_ROOT = {REPO_ROOT!r}\n" + GUARD_SCRIPT],
                           cwd=REPO_ROOT, env=env, capture_output=True, text=True, timeout=120)
     assert proc.returncode == 0, proc.stderr[-3000:]
@@ -122,6 +128,19 @@ def test_serving_path_never_reads_keys_imports_clients_or_opens_sockets():
     assert r["out"]["sample_codes"] == [200]                  # every call reached its handler
     assert r["out"]["ask"] == 400
     assert r["out"]["retrieve"] == [200, 200]                 # live BM25 ran, under the tripwires
+    assert r["out"]["gate"] == [200, 200, 200, 200]           # the live release gate, too
+    assert r["out"]["live_status"] is False                   # live answers are off by default
+
+
+def test_with_live_answers_on_the_other_endpoints_still_never_touch_the_model():
+    """Production runs with LIVE_ANSWERS=on and the key mounted. Every endpoint
+    except POST /live/answer must still never read the key, import the SDK or
+    open a socket. (The live path itself is tested with a fake client in
+    tests/test_live_answer.py.)"""
+    r = run_guard(LIVE_ANSWERS="on", LIVE_ALLOW_MEMORY_COUNTER="1")
+    assert r["tripped"] == [], r["tripped"]
+    assert r["loaded"] == []
+    assert r["out"]["sample_codes"] == [200] and r["out"]["live_status"] is True
 
 
 def test_model_client_is_disabled_in_the_serving_process():
@@ -145,27 +164,45 @@ def test_recording_scripts_refuse_in_serving_mode():
 
 def test_image_never_contains_the_recorder_or_secrets():
     dockerfile = open(os.path.join(REPO_ROOT, "Dockerfile"), encoding="utf-8").read()
-    assert "record_samples" not in dockerfile.replace("record_samples.py, any", "")
-    assert "record_llm_judge" not in dockerfile and "scripts" not in dockerfile
-    assert "ANTHROPIC" not in dockerfile
+    assert "record_samples.py" not in dockerfile.replace("the recorders", "")
+    assert "record_llm_judge" not in dockerfile and "ANTHROPIC" not in dockerfile
+    # The only script in the image is the release gate.
+    assert [l for l in dockerfile.splitlines() if "scripts/" in l] == [
+        "COPY scripts/release_gate.py ./scripts/release_gate.py"]
     for ignore in (".dockerignore", ".gcloudignore"):
         lines = [l.strip() for l in open(os.path.join(REPO_ROOT, ignore), encoding="utf-8")]
-        assert "*" in lines, f"{ignore} must start from an allow-list"
-        assert not any(l.startswith("!") and (".env" in l or "record_" in l or "scripts" in l)
-                       for l in lines)
+        assert "*" in lines and "scripts/*" in lines, f"{ignore} must start from an allow-list"
+        allowed = [l for l in lines if l.startswith("!")]
+        assert not any(".env" in l or "record_" in l for l in allowed)
+        assert [l for l in allowed if "scripts" in l] == ["!scripts/", "!scripts/release_gate.py"]
     reqs = open(os.path.join(REPO_ROOT, "requirements-server.txt"), encoding="utf-8").read().lower()
-    for pkg in ("anthropic", "requests", "python-dotenv", "torch", "sentence-transformers"):
+    for pkg in ("requests", "python-dotenv", "torch", "sentence-transformers", "arize-phoenix"):
         assert f"\n{pkg}=" not in reqs and not reqs.startswith(f"{pkg}=")
+    assert "\nanthropic==" in reqs              # pinned, for POST /live/answer only
 
 
 def test_deploy_script_pins_safe_cloud_run_settings():
     sh = open(os.path.join(REPO_ROOT, "deploy.sh"), encoding="utf-8").read()
     assert 'REQUIRED_ACCOUNT="gargivipat@gmail.com"' in sh
-    assert "--set-env-vars LLM_PROVIDER=disabled" in sh      # replaces all other env vars
-    assert "ANTHROPIC" not in sh.replace("an Anthropic key", "")
-    assert "--set-secrets" not in sh and "--update-env-vars" not in sh
+    assert "LLM_PROVIDER=disabled" in sh and "--update-env-vars" not in sh
+    # The key reaches the service only as a Secret Manager reference, never a value.
+    assert "--set-secrets ANTHROPIC_API_KEY=$SECRET:latest" in sh
+    assert not re.search(r"ANTHROPIC_API_KEY=(?!\$SECRET:latest)", sh)
+    assert not re.search(r"sk-ant-[A-Za-z0-9_-]{20,}", sh)   # a scan pattern is fine; a key is not
+    assert "LIVE_DAILY_CAP:-50" in sh and "LIVE_PER_IP_PER_HOUR:-5" in sh   # the approved caps
     for flag in ("--max-instances 2", "--timeout 60", "--memory 512Mi", "--concurrency 20"):
         assert flag in sh
     assert '[ "${1:-}" != "--yes" ]' in sh                    # dry run unless --yes
     assert "--service-account $RUNTIME_SA" in sh                # not the Editor default account
     assert "add-iam-policy-binding" not in sh and "--role" not in sh   # the account gets no roles
+
+
+def test_live_setup_script_grants_only_scoped_access_and_never_sees_the_key():
+    sh = open(os.path.join(REPO_ROOT, "setup_live.sh"), encoding="utf-8").read()
+    assert 'REQUIRED_ACCOUNT="gargivipat@gmail.com"' in sh and '[ "${1:-}" != "--yes" ]' in sh
+    roles = re.findall(r"--role (roles/[\w.]+)", sh)
+    assert sorted(roles) == ["roles/secretmanager.secretAccessor", "roles/storage.objectUser"]
+    assert "projects add-iam-policy-binding" not in sh        # nothing project-wide
+    assert "--public-access-prevention" in sh
+    assert not re.search(r"sk-ant-[A-Za-z0-9_-]{20,}", sh)
+    assert "versions add" in sh.split("Done. Now add the key YOURSELF")[1]

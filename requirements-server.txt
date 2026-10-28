@@ -1,22 +1,33 @@
 # Runtime dependencies of the Cloud Run service ONLY (server/app.py), fully
-# pinned. Deliberately absent: anthropic, requests, python-dotenv, torch,
-# sentence-transformers, arize-phoenix. The service replays recorded retrieval
-# and makes no model call, so it needs none of them -- and without an HTTP
-# client or the Anthropic SDK in the image it cannot make one by accident.
-# numpy and rank-bm25 are here only because reasoning.py imports retrieval.py.
+# pinned (resolved in a clean Python 3.12 venv).
+#
+# anthropic (+ httpx2, httpcore2, jiter, docstring_parser, sniffio,
+# truststore) is here for ONE path: POST /live/answer (server/live_answer.py),
+# which is off unless LIVE_ANSWERS=on and imports the SDK only when it runs.
+# Every other endpoint never imports it; tests/test_no_model_calls.py fails if
+# one does. Still deliberately absent: requests, python-dotenv, torch,
+# sentence-transformers, arize-phoenix.
+# numpy and rank-bm25: reasoning.py imports retrieval.py, and live BM25.
 annotated-doc==0.0.5
 annotated-types==0.8.0
+anthropic==1.17.0
 anyio==4.15.1
 click==8.5.0
+docstring_parser==0.18.0
 fastapi==0.161.1
 h11==0.16.0
+httpcore2==2.16.0
+httpx2==2.16.0
 idna==3.20
+jiter==0.18.0
 numpy==2.5.2
 opentelemetry-api==1.45.1
 pydantic==2.14.1
 pydantic_core==2.50.1
 rank-bm25==0.2.2
+sniffio==1.3.1
 starlette==1.10.0
+truststore==0.10.5
 typing-inspection==0.4.4
 typing_extensions==4.16.0
 uvicorn==0.54.0

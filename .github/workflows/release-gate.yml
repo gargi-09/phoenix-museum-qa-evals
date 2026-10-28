@@ -1,7 +1,8 @@
 # Release gate: the test suite plus scripts/release_gate.py over the fixed
 # answer sets. No secrets, no model key, no model call: LLM_PROVIDER=disabled
-# for every step, and the dependency set has no model SDK, HTTP client or
-# torch (checked below, not assumed).
+# for every step. The Anthropic SDK is installed (the server ships it for the
+# opt-in live path) but no key exists here, and the live path is tested with
+# a fake client. No requests, dotenv or torch (checked below, not assumed).
 name: release-gate
 
 on:
@@ -45,11 +46,11 @@ jobs:
           git diff --exit-code -- docs/sandbox.js \
             || { echo "docs/sandbox.js does not match docs/src/sandbox.ts: run npm run build:sandbox and commit"; exit 1; }
 
-      - name: No model SDK, HTTP client or torch installed
+      - name: No requests, dotenv, torch or Phoenix installed
         run: |
           python - <<'EOF'
           import importlib.util, sys
-          bad = [m for m in ("anthropic", "requests", "dotenv", "torch",
+          bad = [m for m in ("requests", "dotenv", "torch",
                              "sentence_transformers", "phoenix") if importlib.util.find_spec(m)]
           print("forbidden packages installed:", bad or "none")
           sys.exit(1 if bad else 0)

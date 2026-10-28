@@ -11,9 +11,15 @@
 # a project is set, and samples/recorded_outputs.json exists and is labelled
 # "recorded model outputs". The service gets exactly one env var,
 # LLM_PROVIDER=disabled (--set-env-vars replaces any others), and no secrets.
-# It runs as a dedicated service account with NO roles (RUNTIME_SA), not the
-# project's default compute account, which has Editor on the project. The
-# service needs no Google API at all: it serves a file it was built with.
+# It runs as a dedicated service account with NO project roles (RUNTIME_SA),
+# not the default compute account, which has Editor on the project.
+#
+# Live answers (POST /live/answer) are ON by default (LIVE=on): one real
+# claude-haiku-5-5 call per answer, capped at LIVE_DAILY_CAP per UTC day
+# across all instances and LIVE_PER_IP_PER_HOUR per visitor. The key is
+# mounted from Secret Manager (--set-secrets); it is never in this script,
+# the image or an env var literal. One-time setup: bash setup_live.sh.
+# LIVE=off deploys with live answers off and mounts no secret.
 set -euo pipefail
 
 REQUIRED_ACCOUNT="gargivipat@gmail.com"
@@ -21,6 +27,10 @@ REGION="${REGION:-us-central1}"
 SERVICE="${SERVICE:-museum-qa-api}"
 SAMPLES="samples/recorded_outputs.json"
 RUNTIME_SA_NAME="${RUNTIME_SA_NAME:-museum-qa-api-runtime}"
+LIVE="${LIVE:-on}"
+LIVE_DAILY_CAP="${LIVE_DAILY_CAP:-50}"
+LIVE_PER_IP_PER_HOUR="${LIVE_PER_IP_PER_HOUR:-5}"
+SECRET="anthropic-api-key"
 
 cd "$(dirname "$0")"
 
@@ -50,13 +60,23 @@ CMDS=(
 if ! gcloud iam service-accounts describe "$RUNTIME_SA" --project "$PROJECT_ID" >/dev/null 2>&1; then
   CMDS+=("gcloud iam service-accounts create $RUNTIME_SA_NAME --project $PROJECT_ID --display-name 'museum-qa-api runtime (no roles)'")
 fi
-CMDS+=("gcloud run deploy $SERVICE --source . --project $PROJECT_ID --region $REGION --allow-unauthenticated --service-account $RUNTIME_SA --port 8080 --memory 512Mi --cpu 1 --concurrency 20 --max-instances 2 --min-instances 0 --timeout 60 --set-env-vars LLM_PROVIDER=disabled --quiet")
+if [ "$LIVE" = "on" ]; then
+  BUCKET="$PROJECT_ID-live-quota"
+  gcloud secrets versions describe latest --secret "$SECRET" --project "$PROJECT_ID" >/dev/null 2>&1 \
+    || fail "secret $SECRET has no version. Run bash setup_live.sh, add the key, or deploy with LIVE=off"
+  ENV_VARS="LLM_PROVIDER=disabled,LIVE_ANSWERS=on,LIVE_DAILY_CAP=$LIVE_DAILY_CAP,LIVE_PER_IP_PER_HOUR=$LIVE_PER_IP_PER_HOUR,COUNTER_BUCKET=$BUCKET"
+  LIVE_FLAGS="--set-env-vars $ENV_VARS --set-secrets ANTHROPIC_API_KEY=$SECRET:latest"
+else
+  LIVE_FLAGS="--set-env-vars LLM_PROVIDER=disabled,LIVE_ANSWERS=off --clear-secrets"
+fi
+CMDS+=("gcloud run deploy $SERVICE --source . --project $PROJECT_ID --region $REGION --allow-unauthenticated --service-account $RUNTIME_SA --port 8080 --memory 512Mi --cpu 1 --concurrency 20 --max-instances 2 --min-instances 0 --timeout 60 $LIVE_FLAGS --quiet")
 
 echo "Account : $ACCOUNT"
 echo "Project : $PROJECT_ID"
 echo "Region  : $REGION"
 echo "Service : $SERVICE"
-echo "Runs as : $RUNTIME_SA (no roles)"
+echo "Runs as : $RUNTIME_SA (no project roles)"
+echo "Live    : $LIVE (cap $LIVE_DAILY_CAP/day, $LIVE_PER_IP_PER_HOUR per visitor per hour)"
 echo
 echo "These commands create or use billable resources (Cloud Build, Artifact Registry, Cloud Run)"
 echo "or change IAM (a service account with no roles):"
