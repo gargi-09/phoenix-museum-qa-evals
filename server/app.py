@@ -24,6 +24,9 @@ Endpoints:
   GET  /samples/{sample_id}    a recorded sample, evaluated live
   POST /evaluate               {"sample_id", "answer"?, "system_prompt_delivered"?}
   POST /retrieve               {"question"} -> live BM25 candidates + gate
+  GET  /live/status            live-answer quota (only when LIVE_ANSWERS=on)
+  POST /live/answer            {"question"} -> one real model call, verified (server/live_answer.py)
+  POST /gate/run               {"break"?} -> the CI release gate, live, optionally broken on purpose
 
 Run locally:
   uvicorn server.app:app --port 8080
@@ -54,6 +57,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from rescore import evaluate, rescore  # noqa: E402  (after LLM_PROVIDER is set)
 from live_retrieval import LiveBM25, default_path as default_corpus_path  # noqa: E402
+import live_answer  # noqa: E402  (constructs nothing unless LIVE_ANSWERS=on)
+from gate_runner import BREAKS, GateRunner  # noqa: E402
 
 SAMPLES_ONLY = "Live demo runs on recorded samples only."
 DEFAULT_SAMPLES_PATH = os.path.join(REPO_ROOT, "samples", "recorded_outputs.json")
@@ -251,10 +256,26 @@ class RetrieveRequest(BaseModel):
     question: str = Field(min_length=1, max_length=MAX_QUESTION_CHARS)
 
 
-def create_app(samples_path=None, rate_limit_per_minute=None, corpus_path=None):
+class LiveAnswerRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    question: str = Field(min_length=1, max_length=MAX_QUESTION_CHARS)
+
+
+class GateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    # Named "break_name" in Python; "break" on the wire.
+    break_name: str = Field(default="none", alias="break", max_length=32)
+
+
+def create_app(samples_path=None, rate_limit_per_minute=None, corpus_path=None, answerer=None):
     store = SampleStore(samples_path or os.getenv("SAMPLES_PATH") or DEFAULT_SAMPLES_PATH)
     corpus_file = corpus_path or default_corpus_path(REPO_ROOT)
     live = LiveBM25(corpus_file) if os.path.exists(corpus_file) else None
+    # Live answers: None (off) unless LIVE_ANSWERS=on with a durable counter.
+    answers = answerer if answerer is not None else (live_answer.from_env(live) if live else None)
+    gate = GateRunner(REPO_ROOT, list(store.samples.values())) if store.label == "recorded model outputs" else None
     limiter = RateLimiter(rate_limit_per_minute
                           or int(os.getenv("RATE_LIMIT_PER_MINUTE", "30")))
 
@@ -285,6 +306,7 @@ def create_app(samples_path=None, rate_limit_per_minute=None, corpus_path=None):
         return {"status": "ok", "samples": len(store.samples), "data_label": store.label,
                 "model_calls": "disabled",
                 "live_retrieval": "bm25" if live else "unavailable",
+                "live_answers": "on" if answers else "off",
                 "records": len(live.records) if live else 0}
 
     @app.get("/samples")
@@ -333,6 +355,38 @@ def create_app(samples_path=None, rate_limit_per_minute=None, corpus_path=None):
         out["recorded_sample_id"] = by_question.get(question.lower())
         return out
 
+    @app.get("/live/status")
+    def live_status(request: Request):
+        if answers is None:
+            return {"enabled": False,
+                    "detail": "Live answers are off on this deployment; recorded samples still work."}
+        return answers.status(client_ip(request.scope))
+
+    @app.post("/live/answer")
+    def live_answer_route(req: LiveAnswerRequest, request: Request):
+        if answers is None:
+            raise HTTPException(503, "Live answers are off on this deployment. Try a recorded sample.")
+        question = req.question.strip()
+        if not question:
+            raise HTTPException(422, "Empty question.")
+        try:
+            return answers.answer(question, client_ip(request.scope))
+        except live_answer.QuotaExhausted as e:
+            who = "your hourly limit" if str(e) == "visitor" else "today's limit"
+            return JSONResponse({"detail": f"Live answers have reached {who}. Recorded samples "
+                                           f"and live search still work."}, status_code=429)
+        except live_answer.QuotaUnavailable:
+            raise HTTPException(503, "The live-answer quota counter is unreachable, so no paid call "
+                                     "was made. Recorded samples still work.")
+
+    @app.post("/gate/run")
+    def gate_run(req: GateRequest):
+        if gate is None:
+            raise HTTPException(503, "The release gate runs on the recorded answer set only.")
+        if req.break_name not in BREAKS:
+            raise HTTPException(422, f"break must be one of {sorted(BREAKS)}")
+        return gate.run(req.break_name)
+
     @app.api_route("/ask", methods=["GET", "POST"])
     @app.api_route("/query", methods=["GET", "POST"])
     @app.api_route("/answer", methods=["GET", "POST"])
@@ -349,6 +403,7 @@ def create_app(samples_path=None, rate_limit_per_minute=None, corpus_path=None):
                        allow_headers=["Content-Type"], allow_credentials=False, max_age=600)
     app.state.store = store
     app.state.live = live
+    app.state.answers = answers
     app.state.limiter = limiter
 
     # Warm-up: the first evaluation imports the pipeline modules (measured
