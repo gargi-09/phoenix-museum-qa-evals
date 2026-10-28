@@ -19,7 +19,11 @@ GUARD_SCRIPT = textwrap.dedent(r"""
 
     tripped = []
     FORBIDDEN_ENV = {"ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "API_KEY", "MODEL_ENDPOINT"}
-    FORBIDDEN_MODULES = ("anthropic", "requests", "dotenv", "urllib3")
+    # With live answers on, the SDK is imported at startup (import only: no
+    # client, no key read, no connection); everything else stays forbidden.
+    SDK_ALLOWED = os.environ.get("GUARD_ALLOW_SDK_IMPORT") == "1"
+    FORBIDDEN_MODULES = (("requests", "dotenv", "urllib3") if SDK_ALLOWED
+                         else ("anthropic", "requests", "dotenv", "urllib3"))
     # Local-only recorders: the serving process must never import them.
     LOCAL_ONLY_SCRIPTS = ("record_samples", "record_llm_judge")
 
@@ -79,6 +83,9 @@ GUARD_SCRIPT = textwrap.dedent(r"""
     # skip the code under test and pass the guard vacuously.
     os.environ["RATE_LIMIT_PER_MINUTE"] = "1000"
     import server.app as appmod                  # module-level app + warm-up run here
+    import live_answer
+    if live_answer.PREWARM is not None:          # let the SDK import finish under the tripwires
+        live_answer.PREWARM.join(timeout=60)
     from fastapi.testclient import TestClient    # in-process ASGI: no sockets
     c = TestClient(appmod.app)
 
@@ -137,9 +144,9 @@ def test_with_live_answers_on_the_other_endpoints_still_never_touch_the_model():
     except POST /live/answer must still never read the key, import the SDK or
     open a socket. (The live path itself is tested with a fake client in
     tests/test_live_answer.py.)"""
-    r = run_guard(LIVE_ANSWERS="on", LIVE_ALLOW_MEMORY_COUNTER="1")
-    assert r["tripped"] == [], r["tripped"]
-    assert r["loaded"] == []
+    r = run_guard(LIVE_ANSWERS="on", LIVE_ALLOW_MEMORY_COUNTER="1", GUARD_ALLOW_SDK_IMPORT="1")
+    assert r["tripped"] == [], r["tripped"]           # no key read, no socket, no DNS
+    assert r["loaded"] == []                          # requests / dotenv / urllib3 still absent
     assert r["out"]["sample_codes"] == [200] and r["out"]["live_status"] is True
 
 
