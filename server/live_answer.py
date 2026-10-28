@@ -61,6 +61,34 @@ class QuotaUnavailable(Exception):
     pass
 
 
+class ModelUnavailable(Exception):
+    """The model cannot answer right now. reason: "credit" (the API credit
+    has run out), "config" (bad or revoked key, no access) or "upstream"
+    (rate limit, overload, network)."""
+
+    def __init__(self, reason, detail=""):
+        super().__init__(reason)
+        self.reason, self.detail = reason, detail
+
+
+PAUSE_SECONDS = 15 * 60
+MESSAGES = {
+    "credit": "Live answers are paused: this demo's API credit has run out.",
+    "config": "Live answers are paused: the demo's API key is not working right now.",
+    "upstream": "The model is busy or unreachable right now. Try again in a minute.",
+}
+
+
+def classify_model_error(error_type, detail):
+    """Maps api_client's error_type (+ the server's own text) to a reason."""
+    text = (detail or "").lower()
+    if "credit balance" in text or "billing" in text or "insufficient" in text:
+        return "credit"
+    if error_type in ("bad_key", "permission_denied", "model_not_found", "missing_anthropic_sdk"):
+        return "config"
+    return "upstream"
+
+
 class MemoryDailyCounter:
     """For tests and local development only: resets when the process does."""
 
@@ -186,6 +214,15 @@ class LiveAnswerer:
     def __init__(self, live_bm25, counter, per_visitor, client=None, top_k=10):
         self.live, self.counter, self.per_visitor, self.top_k = live_bm25, counter, per_visitor, top_k
         self._client = client          # injected in tests; built lazily in production
+        # Per instance: after a credit or key error, stop calling the model for
+        # PAUSE_SECONDS so every click does not hit the API again.
+        self.paused_until, self.paused_reason = 0.0, None
+
+    def paused(self):
+        return self.paused_reason if time.time() < self.paused_until else None
+
+    def _pause(self, reason):
+        self.paused_until, self.paused_reason = time.time() + PAUSE_SECONDS, reason
 
     def client(self):
         if self._client is None:
@@ -199,7 +236,10 @@ class LiveAnswerer:
             available = True
         except QuotaUnavailable:
             used, available = None, False
-        return {"enabled": True, "available": available, "daily_cap": self.counter.cap,
+        paused = self.paused()
+        return {"enabled": True, "available": available and not paused,
+                "paused_reason": paused, "message": MESSAGES.get(paused) if paused else None,
+                "daily_cap": self.counter.cap,
                 "used_today": used,
                 "remaining_today": None if used is None else max(0, self.counter.cap - used),
                 "per_visitor_per_hour": self.per_visitor.per_hour,
@@ -239,6 +279,10 @@ class LiveAnswerer:
                              bm25_max=bm25_max, candidates=candidates)
         step("gate", t0, f"pass: best BM25 {bm25_max:.2f} >= {floor}")
 
+        paused = self.paused()
+        if paused:                     # known-broken: do not spend quota or call the API
+            raise ModelUnavailable(paused)
+
         # 2. quota: per visitor, then the durable daily cap (fails closed)
         t0 = time.perf_counter()
         if not self.per_visitor.take(visitor):
@@ -271,9 +315,10 @@ class LiveAnswerer:
         step("model_call", t0, model, prompt_tokens=usage.get("prompt_tokens"),
              completion_tokens=usage.get("completion_tokens"))
         if res.get("error_type"):
-            return self._out(question, trace, t_all, error=res["error_type"],
-                             detail=res.get("error_detail"), candidates=candidates,
-                             usage=usage, quota_used=used)
+            reason = classify_model_error(res["error_type"], res.get("error_detail"))
+            if reason in ("credit", "config"):
+                self._pause(reason)
+            raise ModelUnavailable(reason, res["error_type"])
 
         # 6. verify: parse, the 4 checks, confidence, audit on the billed count,
         #    then all 8 evaluators on the root-span-shaped payload

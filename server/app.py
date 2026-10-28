@@ -378,6 +378,9 @@ def create_app(samples_path=None, rate_limit_per_minute=None, corpus_path=None, 
         except live_answer.QuotaUnavailable:
             raise HTTPException(503, "The live-answer quota counter is unreachable, so no paid call "
                                      "was made. Recorded samples still work.")
+        except live_answer.ModelUnavailable as e:
+            return JSONResponse({"detail": live_answer.MESSAGES[e.reason] + " Recorded answers still work.",
+                                 "reason": e.reason}, status_code=503)
 
     @app.post("/gate/run")
     def gate_run(req: GateRequest):

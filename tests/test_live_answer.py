@@ -293,3 +293,62 @@ def test_each_break_blocks_the_release(gate_client, brk, expect):
 
 def test_gate_rejects_unknown_breaks(gate_client):
     assert gate_client.post("/gate/run", json={"break": "rm -rf"}).status_code == 422
+
+
+# --- out of credit / broken key: pause, say why, stop calling --------------------
+
+class FailingClient(FakeClient):
+    """Every model call raises the SDK error a given account state produces."""
+
+    def __init__(self, exc_name, message):
+        super().__init__("{}")
+        self.exc_name, self.message = exc_name, message
+        outer = self
+        base = self.messages
+
+        class Messages:
+            count_tokens = base.count_tokens
+
+            def create(self, **kw):
+                outer.creates.append(kw)
+                raise getattr(sys.modules["anthropic"], outer.exc_name)(outer.message)
+
+        self.messages = Messages()
+
+
+def test_out_of_credit_pauses_live_answers_and_says_why():
+    fake = FailingClient("BadRequestError", "Your credit balance is too low to access the Anthropic API.")
+    c, answerer = make(fake)
+    r = ask(c, Q01)
+    assert r.status_code == 503 and r.json()["reason"] == "credit"
+    assert "credit has run out" in r.json()["detail"] and "Recorded answers still work" in r.json()["detail"]
+    st = c.get("/live/status").json()
+    assert st["available"] is False and st["paused_reason"] == "credit"
+    used = answerer.counter.used_today()
+    calls = len(fake.creates)
+    r2 = ask(c, Q01)                                       # paused: no call, no quota
+    assert r2.status_code == 503 and len(fake.creates) == calls
+    assert answerer.counter.used_today() == used
+
+
+def test_a_bad_key_pauses_too():
+    c, _ = make(FailingClient("AuthenticationError", "invalid x-api-key"))
+    r = ask(c, Q01)
+    assert r.status_code == 503 and r.json()["reason"] == "config"
+
+
+def test_a_transient_error_does_not_pause():
+    fake = FailingClient("APIConnectionError", "connection reset")
+    c, answerer = make(fake)
+    r = ask(c, Q01)
+    assert r.status_code == 503 and r.json()["reason"] == "upstream"
+    assert answerer.paused() is None
+    ask(c, Q01)
+    assert len(fake.creates) >= 2                          # it tried again
+
+
+def test_gated_questions_still_answer_while_paused():
+    c, answerer = make(FailingClient("BadRequestError", "credit balance is too low"))
+    ask(c, Q01)
+    r = ask(c, "What is the capital of Mongolia?")         # the gate needs no model
+    assert r.status_code == 200 and r.json()["abstain_reason"] == "retrieval_gate"
