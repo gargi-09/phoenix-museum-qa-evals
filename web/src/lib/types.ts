@@ -142,3 +142,61 @@ export interface JudgeRecord {
     usage: { total_tokens?: number } | null;
   }[];
 }
+
+export interface TraceStep {
+  step: 'retrieve' | 'gate' | 'quota' | 'build_prompt' | 'count_tokens' | 'model_call' | 'verify' | 'llm_judge' | 'decide';
+  ms: number;
+  detail: string;
+  prompt_tokens?: number | null;
+  completion_tokens?: number | null;
+}
+
+interface Usage { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number }
+
+export interface LiveAnswer {
+  question: string;
+  mode: 'live';
+  note: string;
+  outcome: 'accepted' | 'abstained' | 'error';
+  abstain_reason?: 'retrieval_gate' | 'verification_failed' | null;
+  reason?: string;
+  error?: string;
+  model_called: boolean;
+  quota_used?: number;
+  bm25_max?: number;
+  candidates: { id: string; title: string | null; institution: string | null; bm25_score: number }[];
+  trace: TraceStep[];
+  total_ms: number;
+  usage: { answer: Usage | null; judge: Usage | null; estimated_cost_usd: number; pricing: string };
+  output?: { raw: string; answer: string | null; answerable: unknown; record_ids_used: unknown; error: string | null; limitations: unknown };
+  confidence?: { score: number | null; label: string } | null;
+  prompt_audit?: { status: string; detail: string };
+  evaluations?: Record<string, EvalResult>;
+  deterministic_verdict?: EvalResult;
+  llm_judge_surrogate?: EvalResult;
+  llm_judge?: EvalResult;
+  context_titles?: Record<string, string | null>;
+}
+
+export interface LiveStatus {
+  enabled: boolean;
+  available?: boolean;
+  daily_cap?: number;
+  remaining_today?: number | null;
+  per_visitor_per_hour?: number;
+  visitor_remaining?: number;
+  model?: string;
+  detail?: string;
+}
+
+export type GateBreak = 'none' | 'approve_seeded' | 'drop_known_good' | 'hide_dropped_prompt';
+
+export interface GateRun {
+  break: GateBreak;
+  break_description: string;
+  label: string;
+  checks: { ok: boolean; message: string }[];
+  release: 'OK' | 'BLOCKED';
+  ran_in_ms: number;
+  note: string;
+}

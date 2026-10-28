@@ -18,7 +18,7 @@ export function Results({ metrics, judge }: { metrics: Metrics | null; judge: Ju
   const tok = s?.recorded_tokens_per_answer;
 
   return (
-    <Section id="results" step="Step 3 · measured" title="What the measurements say"
+    <Section id="results" step="Measured" title="What the measurements say"
       lead="Every number below comes from a file in the repo, produced by a script: nothing is typed in by hand.">
       <div className="grid gap-5 lg:grid-cols-2">
         <Card className="p-5">

@@ -3,6 +3,7 @@ import { FoolTheVerifier } from './components/FoolTheVerifier';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { HowItWorks } from './components/HowItWorks';
+import { ReleaseGate } from './components/ReleaseGate';
 import { Results } from './components/Results';
 import { SearchArchive } from './components/SearchArchive';
 import { ExtLink } from './components/ui';
@@ -44,6 +45,7 @@ export default function App() {
           <FoolTheVerifier key={selected} api={api} samples={samples} selected={selected}
             onSelect={setSelected} onApiFailed={() => setApi('down')} />
         )}
+        <ReleaseGate api={api} />
         <Results metrics={metrics} judge={judge} />
         <HowItWorks />
       </main>

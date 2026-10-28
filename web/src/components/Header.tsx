@@ -23,8 +23,9 @@ export function Header({ api }: { api: ApiState }) {
           <span className="truncate font-semibold text-zinc-100">Museum QA Verifiers</span>
         </a>
         <nav className="ml-6 hidden md:flex items-center gap-5 text-sm text-zinc-400" aria-label="Sections">
-          <a className="hover:text-zinc-100" href="#search">Search</a>
+          <a className="hover:text-zinc-100" href="#search">Ask</a>
           <a className="hover:text-zinc-100" href="#verify">Fool the verifier</a>
+          <a className="hover:text-zinc-100" href="#gate">Release gate</a>
           <a className="hover:text-zinc-100" href="#results">Results</a>
           <a className="hover:text-zinc-100" href="#how">How it works</a>
         </nav>

@@ -42,9 +42,9 @@ export function Hero() {
 
       <ol className="mt-10 grid gap-3 sm:grid-cols-3 text-sm">
         {[
-          ['1', 'Search the archive', 'Type any question. Live retrieval over every record, and the gate that refuses off-topic ones.'],
+          ['1', 'Ask your own question', 'A real Claude answer, verified live by 8 checks and judged by an LLM, with the full trace.'],
           ['2', 'Try to fool the verifier', 'Edit a real Claude answer. Strip its sources, fake a citation, drop the system prompt.'],
-          ['3', 'See the measured results', 'What the real LLM judge approved, the CI release gate, latency and tokens.'],
+          ['3', 'Run the release gate', 'The CI gate, live. Break something on purpose and watch it refuse to ship.'],
         ].map(([n, t, d]) => (
           <li key={n} className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
             <p className="font-mono text-xs text-emerald-400">Step {n}</p>

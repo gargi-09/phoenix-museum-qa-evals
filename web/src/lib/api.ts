@@ -1,6 +1,6 @@
 // The Cloud Run API (server/app.py). It never calls a model: recorded
 // answers are re-scored live, and /retrieve runs live BM25 only.
-import type { EvalResult, Health, RetrieveResponse, Scored } from './types';
+import type { EvalResult, GateBreak, GateRun, Health, LiveAnswer, LiveStatus, RetrieveResponse, Scored } from './types';
 
 export const API_BASE: string =
   (import.meta.env.VITE_API_BASE as string | undefined) ?? 'https://museum-qa-api-o7gdkkg7ja-uc.a.run.app';
@@ -56,3 +56,13 @@ export async function scoreOnApi(sampleId: string, answer: string, delivered: bo
   return { evaluations: r.evaluations, verdict: r.deterministic_verdict, judge: r.llm_judge_surrogate,
            engine: 'api', computeMs: r.evaluated_in_ms };
 }
+
+export const liveStatus = (): Promise<LiveStatus> => call<LiveStatus>('/live/status');
+
+// One real model call plus a judge call: give it room (the server caps the
+// model client at 40 s inside Cloud Run's 60 s request timeout).
+export const liveAnswer = (question: string): Promise<LiveAnswer> =>
+  call<LiveAnswer>('/live/answer', { method: 'POST', body: JSON.stringify({ question }) }, 55000);
+
+export const runGate = (brk: GateBreak): Promise<GateRun> =>
+  call<GateRun>('/gate/run', { method: 'POST', body: JSON.stringify({ break: brk }) }, 15000);

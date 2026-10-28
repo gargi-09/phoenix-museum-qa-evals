@@ -1,8 +1,9 @@
-import { ArrowDownRight, Loader2, Search, ShieldOff, ShieldCheck } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
-import { ApiError, retrieve } from '../lib/api';
-import type { RetrieveResponse } from '../lib/types';
+import { ArrowDownRight, Loader2, Search, ShieldOff, ShieldCheck, Sparkles } from 'lucide-react';
+import { useEffect, useState, type FormEvent } from 'react';
+import { ApiError, liveAnswer, liveStatus, retrieve } from '../lib/api';
+import type { LiveAnswer, LiveStatus, RetrieveResponse } from '../lib/types';
 import type { ApiState } from '../App';
+import { LiveResult } from './LiveResult';
 import { Card, Section, Tag } from './ui';
 
 const EXAMPLES: { q: string; why: string }[] = [
@@ -18,11 +19,17 @@ export function SearchArchive({ api, onOpenSample }: { api: ApiState; onOpenSamp
   const [busy, setBusy] = useState(false);
   const [res, setRes] = useState<RetrieveResponse | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [answer, setAnswer] = useState<LiveAnswer | null>(null);
+  const [answering, setAnswering] = useState(false);
+  const [quota, setQuota] = useState<LiveStatus | null>(null);
+
+  const refreshQuota = () => { liveStatus().then(setQuota).catch(() => setQuota(null)); };
+  useEffect(() => { if (api === 'up') refreshQuota(); }, [api]);
 
   async function run(question: string) {
     const text = question.trim();
     if (!text) return;
-    setQ(text); setBusy(true); setErr(null);
+    setQ(text); setBusy(true); setErr(null); setAnswer(null);
     try {
       setRes(await retrieve(text));
     } catch (e) {
@@ -33,16 +40,36 @@ export function SearchArchive({ api, onOpenSample }: { api: ApiState; onOpenSamp
     }
   }
 
+  async function ask(question: string) {
+    const text = question.trim();
+    if (!text) return;
+    setQ(text); setAnswering(true); setErr(null); setRes(null);
+    try {
+      setAnswer(await liveAnswer(text));
+    } catch (e) {
+      setAnswer(null);
+      setErr(e instanceof ApiError ? e.message : 'The live answer failed.');
+    } finally {
+      setAnswering(false);
+      refreshQuota();
+    }
+  }
+
+  const liveOn = api === 'up' && quota?.enabled === true;
+  const left = quota?.remaining_today ?? null;
+  const visitorLeft = quota?.visitor_remaining ?? null;
+  const canAsk = liveOn && !answering && !busy && !!q.trim() && left !== 0 && visitorLeft !== 0 && quota?.available !== false;
   const submit = (e: FormEvent) => { e.preventDefault(); void run(q); };
   const gate = res?.gate;
   const pct = gate ? Math.min(100, (gate.bm25_max / (gate.threshold * 2)) * 100) : 0;
 
   return (
-    <Section id="search" step="Step 1 · live" title="Search 5,010 museum records"
-      lead={<>Ask anything. Your question runs through the pipeline's <strong className="text-zinc-200">BM25 retriever</strong> over
-        every record from the Cleveland Museum of Art and the Art Institute of Chicago, then through the
-        <strong className="text-zinc-200"> abstention gate</strong> that stops off-topic questions before any model is paid for.
-        Nothing generates an answer here, and your question is not stored.</>}>
+    <Section id="search" step="Step 1 · live" title="Ask the archive"
+      lead={<>Ask anything about 5,010 records from the Cleveland Museum of Art and the Art Institute of Chicago.
+        <strong className="text-zinc-200"> Search</strong> shows what the retriever finds and whether the
+        <strong className="text-zinc-200"> abstention gate</strong> lets the question through (free, no model).
+        <strong className="text-zinc-200"> Answer it</strong> runs the whole pipeline live: one real Claude Haiku call, all 8
+        checks, and a real LLM judge, with the trace of every step. Your question is not stored or logged.</>}>
       <Card className="p-4 sm:p-5">
         <form onSubmit={submit} className="flex flex-col sm:flex-row gap-2">
           <label htmlFor="q" className="sr-only">Your question</label>
@@ -52,15 +79,28 @@ export function SearchArchive({ api, onOpenSample }: { api: ApiState; onOpenSamp
               placeholder="e.g. Who made Coney Island Beach?"
               className="w-full rounded-xl border border-zinc-700 bg-zinc-950 py-2.5 pl-9 pr-3 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-emerald-500 focus:outline-none" />
           </div>
-          <button type="submit" disabled={busy || api === 'down' || !q.trim()}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-zinc-950 hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-40">
+          <button type="submit" disabled={busy || answering || api === 'down' || !q.trim()}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-600 px-4 py-2.5 text-sm font-semibold text-zinc-100 hover:border-zinc-400 disabled:cursor-not-allowed disabled:opacity-40">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Search className="h-4 w-4" aria-hidden />}
             Search
           </button>
+          <button type="button" onClick={() => void ask(q)} disabled={!canAsk}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-zinc-950 hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-40">
+            {answering ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Sparkles className="h-4 w-4" aria-hidden />}
+            {answering ? 'Answering…' : 'Answer it (live)'}
+          </button>
         </form>
+        <p className="mt-2 font-mono text-[11px] text-zinc-500">
+          {liveOn
+            ? left === 0 ? "Today's live answers are used up. Search, step 2 and the release gate still work."
+              : visitorLeft === 0 ? 'You have used your live answers for this hour. Search still works.'
+              : `Live answers left today: ${left ?? '?'} of ${quota?.daily_cap ?? '?'} · you: ${visitorLeft ?? '?'} this hour · ${quota?.model ?? ''}`
+            : api === 'up' && quota && !quota.enabled ? 'Live answers are off right now. Search, step 2 and the release gate still work.'
+            : ''}
+        </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {EXAMPLES.map((ex) => (
-            <button key={ex.q} type="button" onClick={() => void run(ex.q)} disabled={busy || api === 'down'}
+            <button key={ex.q} type="button" onClick={() => setQ(ex.q)} disabled={busy || answering}
               className="rounded-full border border-zinc-800 bg-zinc-950 px-3 py-1 text-left text-xs text-zinc-300 hover:border-zinc-600 disabled:opacity-40">
               {ex.q} <span className="text-zinc-500">· {ex.why}</span>
             </button>
@@ -75,7 +115,12 @@ export function SearchArchive({ api, onOpenSample }: { api: ApiState; onOpenSamp
           <p className="mt-4 text-xs text-zinc-500">The API is waking up (it scales to zero when idle); the first search can take a few seconds.</p>
         )}
         {err && <p role="alert" className="mt-4 rounded-lg border border-rose-500/30 bg-rose-500/5 p-3 text-sm text-rose-200">{err}</p>}
+        {answering && (
+          <p className="mt-4 text-sm text-zinc-400">Retrieving, checking the gate, calling Claude, verifying, asking the judge… (a few seconds)</p>
+        )}
       </Card>
+
+      {answer && <LiveResult r={answer} />}
 
       {res && gate && (
         <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
