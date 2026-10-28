@@ -37,7 +37,7 @@ export interface Sample {
   max_tokens?: number;
   dropped_by_script?: boolean;
   seed?: { type: string; from: string; note?: string; transform?: string; record_id?: string } | null;
-  recorded?: { model?: string; model_calls?: number; tokens?: number; derived_from?: string };
+  recorded?: { model?: string; model_calls?: number; tokens?: number; derived_from?: string; recorded_at?: string };
   python_verdicts: Record<string, EvalResult>;
 }
 
@@ -187,6 +187,8 @@ export interface LiveStatus {
   visitor_remaining?: number;
   model?: string;
   detail?: string;
+  paused_reason?: 'credit' | 'config' | null;
+  message?: string | null;
 }
 
 export type GateBreak = 'none' | 'approve_seeded' | 'drop_known_good' | 'hide_dropped_prompt';

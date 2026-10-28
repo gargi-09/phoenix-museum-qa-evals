@@ -3,7 +3,8 @@ dev_fake_live_api.py -- LOCAL DEVELOPMENT ONLY. Runs the API with live answers
 ON but a FAKE model client, so the web app's live flow can be built and
 tested with no key, no cost and no network:
 
-    python scripts/dev_fake_live_api.py          # http://127.0.0.1:8080
+    python scripts/dev_fake_live_api.py                  # http://127.0.0.1:8080
+    python scripts/dev_fake_live_api.py --out-of-credit  # every model call fails like a drained account
 
 The fake replays a recorded Claude answer when the question matches a
 recorded sample, and otherwise returns a polite decline. Every response's
@@ -28,6 +29,7 @@ RECORDED = {s["payload"]["question"].lower(): s["payload"]["llm"]["raw_content"]
             for s in json.load(open(os.path.join(REPO_ROOT, "samples", "recorded_outputs.json"),
                                     encoding="utf-8"))["scenarios"]
             if s["kind"] == "recorded" and (s["payload"].get("llm") or {}).get("raw_content")}
+OUT_OF_CREDIT = "--out-of-credit" in sys.argv
 DECLINE = json.dumps({"answer": "The retrieved records do not say.", "answerable": False,
                       "record_ids_used": [], "record_ids_excluded": [], "limitations": "FAKE local model"})
 
@@ -41,6 +43,9 @@ class FakeAnthropic:
                 return types.SimpleNamespace(input_tokens=4300 if system else 3700)
 
             def create(self, **kw):
+                if OUT_OF_CREDIT:
+                    raise sys.modules["anthropic"].BadRequestError(
+                        "Your credit balance is too low to access the Anthropic API.")
                 judge = "system" not in kw
                 q = kw["messages"][0]["content"]
                 text = ('{"label": "PASS", "explanation": "FAKE judge: reads fine."}' if judge

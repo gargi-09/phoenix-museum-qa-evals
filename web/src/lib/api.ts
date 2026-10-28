@@ -6,7 +6,7 @@ export const API_BASE: string =
   (import.meta.env.VITE_API_BASE as string | undefined) ?? 'https://museum-qa-api-o7gdkkg7ja-uc.a.run.app';
 
 export class ApiError extends Error {
-  constructor(message: string, readonly status: number | null) {
+  constructor(message: string, readonly status: number | null, readonly reason: string | null = null) {
     super(message);
   }
 }
@@ -22,8 +22,9 @@ async function call<T>(path: string, init: RequestInit = {}, timeoutMs = 12000):
     });
     const body: unknown = await res.json().catch(() => null);
     if (!res.ok) {
-      const detail = (body as { detail?: unknown } | null)?.detail;
-      throw new ApiError(typeof detail === 'string' ? detail : `HTTP ${res.status}`, res.status);
+      const b = body as { detail?: unknown; reason?: unknown } | null;
+      throw new ApiError(typeof b?.detail === 'string' ? b.detail : `HTTP ${res.status}`, res.status,
+                         typeof b?.reason === 'string' ? b.reason : null);
     }
     return body as T;
   } catch (e) {

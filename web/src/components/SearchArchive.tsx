@@ -1,9 +1,10 @@
 import { ArrowDownRight, Loader2, Search, ShieldOff, ShieldCheck, Sparkles } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { ApiError, liveAnswer, liveStatus, retrieve } from '../lib/api';
-import type { LiveAnswer, LiveStatus, RetrieveResponse } from '../lib/types';
+import type { LiveAnswer, LiveStatus, RetrieveResponse, Sample } from '../lib/types';
 import type { ApiState } from '../App';
 import { LiveResult } from './LiveResult';
+import { RecordedReplay } from './RecordedReplay';
 import { Card, Section, Tag } from './ui';
 
 const EXAMPLES: { q: string; why: string }[] = [
@@ -14,7 +15,12 @@ const EXAMPLES: { q: string; why: string }[] = [
   { q: 'What is the melting point of gallium arsenide?', why: 'slips past the gate' },
 ];
 
-export function SearchArchive({ api, onOpenSample }: { api: ApiState; onOpenSample: (id: string) => void }) {
+// Recorded questions offered for instant replay (real Claude answers).
+const REPLAY_IDS = ['q01', 'q03', 'q05', 'q07', 'q09', 'q10', 'q11'];
+
+export function SearchArchive({ api, samples, onOpenSample }: {
+  api: ApiState; samples: Sample[]; onOpenSample: (id: string) => void;
+}) {
   const [q, setQ] = useState('');
   const [busy, setBusy] = useState(false);
   const [res, setRes] = useState<RetrieveResponse | null>(null);
@@ -22,6 +28,12 @@ export function SearchArchive({ api, onOpenSample }: { api: ApiState; onOpenSamp
   const [answer, setAnswer] = useState<LiveAnswer | null>(null);
   const [answering, setAnswering] = useState(false);
   const [quota, setQuota] = useState<LiveStatus | null>(null);
+  const [replay, setReplay] = useState<Sample | null>(null);
+  const [unavailable, setUnavailable] = useState<string | null>(null);
+  const replayable = samples.filter((s) => REPLAY_IDS.includes(s.id));
+  const recordedFor = (text: string): Sample | undefined =>
+    samples.find((s) => s.kind === 'recorded' && s.question.trim().toLowerCase() === text.trim().toLowerCase());
+  const startReplay = (s: Sample) => { setQ(s.question); setReplay(s); setAnswer(null); setRes(null); setErr(null); };
 
   const refreshQuota = () => { liveStatus().then(setQuota).catch(() => setQuota(null)); };
   useEffect(() => { if (api === 'up') refreshQuota(); }, [api]);
@@ -29,7 +41,7 @@ export function SearchArchive({ api, onOpenSample }: { api: ApiState; onOpenSamp
   async function run(question: string) {
     const text = question.trim();
     if (!text) return;
-    setQ(text); setBusy(true); setErr(null); setAnswer(null);
+    setQ(text); setBusy(true); setErr(null); setAnswer(null); setReplay(null);
     try {
       setRes(await retrieve(text));
     } catch (e) {
@@ -43,12 +55,15 @@ export function SearchArchive({ api, onOpenSample }: { api: ApiState; onOpenSamp
   async function ask(question: string) {
     const text = question.trim();
     if (!text) return;
-    setQ(text); setAnswering(true); setErr(null); setRes(null);
+    setQ(text); setAnswering(true); setErr(null); setRes(null); setReplay(null); setUnavailable(null);
     try {
       setAnswer(await liveAnswer(text));
     } catch (e) {
       setAnswer(null);
-      setErr(e instanceof ApiError ? e.message : 'The live answer failed.');
+      const msg = e instanceof ApiError ? e.message : 'The live answer failed.';
+      // Quota used up, credit run out, key not working, model busy: point to the recordings.
+      if (e instanceof ApiError && (e.status === 429 || e.status === 503)) setUnavailable(msg);
+      else setErr(msg);
     } finally {
       setAnswering(false);
       refreshQuota();
@@ -58,7 +73,9 @@ export function SearchArchive({ api, onOpenSample }: { api: ApiState; onOpenSamp
   const liveOn = api === 'up' && quota?.enabled === true;
   const left = quota?.remaining_today ?? null;
   const visitorLeft = quota?.visitor_remaining ?? null;
+  const paused = quota?.paused_reason ? (quota.message ?? 'Live answers are paused right now.') : null;
   const canAsk = liveOn && !answering && !busy && !!q.trim() && left !== 0 && visitorLeft !== 0 && quota?.available !== false;
+  const notice = unavailable ?? paused ?? (liveOn && left === 0 ? "Today's live answers are used up." : null);
   const submit = (e: FormEvent) => { e.preventDefault(); void run(q); };
   const gate = res?.gate;
   const pct = gate ? Math.min(100, (gate.bm25_max / (gate.threshold * 2)) * 100) : 0;
@@ -115,12 +132,37 @@ export function SearchArchive({ api, onOpenSample }: { api: ApiState; onOpenSamp
           <p className="mt-4 text-xs text-zinc-500">The API is waking up (it scales to zero when idle); the first search can take a few seconds.</p>
         )}
         {err && <p role="alert" className="mt-4 rounded-lg border border-rose-500/30 bg-rose-500/5 p-3 text-sm text-rose-200">{err}</p>}
+        {notice && (
+          <div role="status" className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+            <p className="text-sm text-amber-100">{notice}</p>
+            <p className="mt-1 text-sm text-zinc-400">These are real Claude answers recorded earlier. Pick one to replay it; the 8 checks run on it live.</p>
+          </div>
+        )}
+        <div className="mt-4">
+          <p className="font-mono text-[11px] uppercase tracking-wider text-zinc-500">Or replay a recorded Claude answer</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {replayable.map((s) => (
+              <button key={s.id} type="button" onClick={() => startReplay(s)}
+                className={`rounded-full border px-3 py-1 text-left text-xs hover:border-emerald-500/60 ${replay?.id === s.id
+                  ? 'border-emerald-500/60 bg-emerald-500/10 text-emerald-100' : notice ? 'border-amber-500/40 bg-zinc-950 text-zinc-200' : 'border-zinc-800 bg-zinc-950 text-zinc-300'}`}>
+                {s.question}
+              </button>
+            ))}
+          </div>
+        </div>
         {answering && (
           <p className="mt-4 text-sm text-zinc-400">Retrieving, checking the gate, calling Claude, verifying, asking the judge… (a few seconds)</p>
         )}
       </Card>
 
       {answer && <LiveResult r={answer} />}
+      {replay && <RecordedReplay key={replay.id} sample={replay} api={api} onOpenSample={onOpenSample} />}
+      {!replay && !answer && unavailable && recordedFor(q) && (
+        <button type="button" onClick={() => { const s = recordedFor(q); if (s) startReplay(s); }}
+          className="mt-4 text-sm font-medium text-emerald-300 hover:text-emerald-200">
+          This exact question has a recorded answer: replay it
+        </button>
+      )}
 
       {res && gate && (
         <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">

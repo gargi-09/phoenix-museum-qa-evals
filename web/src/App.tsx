@@ -38,7 +38,7 @@ export default function App() {
       <Header api={api} />
       <main>
         <Hero />
-        <SearchArchive api={api} onOpenSample={openSample} />
+        <SearchArchive api={api} samples={samples} onOpenSample={openSample} />
         {loadError ? (
           <p role="alert" className="mx-auto max-w-6xl px-4 sm:px-6 text-rose-300">Could not load the recorded samples: {loadError}</p>
         ) : samples.length > 0 && (
