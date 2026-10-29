@@ -83,9 +83,6 @@ GUARD_SCRIPT = textwrap.dedent(r"""
     # skip the code under test and pass the guard vacuously.
     os.environ["RATE_LIMIT_PER_MINUTE"] = "1000"
     import server.app as appmod                  # module-level app + warm-up run here
-    import live_answer
-    if live_answer.PREWARM is not None:          # let the SDK import finish under the tripwires
-        live_answer.PREWARM.join(timeout=60)
     from fastapi.testclient import TestClient    # in-process ASGI: no sockets
     c = TestClient(appmod.app)
 
