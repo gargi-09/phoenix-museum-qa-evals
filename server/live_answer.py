@@ -431,19 +431,6 @@ def _parse_judge(res):
         return {"label": "INCONCLUSIVE", "score": None, "explanation": f"unparseable judge output: {content[:200]}"}
 
 
-PREWARM = None
-
-
-def _prewarm_sdk():
-    """Import the SDK only. Measured at ~6-7 s (it loads thousands of type
-    modules), which a fresh instance would otherwise add to its first live
-    answer. No client is built, so no key is read and nothing connects."""
-    try:
-        import anthropic  # noqa: F401
-    except Exception:  # noqa: BLE001 -- the live call reports a missing SDK itself
-        pass
-
-
 def from_env(live_bm25):
     """None unless LIVE_ANSWERS=on AND a durable counter is configured (or the
     explicit local-only memory counter). Fails closed on anything missing."""
@@ -458,7 +445,4 @@ def from_env(live_bm25):
         counter = MemoryDailyCounter(cap)
     else:
         return None
-    global PREWARM
-    PREWARM = threading.Thread(target=_prewarm_sdk, name="prewarm-anthropic-sdk", daemon=True)
-    PREWARM.start()
     return LiveAnswerer(live_bm25, counter, PerVisitor(per_ip))
