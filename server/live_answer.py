@@ -431,15 +431,13 @@ def _parse_judge(res):
         return {"label": "INCONCLUSIVE", "score": None, "explanation": f"unparseable judge output: {content[:200]}"}
 
 
+PREWARM = None
+
+
 def _prewarm_sdk():
     """Import the SDK only. Measured at ~6-7 s (it loads thousands of type
     modules), which a fresh instance would otherwise add to its first live
-    answer. No client is built, so no key is read and nothing connects.
-
-    Runs synchronously, before the server listens: Cloud Run gives a starting
-    container full CPU but throttles CPU between requests, so a background
-    import crawled and the first live answer then waited on its import lock
-    (measured: count_tokens 35.8 s)."""
+    answer. No client is built, so no key is read and nothing connects."""
     try:
         import anthropic  # noqa: F401
     except Exception:  # noqa: BLE001 -- the live call reports a missing SDK itself
@@ -460,5 +458,7 @@ def from_env(live_bm25):
         counter = MemoryDailyCounter(cap)
     else:
         return None
-    _prewarm_sdk()
+    global PREWARM
+    PREWARM = threading.Thread(target=_prewarm_sdk, name="prewarm-anthropic-sdk", daemon=True)
+    PREWARM.start()
     return LiveAnswerer(live_bm25, counter, PerVisitor(per_ip))
