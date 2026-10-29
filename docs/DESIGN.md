@@ -31,7 +31,9 @@ flowchart LR
   CI --> H
   CORPUS[("samples/corpus.jsonl.gz<br/>5,010 records")] --> BM["server/live_retrieval.py<br/>live BM25 + BM25 gate"]
   API --> BM
-  PAGES["GitHub Pages: web/<br/>React + strict TS"] -- "POST /evaluate, /retrieve" --> API
+  PAGES["GitHub Pages: web/<br/>React + strict TS"] -- "POST /evaluate, /retrieve,<br/>/live/answer, /gate/run" --> API
+  API --> LA["server/live_answer.py<br/>quota, 1 Claude call,<br/>8 checks, LLM judge"]
+  LA --> BM
   PAGES -. "fallback" .-> TS["sandbox.js<br/>(built from sandbox.ts)"]
 ```
 
@@ -39,8 +41,9 @@ For the 14 samples, **retrieval is replayed**: each sample carries the
 candidates the real hybrid retriever returned when it was recorded, and the
 answers are recorded too. The evaluators run live. A visitor's own question
 gets **live BM25 only** (`POST /retrieve`): the lexical half of the
-retriever and its 19.5 floor, over all 5,010 records. It gets no dense
-retrieval, no fusion and no answer.
+retriever and its 19.5 floor, over all 5,010 records, with no dense
+retrieval and no fusion. `POST /live/answer` adds one real Claude call on
+those records, then the 8 checks and a real LLM judge, at most 50 a day.
 
 ## Harness contract (`harness/`)
 
@@ -81,11 +84,13 @@ retrieval, no fusion and no answer.
 - **Deterministic gate over an LLM judge.** It is reproducible and free, and
   it sees the evidence. The cost is false positives on real text (q06).
   Known-good therefore gates at **6/7**, not 7/7.
-- **Replay over live serving.** The public service cannot spend money or leak
-  a key. It has no key, no SDK and no HTTP client, and tests trip on any
-  attempt. The cost is that answers exist only for 14 fixed samples. Free
-  text gets live BM25 and the gate, but not dense retrieval, which would need
-  torch and the embedding model in the image.
+- **Replay by default, live behind a cap.** The recorded path never calls a
+  model, and tests trip on any attempt. Live answers are one bounded path:
+  a durable 50-a-day counter that fails closed, 5 an hour per visitor, one
+  attempt, and a 15-minute pause on credit or key errors. The key is a
+  Secret Manager reference. The cost is a small daily budget and BM25-only
+  retrieval: dense retrieval would need torch and the embedding model in
+  the image.
 - **Concurrent evaluators.** Each one is isolated, so one that crashes
   cannot hide the others. It is not faster: on this laptop the concurrent
   verify step takes p50 1.225 ms against 0.247 ms sequential
@@ -109,13 +114,20 @@ retrieval, no fusion and no answer.
     search).
   - **Harness in replay**, this laptop: p50 1.263 ms, p95 1.962 ms.
   - Neither includes a model call.
+  - **Live answer**, Cloud Run revision `00004`, 2026-10-28: 4.85 s warm
+    (Claude 2.46 s, judge 1.95 s). The first answer on an instance took
+    15.8 s, 10.6 s of it the SDK's first import. A background import at
+    startup made it 48.7 s, because Cloud Run throttles CPU between
+    requests; it was rolled back.
 - **Cost of a real call.** Recorded prompts average 4,395 tokens (range
-  3,694–4,900), about 5.0K tokens per call in total.
+  3,694–4,900), about 5.0K tokens per call in total. A live answer with
+  its judge cost $0.00087–$0.00091 at Haiku 5.5 list price.
 
 ## What I did not build
 
 - No live *hybrid* retrieval on the public service: BM25 only, with no
-  dense retrieval and no fusion. No answers to free-text questions.
+  dense retrieval and no fusion.
+- No retry on live answers, and no fix yet for the slow first live answer.
 - No second recorded attempts, so retry is never shown on recorded data.
 - No export of harness traces to Phoenix; they are structured JSON only. The
   pipeline's own spans do go to Phoenix.

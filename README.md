@@ -24,8 +24,10 @@ passes all 3 seeded false passes. The real LLM judge (`make_live_llm_judge`,
 [the recorded LLM-judge run](#the-recorded-llm-judge-run).
 
 **[Try it in the browser →](https://gargi-09.github.io/phoenix-museum-qa-evals/)** No key and no
-sign-up. Search the 5,010 records live, then edit real Claude answers and see
-which checks you can fool. See [the web app](#the-web-app).
+sign-up. Ask your own question and get a live Claude answer, checked by the
+verifier and a real LLM judge, with a step-by-step trace (50 a day). Edit
+real Claude answers and see which checks you can fool, or break the CI
+release gate and watch it block. See [the web app](#the-web-app).
 
 ![The zero-sources trap in Phoenix: the LLM judge scores 1.00 while zero_source_false_pass and citation_groundedness score 0.00](docs/assets/trace-zero.png)
 
@@ -292,26 +294,35 @@ longer published by AIC.
 **https://museum-qa-api-o7gdkkg7ja-uc.a.run.app**, the backend the
 [web app](#the-web-app) calls.
 
-The model outputs are **recorded**: 11 real `claude-haiku-5-5` calls made
-once, locally, by [`record_samples.py`](record_samples.py) (54,954 tokens).
-The **evaluators run live** on every request. The deployed service never
-calls a model: it runs with `LLM_PROVIDER=disabled`, has no API key and no
-HTTP client in its image, and generates no answer to a free-text question.
+Two paths:
+
+- **Recorded:** 11 real `claude-haiku-5-5` calls made once, locally, by
+  [`record_samples.py`](record_samples.py) (54,954 tokens). The
+  **evaluators run live** on every request. This path never calls a model
+  (`LLM_PROVIDER=disabled`).
+- **Live answers:** `POST /live/answer` makes a real Claude call for a
+  visitor's question, capped at 50 a day. See
+  [live answers](#live-answers-post-liveanswer).
 
 ```
 GitHub Pages (web/) --POST /evaluate--> Cloud Run: FastAPI + src/rescore.py
   recorded answer (or the visitor's edit) -> parse, truncation check, 4 verifiers,
   confidence cap, prompt-token audit -> 8 evaluators + verdict, computed per request
 GitHub Pages (web/) --POST /retrieve--> live BM25 over 5,010 records + the BM25 gate
+GitHub Pages (web/) --POST /live/answer--> BM25 + gate -> quota -> Claude -> 8 checks -> LLM judge
+GitHub Pages (web/) --POST /gate/run--> scripts/release_gate.py on the recorded set
 ```
 
 | Endpoint | What it does |
 |---|---|
-| `GET /health` | status, sample count, `"model_calls": "disabled"` |
+| `GET /health` | status, sample count, `"model_calls": "disabled"` (the recorded path), `"live_answers"` |
 | `GET /samples` | the 14 fixed samples (11 recorded questions, 3 seeded failures) |
 | `GET /samples/{id}` | one sample: question, retrieved records, recorded answer |
 | `POST /evaluate` | `{"sample_id", "answer"?, "system_prompt_delivered"?}` → all evaluator verdicts |
 | `POST /retrieve` | `{"question"}` (1–300 characters) → live BM25 top 10 over all 5,010 records, plus the BM25 gate decision. No answer is generated |
+| `GET /live/status` | live answers: on or paused (and why), today's cap and use, this visitor's remaining answers |
+| `POST /live/answer` | `{"question"}` → a real Claude answer with citations, the 8 checks, the LLM judge, tokens, cost and a per-step trace. 429 when a cap is reached, 503 when paused |
+| `POST /gate/run` | `{"break"}`: `none`, `approve_seeded`, `drop_known_good` or `hide_dropped_prompt` → the release gate's verdict on the recorded set, with that one change applied |
 
 ```bash
 curl -s -X POST https://museum-qa-api-o7gdkkg7ja-uc.a.run.app/evaluate -H "Content-Type: application/json" -d '{"sample_id": "s01"}'
@@ -331,7 +342,59 @@ curl -s -X POST https://museum-qa-api-o7gdkkg7ja-uc.a.run.app/evaluate -H "Conte
   [`scripts/export_corpus.py`](scripts/export_corpus.py) with byte-identical
   passages. A test checks the recorded gate values: q11 is 17.22, q10 is
   19.75.
-- **The question itself** is never sent to a model, stored or logged.
+- **The question itself** is never sent to a model by `/retrieve`, and is
+  never stored or logged.
+
+### Live answers (`POST /live/answer`)
+
+A visitor's own question can get a **real Claude answer**, capped at **50 a
+day**. [`server/live_answer.py`](server/live_answer.py) runs these steps and
+returns each one with its timing:
+
+retrieve (live BM25, top 10) → gate (BM25 floor 19.5; below it the question
+abstains with no model call and no quota spent) → quota → build the prompt
+the way `answer_question` does → `count_tokens` → **one
+`claude-haiku-5-5` call** → the 8 deterministic checks → **a real LLM judge
+call** (question and answer only) → accept or abstain.
+
+So every live answer shows the LLM judge and the deterministic verifier on
+the same answer, like the recorded traces.
+
+**Safeguards:**
+- **Daily cap:** 50 answers, counted in a private Cloud Storage object.
+  Updates use `ifGenerationMatch`, so two instances can't both spend the
+  last answer. If the counter can't be read, the endpoint refuses (fails
+  closed).
+- **Per visitor:** 5 answers an hour per IP.
+- **One attempt:** a failed check abstains; it doesn't pay for a retry.
+- **Out of credit or a broken key:** the service pauses live answers for
+  15 minutes and says why. The web app then offers recorded answers instead
+  (see [the web app](#the-web-app)).
+- **The key:** stored in Secret Manager and mounted with `--set-secrets`.
+  It is not in the repo, the image, the service's plain environment or the
+  logs.
+- **The question** is sent to the model but not stored or logged.
+
+**Measured on Cloud Run** (revision `00004`, 2026-10-28, two real answers):
+
+| | First answer on the instance | Second answer |
+|---|---|---|
+| End to end | 15.8 s | **4.85 s** |
+| `count_tokens` | 10.6 s | 238 ms |
+| Claude answer call | 2.9 s | 2.46 s |
+| LLM judge call | 2.1 s | 1.95 s |
+| Cost (Haiku 5.5 list price) | $0.00087 | $0.00091 |
+
+Both were accepted, with verifier PASS and LLM judge PASS. A question about
+Mongolia abstained at the gate with no model call.
+
+The first answer is slow because importing the SDK takes 6–7 s (measured
+locally), and it happens on the first call. I tried importing it in a
+background thread at startup (revision `00005`). On Cloud Run that made the
+first answer **48.7 s** (`count_tokens` 35.8 s): Cloud Run throttles CPU
+between requests, so the import crawled. I rolled traffic back to `00004`
+and reverted the change. Importing it synchronously before the server
+listens should fix it; that isn't deployed or measured.
 
 **Prompt size.** About 4.4K prompt tokens per call on the recorded runs
 (mean 4,395, range 3,694 to 4,900; the 3,694 is s02, sent without its
@@ -428,8 +491,10 @@ What the numbers mean:
 - The rate limit is counted per instance, so with 2 instances the ceiling is
   up to 60 requests a minute per IP.
 - It runs as `museum-qa-api-runtime`, a dedicated service account with **no
-  IAM roles** and no user-managed keys, not the project's default compute
-  account, which has Editor on the project. The service calls no Google API.
+  project roles** and no user-managed keys, not the project's default
+  compute account, which has Editor on the project. Its only grants are
+  `objectUser` on the quota bucket and `secretAccessor` on the one secret,
+  both added by [`setup_live.sh`](setup_live.sh).
 - If the API is down or slow, the dashboard falls back to the in-browser
   sandbox.
 
@@ -439,6 +504,11 @@ What the numbers mean:
 3. Preview the billable and IAM commands with `bash deploy.sh`, then run
    them with `bash deploy.sh --yes`. They create the no-role service account
    if it's missing.
+4. For live answers: run `bash setup_live.sh --yes` (bucket, empty secret,
+   the two grants), then add your key as a version of the
+   `anthropic-api-key` secret in the Secret Manager console. `deploy.sh`
+   checks the secret has a version. `LIVE=off bash deploy.sh --yes` deploys
+   without live answers.
 
 ---
 
@@ -532,12 +602,14 @@ pip install -r requirements-ci.txt
 python -m pytest
 ```
 
-There are 80 tests. They include:
+There are 107 tests. They include:
 
 - a guard that runs the server with tripwires on key reads, client imports,
   outbound sockets and imports of the recorder scripts. It exercises every
   endpoint, including `/retrieve`, and checks each request reached its
-  handler rather than a 429;
+  handler rather than a 429. It runs twice: with live answers off, and on;
+- live answers against a fake client: the billed-count audit, the judge
+  being fooled, the gate, both caps, the counter, the out-of-credit pause;
 - live BM25 scores matching the recorded pipeline (q11 17.22, q10 19.75);
 - the web app's pinned dependencies and its strict, `any`-free TypeScript;
 - the 1,040/1,040 parity test;
@@ -551,9 +623,9 @@ retriever. It has no torch and no model SDK.
 - **A small fixed set:** 14 samples. Two of the three seeded failures (s01,
   s03) are labelled edits of real answers, and the real LLM judge was run
   once, on those three.
-- **Not a live answering system:** the deployed service replays recorded
-  answers, never calls a model, and answers no free-text question. Live
-  search over free text is BM25 only: no dense retrieval, no fusion.
+- **Live answers are small and BM25 only:** 50 a day, one attempt, no
+  dense retrieval and no fusion, so confidence has no retrieval component.
+  The first answer on a fresh instance takes about 16 s (see above).
 - **One known false positive:** q06 is a correct answer that the year check
   fails. It's documented, not tuned away.
 - **Latency comes from one client and one laptop**, and it varies run to
@@ -568,12 +640,18 @@ built for people who want to *use* the project, not read it.
 [`web/`](web/) is React 18 and strict TypeScript (`noImplicitAny`,
 `noUncheckedIndexedAccess`, no `any`), built with Vite and deployed by
 [`.github/workflows/pages.yml`](.github/workflows/pages.yml). It's a walk
-through three steps:
+through four steps:
 
-1. **Search 5,010 museum records (live).** Any question goes through
-   `POST /retrieve`: the live BM25 ranking, plus the abstention gate drawn
-   against its 19.5 floor. A question that matches a recorded sample links
-   to Claude's recorded answer.
+1. **Ask the archive (live).** **Search** shows the live BM25 ranking over
+   5,010 records and the abstention gate against its 19.5 floor. **Answer it
+   (live)** makes a real Claude call and shows the answer, its citations,
+   the LLM judge next to the verifier (with a banner when the judge is
+   fooled), a step-by-step trace, tokens, cost and all 8 checks.
+   - **When live answers are unavailable** (the daily cap is used up, the
+     credit has run out or the key fails), the page says so and offers
+     recorded Claude answers. Picking one replays it as a chat turn, labelled
+     *recorded answer · replayed*. The steps and typing are presentation;
+     the 8 checks run on it live.
 2. **Try to fool the verifier.** Edit any of the 14 recorded answers, or
    apply a one-click trick (remove the citations, cite a fake record, wrong
    year, "no violations", plain prose, drop the system prompt).
@@ -582,7 +660,11 @@ through three steps:
    - Scoring: by the Python evaluators on the API. If the API is
      unreachable, by the parity-checked TypeScript engine in the browser,
      and the page says which.
-3. **See the measured results.** Read from the committed files: the real
+3. **Break the release gate.** Pick one change (approve a seeded failure,
+   strip a good answer's citations, hide the dropped system prompt) and run
+   the real `scripts/release_gate.py` on the API. It shows RELEASE OK or
+   BLOCKED, and which check caught it.
+4. **See the measured results.** Read from the committed files: the real
    LLM judge's verdicts, the CI gate, latency and recorded tokens.
 
 Every number on the page comes from a generated file or the API, and each
@@ -790,6 +872,9 @@ docs/DESIGN.md         components, harness contract, failure modes, limits
 harness/               retrieve -> answer -> verify -> accept | retry | abstain (python -m harness)
 server/app.py          the Cloud Run API (recorded samples only, LLM_PROVIDER=disabled)
 server/live_retrieval.py  live BM25 + gate for POST /retrieve (no model, no dense)
+server/live_answer.py  POST /live/answer: quota, one Claude call, checks, LLM judge, trace
+server/gate_runner.py  POST /gate/run: the release gate with one chosen change
+setup_live.sh          one-time: quota bucket, empty secret, the two grants
 samples/               samples.json, recorded_outputs.json, recorded_llm_judge.json,
                        release_gate.json, corpus.jsonl.gz (the 5,010 records, slim)
 record_samples.py      LOCAL ONLY: records the model answers (needs your key)
