@@ -6,7 +6,7 @@ import { Card, ExtLink, Section, Tag } from './ui';
 const STEPS: { name: string; detail: string; here: 'live' | 'recorded' | 'partly live' }[] = [
   { name: 'Retrieve', detail: 'BM25 + bge-small embeddings, fused with RRF, entity resolution', here: 'partly live' },
   { name: 'Gate', detail: 'Abstain if BM25 < 19.5 or dense < 0.35: no paid call', here: 'partly live' },
-  { name: 'Answer', detail: 'One Claude Haiku call with the retrieved records', here: 'recorded' },
+  { name: 'Answer', detail: 'One Claude Haiku call with the retrieved records, then a real LLM judge', here: 'partly live' },
   { name: 'Verify', detail: '8 deterministic evaluators + a prompt-token audit', here: 'live' },
   { name: 'Decide', detail: 'Accept only if all pass; else retry or abstain', here: 'live' },
   { name: 'Trace', detail: 'OpenInference spans into Arize Phoenix', here: 'recorded' },
@@ -21,7 +21,7 @@ const SHOTS = [
 export function HowItWorks() {
   return (
     <Section id="how" step="Under the hood" title="How it works"
-      lead="The full pipeline runs locally against Arize Phoenix. The public demo runs the parts that cannot spend money or leak a key, and says which is which.">
+      lead="The full pipeline runs locally against Arize Phoenix. The public demo runs live answers behind a daily cap, replays recorded ones for the rest, and says which is which.">
       <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
         {STEPS.map((s, i) => (
           <li key={s.name} className="relative rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
@@ -37,10 +37,10 @@ export function HowItWorks() {
       <Card className="mt-5 p-5">
         <p className="font-mono text-[11px] uppercase tracking-wider text-zinc-500">What is live in this demo, and what is recorded</p>
         <ul className="mt-3 grid gap-2 text-sm text-zinc-300 sm:grid-cols-2">
-          <li><strong className="text-emerald-300">Live:</strong> BM25 search over all 5,010 records and the BM25 half of the gate (step 1).</li>
-          <li><strong className="text-emerald-300">Live:</strong> all 8 evaluators and the harness decision on every edit (step 2).</li>
+          <li><strong className="text-emerald-300">Live:</strong> BM25 search over all 5,010 records and the BM25 half of the gate, and up to 50 real Claude answers a day, each with a real LLM judge (step 1).</li>
+          <li><strong className="text-emerald-300">Live:</strong> all 8 evaluators and the harness decision on every edit (step 2), and the release gate (step 3).</li>
           <li><strong className="text-zinc-100">Recorded:</strong> 11 real Claude Haiku answers and the records the full hybrid retriever returned for them.</li>
-          <li><strong className="text-zinc-100">Not on the public service:</strong> dense retrieval (needs the embedding model) and any model call. The API has no key.</li>
+          <li><strong className="text-zinc-100">Not on the public service:</strong> dense retrieval (needs the embedding model) and the Phoenix traces. The key stays in Secret Manager.</li>
         </ul>
       </Card>
 
