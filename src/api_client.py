@@ -1101,10 +1101,20 @@ def _call_anthropic(messages, max_tokens, stage, expect_json, system,
         return _anthropic_error("refusal", f"model declined (category={category})")
 
     content = "".join(b.text for b in response.content if b.type == "text")
+    # input_tokens is only the UNCACHED part of the prompt: cache reads and
+    # writes are reported separately. The prompt the model read is all three,
+    # and that is what the prompt-token audit compares against. Reading
+    # input_tokens alone, a cached system prompt looks like a dropped one.
+    u = response.usage
+    cache_read = getattr(u, "cache_read_input_tokens", None) or 0
+    cache_write = getattr(u, "cache_creation_input_tokens", None) or 0
+    prompt_tokens = u.input_tokens + cache_read + cache_write
     usage = {
-        "prompt_tokens": response.usage.input_tokens,
-        "completion_tokens": response.usage.output_tokens,
-        "total_tokens": response.usage.input_tokens + response.usage.output_tokens,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": u.output_tokens,
+        "total_tokens": prompt_tokens + u.output_tokens,
+        "cache_read_input_tokens": cache_read,
+        "cache_creation_input_tokens": cache_write,
     }
     call_seq = getattr(response, "_request_id", None) or response.id
 
