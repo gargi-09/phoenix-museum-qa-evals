@@ -107,6 +107,28 @@ def _get_anthropic_client():
     return _anthropic_client
 
 
+def usage_from_response(response):
+    """The usage dict for an Anthropic response, with prompt_tokens as the
+    WHOLE prompt the model read.
+
+    input_tokens is only the UNCACHED part of the prompt: cache reads and
+    writes are reported separately. The prompt-token audit compares against
+    the whole prompt, so reading input_tokens alone, a cached system prompt
+    looks like a dropped one.
+    """
+    u = response.usage
+    cache_read = getattr(u, "cache_read_input_tokens", None) or 0
+    cache_write = getattr(u, "cache_creation_input_tokens", None) or 0
+    prompt_tokens = u.input_tokens + cache_read + cache_write
+    return {
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": u.output_tokens,
+        "total_tokens": prompt_tokens + u.output_tokens,
+        "cache_read_input_tokens": cache_read,
+        "cache_creation_input_tokens": cache_write,
+    }
+
+
 def active_model():
     """The model name the active provider will use, for logs and spans."""
     return ANTHROPIC_MODEL if PROVIDER == "anthropic" else MODEL_NAME
@@ -1101,21 +1123,7 @@ def _call_anthropic(messages, max_tokens, stage, expect_json, system,
         return _anthropic_error("refusal", f"model declined (category={category})")
 
     content = "".join(b.text for b in response.content if b.type == "text")
-    # input_tokens is only the UNCACHED part of the prompt: cache reads and
-    # writes are reported separately. The prompt the model read is all three,
-    # and that is what the prompt-token audit compares against. Reading
-    # input_tokens alone, a cached system prompt looks like a dropped one.
-    u = response.usage
-    cache_read = getattr(u, "cache_read_input_tokens", None) or 0
-    cache_write = getattr(u, "cache_creation_input_tokens", None) or 0
-    prompt_tokens = u.input_tokens + cache_read + cache_write
-    usage = {
-        "prompt_tokens": prompt_tokens,
-        "completion_tokens": u.output_tokens,
-        "total_tokens": prompt_tokens + u.output_tokens,
-        "cache_read_input_tokens": cache_read,
-        "cache_creation_input_tokens": cache_write,
-    }
+    usage = usage_from_response(response)
     call_seq = getattr(response, "_request_id", None) or response.id
 
     is_truncated, truncation_reasons = detect_truncation(

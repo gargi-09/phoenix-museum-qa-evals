@@ -618,6 +618,14 @@ There are 107 tests. They include:
 `requirements-ci.txt` is the dev set plus scikit-learn for the fixture
 retriever. It has no torch and no model SDK.
 
+The prompt-token audit counts cached prompt tokens too, since
+`usage.input_tokens` excludes cache reads and writes. The unit tests prove the
+accounting with a faked SDK. To check that caching really engages for the
+system prompt, there is an opt-in paid check that makes two real calls and
+expects a cache write and then a cache read:
+`python scripts/check_prompt_cache_live.py --yes`. It needs your key in `.env`
+and isn't run in CI.
+
 ### Limitations
 
 - **A small fixed set:** 14 samples. Two of the three seeded failures (s01,
