@@ -365,10 +365,15 @@ the same answer, like the recorded traces.
   Updates use `ifGenerationMatch`, so two instances can't both spend the
   last answer. If the counter can't be read, the endpoint refuses (fails
   closed).
-- **Per visitor:** 5 answers an hour per IP.
+- **Per visitor:** 5 answers an hour per IP. The IP is the address Cloud
+  Run's front end appends to `X-Forwarded-For`, not an entry the caller
+  sent, so a forged header doesn't reset the limit.
 - **One attempt:** a failed check abstains; it doesn't pay for a retry.
+- **Refunds:** if the request fails before an answer comes back (a token
+  count or answer call error), the reserved answer is handed back.
 - **Out of credit or a broken key:** the service pauses live answers for
-  15 minutes and says why. The web app then offers recorded answers instead
+  15 minutes and says why, whether the error comes from the token count or
+  the answer call. The web app then offers recorded answers instead
   (see [the web app](#the-web-app)).
 - **The key:** stored in Secret Manager and mounted with `--set-secrets`.
   It is not in the repo, the image, the service's plain environment or the
@@ -602,14 +607,19 @@ pip install -r requirements-ci.txt
 python -m pytest
 ```
 
-There are 107 tests. They include:
+There are 129 tests. They include:
 
 - a guard that runs the server with tripwires on key reads, client imports,
   outbound sockets and imports of the recorder scripts. It exercises every
   endpoint, including `/retrieve`, and checks each request reached its
   handler rather than a 429. It runs twice: with live answers off, and on;
 - live answers against a fake client: the billed-count audit, the judge
-  being fooled, the gate, both caps, the counter, the out-of-credit pause;
+  being fooled, the gate, both caps, the counter, the out-of-credit pause,
+  a bad key at the token count, and quota refunds when no answer came back;
+- rate limits keyed on the address a caller can't forge in
+  `X-Forwarded-For`;
+- the gate failing closed: an evaluator that raises blocks the answer, and
+  a gate with no sets, or a set that checks nothing, does not pass;
 - live BM25 scores matching the recorded pipeline (q11 17.22, q10 19.75);
 - the web app's pinned dependencies and its strict, `any`-free TypeScript;
 - the 1,040/1,040 parity test;
