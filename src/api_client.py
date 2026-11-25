@@ -1065,6 +1065,31 @@ def _anthropic_error(error_type, detail=None):
     }
 
 
+def anthropic_error_kind(e):
+    """(error_type, detail) for an exception raised by the Anthropic SDK, or
+    None if it isn't one. One mapping for every call, so the live service
+    treats a failed count_tokens exactly like a failed answer call."""
+    import anthropic
+    sdk = lambda name: getattr(anthropic, name, ())   # noqa: E731 -- () matches nothing
+    # Subclasses before APIStatusError, which they all extend.
+    if isinstance(e, sdk("AuthenticationError")):
+        return "bad_key", str(e)
+    if isinstance(e, sdk("PermissionDeniedError")):
+        return "permission_denied", str(e)
+    if isinstance(e, sdk("NotFoundError")):
+        return "model_not_found", f"{ANTHROPIC_MODEL}: {e}"
+    if isinstance(e, sdk("BadRequestError")):
+        return "unexpected_status_400", str(e)
+    if isinstance(e, sdk("RateLimitError")):
+        return "rate_limited", str(e)
+    if isinstance(e, sdk("APIStatusError")):
+        status = getattr(e, "status_code", 0) or 0
+        return ("server_error" if status >= 500 else f"unexpected_status_{status}"), str(e)
+    if isinstance(e, sdk("APIConnectionError")):
+        return "network_error", str(e)
+    return None
+
+
 def _call_anthropic(messages, max_tokens, stage, expect_json, system,
                     _retry_count=0, _prior_truncation=None):
     """The Anthropic-API half of call_haiku(): same return contract, same
@@ -1101,21 +1126,11 @@ def _call_anthropic(messages, max_tokens, stage, expect_json, system,
 
     try:
         response = _get_anthropic_client().messages.create(**kwargs)
-    except anthropic.AuthenticationError as e:
-        return _anthropic_error("bad_key", str(e))
-    except anthropic.PermissionDeniedError as e:
-        return _anthropic_error("permission_denied", str(e))
-    except anthropic.NotFoundError as e:
-        return _anthropic_error("model_not_found", f"{ANTHROPIC_MODEL}: {e}")
-    except anthropic.BadRequestError as e:
-        return _anthropic_error("unexpected_status_400", str(e))
-    except anthropic.RateLimitError as e:
-        return _anthropic_error("rate_limited", str(e))
-    except anthropic.APIStatusError as e:
-        kind = "server_error" if e.status_code >= 500 else f"unexpected_status_{e.status_code}"
-        return _anthropic_error(kind, str(e))
-    except anthropic.APIConnectionError as e:
-        return _anthropic_error("network_error", str(e))
+    except Exception as e:  # noqa: BLE001 -- only SDK errors are mapped; anything else re-raises
+        kind = anthropic_error_kind(e)
+        if kind is None:
+            raise
+        return _anthropic_error(*kind)
 
     if response.stop_reason == "refusal":
         details = getattr(response, "stop_details", None)

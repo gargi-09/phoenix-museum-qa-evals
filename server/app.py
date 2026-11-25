@@ -157,8 +157,8 @@ def _view(store, s, payload, source):
 
 class RateLimiter:
     """Sliding-window limit per client IP, in memory (per instance; with max 2
-    instances the effective ceiling is at most 2x). Cloud Run puts the client
-    address first in X-Forwarded-For."""
+    instances the effective ceiling is at most 2x). The IP comes from
+    client_ip(), which ignores the entries a caller can forge."""
 
     def __init__(self, per_minute):
         self.per_minute = per_minute
@@ -180,10 +180,20 @@ class RateLimiter:
             return True, 0
 
 
-def client_ip(scope):
+# Cloud Run's front end appends the caller's address to whatever
+# X-Forwarded-For the caller sent, so the first entry is the caller's to choose
+# and only the last TRUSTED_PROXY_HOPS-th from the right is not. 1 = Cloud Run
+# serving directly; add one per proxy you put in front (e.g. a load balancer).
+TRUSTED_PROXY_HOPS = max(1, int(os.environ.get("TRUSTED_PROXY_HOPS", "1")))
+
+
+def client_ip(scope, hops=None):
+    hops = TRUSTED_PROXY_HOPS if hops is None else hops
     for name, value in scope.get("headers") or []:
         if name == b"x-forwarded-for":
-            return value.decode("latin-1").split(",")[0].strip()
+            entries = [e.strip() for e in value.decode("latin-1").split(",") if e.strip()]
+            if entries:
+                return entries[max(0, len(entries) - hops)]
     client = scope.get("client")
     return client[0] if client else "unknown"
 

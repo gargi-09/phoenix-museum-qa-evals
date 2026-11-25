@@ -113,6 +113,11 @@ class MemoryDailyCounter:
             self.used += 1
             return self.used
 
+    def release(self):
+        with self.lock:
+            if self.day == self._today() and self.used > 0:
+                self.used -= 1
+
 
 class GcsDailyCounter:
     """One object per UTC day in a private bucket, incremented with
@@ -180,6 +185,31 @@ class GcsDailyCounter:
         except Exception as e:  # noqa: BLE001 -- fail closed: no counter, no call
             raise QuotaUnavailable(str(e)) from e
 
+    def release(self):
+        """Hands back one answer reserved for a call that never ran. Best
+        effort: if it can't be written the answer simply stays counted, which
+        errs on the side of spending less."""
+        try:
+            for _ in range(6):
+                used, gen = self._read()
+                if used <= 0:
+                    return
+                url = (f"https://storage.googleapis.com/upload/storage/v1/b/{self.bucket}/o"
+                       f"?uploadType=media&name={urllib.parse.quote(self._name(), safe='')}"
+                       f"&ifGenerationMatch={gen}")
+                req = urllib.request.Request(url, data=json.dumps({"used": used - 1}).encode(),
+                                             method="POST",
+                                             headers={**self._auth(), "Content-Type": "application/json"})
+                try:
+                    with urllib.request.urlopen(req, timeout=self.timeout):
+                        return
+                except urllib.error.HTTPError as e:
+                    if e.code == 412:
+                        continue
+                    raise
+        except Exception:  # noqa: BLE001 -- see docstring
+            return
+
 
 class PerVisitor:
     def __init__(self, per_hour):
@@ -195,11 +225,20 @@ class PerVisitor:
 
     def take(self, key, now=None):
         now = time.monotonic() if now is None else now
-        if self.remaining(key, now) <= 0:
-            return False
+        with self.lock:                     # check and record under one lock
+            q = self.hits.setdefault(key, deque())
+            while q and now - q[0] >= 3600:
+                q.popleft()
+            if len(q) >= self.per_hour:
+                return False
+            q.append(now)
+            return True
+
+    def release(self, key):
         with self.lock:
-            self.hits[key].append(now)
-        return True
+            q = self.hits.get(key)
+            if q:
+                q.pop()
 
 
 # ---------------------------------------------------------------------------
@@ -223,6 +262,16 @@ class LiveAnswerer:
 
     def _pause(self, reason):
         self.paused_until, self.paused_reason = time.time() + PAUSE_SECONDS, reason
+
+    def _model_failed(self, error_type, detail=None):
+        reason = classify_model_error(error_type, detail)
+        if reason in ("credit", "config"):
+            self._pause(reason)
+        raise ModelUnavailable(reason, error_type)
+
+    def _refund(self, visitor):
+        self.counter.release()
+        self.per_visitor.release(visitor)
 
     def client(self):
         if self._client is None:
@@ -287,38 +336,52 @@ class LiveAnswerer:
         t0 = time.perf_counter()
         if not self.per_visitor.take(visitor):
             raise QuotaExhausted("visitor")
-        used = self.counter.reserve()
+        try:
+            used = self.counter.reserve()
+        except Exception:
+            self.per_visitor.release(visitor)      # nothing was attempted
+            raise
         step("quota", t0, f"{used}/{self.counter.cap} live answers used today")
 
-        # 3. context + prompt, exactly as answer_question builds them
-        t0 = time.perf_counter()
-        blocks, _folded = reasoning.assemble_context_blocks(candidates)
-        system_prompt, messages = reasoning.build_prompt(question, blocks)
-        step("build_prompt", t0, f"{len(blocks)} context blocks")
+        # Steps 3-5 hold the quota. A failed request isn't billed, so if anything
+        # fails before the answer call returns, the quota goes back.
+        try:
+            # 3. context + prompt, exactly as answer_question builds them
+            t0 = time.perf_counter()
+            blocks, _folded = reasoning.assemble_context_blocks(candidates)
+            system_prompt, messages = reasoning.build_prompt(question, blocks)
+            step("build_prompt", t0, f"{len(blocks)} context blocks")
 
-        # 4. prompt-token audit inputs: exact counts with and without the
-        #    instructions (count_tokens is free)
-        t0 = time.perf_counter()
-        client = self.client()
-        api_client._anthropic_client = client      # the transport below uses this client
-        model = api_client.ANTHROPIC_MODEL
-        with_i = client.messages.count_tokens(model=model, system=system_prompt,
-                                              messages=messages).input_tokens
-        without_i = client.messages.count_tokens(model=model, messages=messages).input_tokens
-        step("count_tokens", t0, f"expected {with_i} with instructions, {without_i} without")
+            # 4. prompt-token audit inputs: exact counts with and without the
+            #    instructions (count_tokens is free). Its errors are handled
+            #    like the answer call's: a bad key here pauses too.
+            t0 = time.perf_counter()
+            client = self.client()
+            api_client._anthropic_client = client      # the transport below uses this client
+            model = api_client.ANTHROPIC_MODEL
+            try:
+                with_i = client.messages.count_tokens(model=model, system=system_prompt,
+                                                      messages=messages).input_tokens
+                without_i = client.messages.count_tokens(model=model, messages=messages).input_tokens
+            except Exception as e:  # noqa: BLE001 -- SDK errors are mapped, others re-raise
+                kind = api_client.anthropic_error_kind(e)
+                if kind is None:
+                    raise
+                self._model_failed(*kind)
+            step("count_tokens", t0, f"expected {with_i} with instructions, {without_i} without")
 
-        # 5. the one model call, through the pipeline's Anthropic transport
-        t0 = time.perf_counter()
-        res = api_client._call_anthropic(messages, reasoning.ANSWER_MAX_TOKENS, "live_answer",
-                                         True, system_prompt)
-        usage = res.get("usage") or {}
-        step("model_call", t0, model, prompt_tokens=usage.get("prompt_tokens"),
-             completion_tokens=usage.get("completion_tokens"))
-        if res.get("error_type"):
-            reason = classify_model_error(res["error_type"], res.get("error_detail"))
-            if reason in ("credit", "config"):
-                self._pause(reason)
-            raise ModelUnavailable(reason, res["error_type"])
+            # 5. the one model call, through the pipeline's Anthropic transport
+            t0 = time.perf_counter()
+            res = api_client._call_anthropic(messages, reasoning.ANSWER_MAX_TOKENS, "live_answer",
+                                             True, system_prompt)
+            usage = res.get("usage") or {}
+            step("model_call", t0, model, prompt_tokens=usage.get("prompt_tokens"),
+                 completion_tokens=usage.get("completion_tokens"))
+            if res.get("error_type"):
+                self._model_failed(res["error_type"], res.get("error_detail"))
+        except Exception:
+            self._refund(visitor)
+            raise
 
         # 6. verify: parse, the 4 checks, confidence, audit on the billed count,
         #    then all 8 evaluators on the root-span-shaped payload

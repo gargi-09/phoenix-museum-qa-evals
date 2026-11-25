@@ -352,3 +352,81 @@ def test_gated_questions_still_answer_while_paused():
     ask(c, Q01)
     r = ask(c, "What is the capital of Mongolia?")         # the gate needs no model
     assert r.status_code == 200 and r.json()["abstain_reason"] == "retrieval_gate"
+
+
+# --- quota is handed back when no answer was billed ----------------------------
+
+class FailingCountClient(FakeClient):
+    """count_tokens raises the SDK error a revoked key produces."""
+
+    def __init__(self, exc_name, message):
+        super().__init__("{}")
+        outer = self
+        base = self.messages
+
+        class Messages:
+            create = base.create
+
+            def count_tokens(self, **kw):
+                outer.counts.append(True)
+                raise getattr(sys.modules["anthropic"], exc_name)(message)
+
+        self.messages = Messages()
+
+
+def test_a_bad_key_at_count_tokens_pauses_and_refunds():
+    fake = FailingCountClient("AuthenticationError", "invalid x-api-key")
+    c, answerer = make(fake)
+    r = ask(c, Q01)
+    assert r.status_code == 503 and r.json()["reason"] == "config"   # not a bare 500
+    assert answerer.paused() == "config" and fake.creates == []
+    assert answerer.counter.used_today() == 0
+    assert answerer.per_visitor.remaining("testclient") == 5
+
+
+def test_a_failed_answer_call_refunds_the_quota():
+    c, answerer = make(FailingClient("APIConnectionError", "connection reset"))
+    assert ask(c, Q01).status_code == 503
+    assert answerer.counter.used_today() == 0
+    assert answerer.per_visitor.remaining("testclient") == 5
+
+
+def test_a_delivered_answer_keeps_its_quota():
+    c, answerer = make(FakeClient(recorded_raw("q01")))
+    assert ask(c, Q01).status_code == 200
+    assert answerer.counter.used_today() == 1
+    assert answerer.per_visitor.remaining("testclient") == 4
+
+
+def test_a_full_daily_cap_does_not_use_up_the_visitor_limit():
+    c, answerer = make(FakeClient(recorded_raw("q01")), cap=1)
+    ask(c, Q01)
+    assert ask(c, Q01).status_code == 429                  # today's cap
+    assert answerer.per_visitor.remaining("testclient") == 4
+
+
+def test_the_visitor_limit_is_checked_and_taken_atomically():
+    from live_answer import PerVisitor
+    pv = PerVisitor(2)
+    assert [pv.take("ip", now=0.0) for _ in range(3)] == [True, True, False]
+    pv.release("ip")
+    assert pv.take("ip", now=1.0) is True
+
+
+def test_gcs_counter_hands_an_answer_back(monkeypatch):
+    import server.app  # noqa: F401
+    import live_answer as la
+    gcs = FakeGcs()
+    monkeypatch.setattr(la.urllib.request, "urlopen", lambda req, timeout=None: _wrap(gcs(req, timeout)))
+    c = la.GcsDailyCounter("bucket", cap=5)
+    c.reserve(), c.reserve()
+    c.release()
+    assert c.used_today() == 1
+
+
+def test_gcs_refund_is_best_effort(monkeypatch):
+    import server.app  # noqa: F401
+    import live_answer as la
+    gcs = FakeGcs(down=True)
+    monkeypatch.setattr(la.urllib.request, "urlopen", lambda req, timeout=None: _wrap(gcs(req, timeout)))
+    la.GcsDailyCounter("bucket", cap=5).release()           # unreachable: no exception, stays counted

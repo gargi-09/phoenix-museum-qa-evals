@@ -170,3 +170,36 @@ def test_answer_length_limit():
     c = client()
     r = c.post("/evaluate", json={"sample_id": "q01", "answer": "x" * 9000})
     assert r.status_code in (413, 422)
+
+
+# --- client IP: the rate limits key on an address the caller can't choose ---
+
+def _scope(xff=None, peer="10.0.0.9"):
+    headers = [(b"x-forwarded-for", xff.encode())] if xff is not None else []
+    return {"headers": headers, "client": (peer, 1234)}
+
+
+def test_a_forged_forwarded_for_entry_is_ignored():
+    from server.app import client_ip
+    # The caller sent "1.2.3.4"; Cloud Run's front end appended the real address.
+    assert client_ip(_scope("1.2.3.4, 203.0.113.7")) == "203.0.113.7"
+    assert client_ip(_scope("203.0.113.7")) == "203.0.113.7"
+
+
+def test_extra_trusted_proxies_move_the_client_entry_left():
+    from server.app import client_ip
+    assert client_ip(_scope("1.2.3.4, 203.0.113.7, 35.191.0.1"), hops=2) == "203.0.113.7"
+    assert client_ip(_scope("203.0.113.7"), hops=3) == "203.0.113.7"   # never past the start
+
+
+def test_without_forwarded_for_the_peer_address_is_used():
+    from server.app import client_ip
+    assert client_ip(_scope()) == "10.0.0.9"
+    assert client_ip(_scope(" , ")) == "10.0.0.9"
+
+
+def test_a_spoofing_client_still_hits_the_rate_limit():
+    c = client(rate=2)
+    codes = [c.get("/samples", headers={"X-Forwarded-For": f"9.9.9.{i}, 203.0.113.7"}).status_code
+             for i in range(3)]
+    assert codes == [200, 200, 429]
