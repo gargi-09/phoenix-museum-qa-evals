@@ -33,6 +33,12 @@ CONFIG_PATH = os.path.join(REPO_ROOT, "samples", "release_gate.json")
 def check_set(cfg, samples):
     """[(ok, message)] for one answer set. `samples` is passed in, not read
     here, so tests can hand it a deliberately broken set."""
+    # A set that checks nothing must not pass: no seeded failures, no
+    # known-good answers or a zero threshold would make every check vacuous.
+    if (not cfg.get("seeded_false_passes") or not cfg.get("known_good")
+            or cfg.get("min_known_good_pass", 0) < 1):
+        return [(False, f"set {cfg.get('name', '?')} checks nothing: it needs seeded false "
+                        f"passes, known-good answers and a known-good threshold of at least 1")]
     by_id = {s["id"]: s for s in samples}
     missing = [i for i in cfg["seeded_false_passes"] + cfg["known_good"]
                + list(cfg["identity_regression"].values()) if i not in by_id]
@@ -78,6 +84,8 @@ def run_gate(config=None, load=load_samples):
     for cfg in config["sets"]:
         samples = load(os.path.join(REPO_ROOT, cfg["path"]))
         report.append((cfg["name"], cfg["label"], check_set(cfg, samples)))
+    if not report:                     # no sets = nothing checked = no release
+        report.append(("(none)", "no answer sets configured", [(False, "the gate has no sets to check")]))
     ok = all(c for _, _, checks in report for c, _ in checks)
     return ok, report
 

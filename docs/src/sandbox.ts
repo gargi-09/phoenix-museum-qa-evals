@@ -583,7 +583,9 @@ interface Root { MuseumQASandbox?: SandboxApi; }
   function evaluate(payload: Payload): Record<string, EvalResult> {
     var out: Record<string, EvalResult> = {};
     Object.keys(EVALUATORS).forEach(function (k) {
-      try { out[k] = EVALUATORS[k](payload); } catch (e) { out[k] = R(INC, null, 'evaluator raised: ' + (e as Error).message); }
+      // A check that raises counts as a FAIL, as in phoenix_evals.run_evaluators:
+      // the verdict never fails on INCONCLUSIVE, so a crash would otherwise pass.
+      try { out[k] = EVALUATORS[k](payload); } catch (e) { out[k] = R(FAIL, 0, 'evaluator raised: ' + (e as Error).message + ' (counted as a failure: a check that can\'t run can\'t pass)'); }
     });
     out.deterministic_verdict = deterministicVerdict(out);
     out.llm_judge_surrogate = llmJudgeSurrogate(payload);

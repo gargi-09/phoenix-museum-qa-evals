@@ -414,14 +414,17 @@ def make_live_llm_judge(dev_mode=True):
 
 def run_evaluators(payload, evaluators):
     """{name: EvalResult}. An evaluator that raises is reported, not fatal:
-    one broken evaluator must not hide the verdicts of the others."""
+    one broken evaluator must not hide the verdicts of the others. It is
+    reported as a FAIL, not INCONCLUSIVE: the verdict never fails on
+    INCONCLUSIVE, so a crashed check would otherwise let the answer pass."""
     out = {}
     for name, fn in evaluators.items():
         try:
             out[name] = fn(payload)
         except Exception as e:  # noqa: BLE001 -- reported as a result below
-            out[name] = EvalResult(INCONCLUSIVE, None,
-                                   f"evaluator raised {type(e).__name__}: {e}")
+            out[name] = EvalResult(FAIL, 0.0,
+                                   f"evaluator raised {type(e).__name__}: {e} "
+                                   f"(counted as a failure: a check that can't run can't pass)")
     return out
 
 

@@ -122,3 +122,42 @@ def test_ci_checks_the_compiled_sandbox_matches_its_typescript_source():
     assert cfg["strict"] is True and cfg["noImplicitAny"] is True
     pkg = json.load(open(os.path.join(REPO_ROOT, "package.json"), encoding="utf-8"))
     assert pkg["devDependencies"] == {"typescript": "5.9.3"}           # pinned, the only dependency
+
+
+# --- the gate fails closed --------------------------------------------------
+
+def test_a_crashing_evaluator_blocks_instead_of_passing(monkeypatch):
+    import phoenix_evals
+
+    def boom(payload):
+        raise RuntimeError("broken check")
+
+    for name in list(phoenix_evals.DETERMINISTIC_EVALUATORS):
+        monkeypatch.setitem(phoenix_evals.DETERMINISTIC_EVALUATORS, name, boom)
+    checks = release_gate.check_set(RECORDED_CFG, recorded())
+    assert any("known-good pass rate: 0/7" in m for m in failed(checks))
+    assert not any("seeded false passes approved" in m for m in failed(checks))
+
+
+def test_an_evaluator_that_raises_reports_a_fail():
+    import phoenix_evals
+
+    def boom(payload):
+        raise ValueError("bad input")
+
+    out = phoenix_evals.run_evaluators({}, {"x": boom})
+    assert out["x"].label == "FAIL" and "bad input" in out["x"].explanation
+
+
+def test_a_gate_with_no_sets_does_not_pass():
+    ok, report = release_gate.run_gate({"sets": []})
+    assert ok is False and failed(report[0][2])
+
+
+@pytest.mark.parametrize("change", [
+    {"seeded_false_passes": []}, {"known_good": []}, {"min_known_good_pass": 0},
+])
+def test_a_set_that_checks_nothing_does_not_pass(change):
+    cfg = {**RECORDED_CFG, **change}
+    checks = release_gate.check_set(cfg, recorded())
+    assert failed(checks) and "checks nothing" in failed(checks)[0]

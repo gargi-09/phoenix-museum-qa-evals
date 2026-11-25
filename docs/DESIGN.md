@@ -58,8 +58,10 @@ those records, then the 8 checks and a real LLM judge, at most 50 a day.
   The state also holds every attempt (status, verdict, failed evaluators, all
   evaluations) and a trace of every step with its timing.
 - **Gate:** an attempt is accepted only if `deterministic_verdict` is PASS.
-  That verdict is the roll-up of all 8 evaluators, where INCONCLUSIVE never
-  counts as a pass. No LLM judge takes part.
+  That verdict is the roll-up of all 8 evaluators: any FAIL blocks it, and
+  INCONCLUSIVE (a check that had nothing to check) neither blocks nor passes
+  on its own. An evaluator that raises counts as a FAIL, so a broken check
+  can't let an answer through. No LLM judge takes part.
 - **Retry:** a failed, timed-out or erroring attempt is retried until the
   budget runs out. The next attempt receives the failing evaluators'
   explanations.

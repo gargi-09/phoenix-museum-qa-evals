@@ -498,11 +498,13 @@
     function evaluate(payload) {
         var out = {};
         Object.keys(EVALUATORS).forEach(function (k) {
+            // A check that raises counts as a FAIL, as in phoenix_evals.run_evaluators:
+            // the verdict never fails on INCONCLUSIVE, so a crash would otherwise pass.
             try {
                 out[k] = EVALUATORS[k](payload);
             }
             catch (e) {
-                out[k] = R(INC, null, 'evaluator raised: ' + e.message);
+                out[k] = R(FAIL, 0, 'evaluator raised: ' + e.message + ' (counted as a failure: a check that can\'t run can\'t pass)');
             }
         });
         out.deterministic_verdict = deterministicVerdict(out);
